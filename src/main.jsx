@@ -1,0 +1,103 @@
+import { StrictMode } from "react";
+import { createRoot } from "react-dom/client";
+import "./index.css";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import Home from "./pages/Home";
+import Login from "./pages/Login";
+import Dashboard from "./pages/DashBoard/Dashboard";
+import ProductDetails from "./components/ProductDetails";
+import { AuthProvider } from "./context/AuthContext";
+import { CartProvider } from "./context/CartContext";
+import PrivateRoute from "./components/PrivateRoute";
+import EditProfile from "./pages/DashBoard/EditProfile";
+import EditProducts from "./pages/DashBoard/EditProducts";
+import UpdateProduct from "./pages/DashBoard/UpdateProduct";
+import AllProductsAdminView from "./pages/DashBoard/AllProductsAdminView";
+import AddProducts from "./pages/DashBoard/AddProducts";
+import HandleOrders from "./pages/DashBoard/HandleOrders";
+import CartPage from "./pages/CartPage";
+
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <Home />,
+  },
+  {
+    path: "/products/:id",
+    element: <ProductDetails />,
+  },
+  {
+    path: "/login",
+    element: <Login />,
+  },
+  {
+    path: "/cart",
+    element: <CartPage />,
+  },
+  {
+    path: "/dashboard",
+    element: (
+      <PrivateRoute>
+        <Dashboard />
+      </PrivateRoute>
+    ),
+  },
+  {
+    path: "/dashboard/edit-your-profile",
+    element: (
+      <PrivateRoute>
+        <EditProfile />
+      </PrivateRoute>
+    ),
+  },
+  {
+    path: "/dashboard/edit-your-products",
+    element: (
+      <PrivateRoute>
+        <EditProducts />
+      </PrivateRoute>
+    ),
+  },
+  {
+    path: "/dashboard/handle-orders",
+    element: (
+      <PrivateRoute>
+        <HandleOrders />
+      </PrivateRoute>
+    ),
+  },
+  {
+    path: "/dashboard/edit-your-products/add",
+    element: (
+      <PrivateRoute>
+        <AddProducts />
+      </PrivateRoute>
+    ),
+  },
+  {
+    path: "/dashboard/edit-your-products/all",
+    element: (
+      <PrivateRoute>
+        <AllProductsAdminView />
+      </PrivateRoute>
+    ),
+  },
+  {
+    path: "/dashboard/update-product/:id",
+    element: (
+      <PrivateRoute>
+        <UpdateProduct />
+      </PrivateRoute>
+    ),
+  },
+]);
+
+createRoot(document.getElementById("root")).render(
+  <StrictMode>
+    <AuthProvider>
+      <CartProvider>
+        <RouterProvider router={router} />
+      </CartProvider>
+    </AuthProvider>
+  </StrictMode>
+);

@@ -1,0 +1,14 @@
+@import "tailwindcss";
+@plugin "daisyui";
+@import "react-responsive-carousel/lib/styles/carousel.min.css";
+
+body {
+  @apply font-sans; 
+  font-family: 'Montserrat', sans-serif;
+}
+
+@theme {
+  --breakpoint-sm: 325px;
+  --breakpoint-md: 640px;
+  --breakpoint-lg: 1024px;
+}
