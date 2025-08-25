@@ -134,7 +134,9 @@ const HandleOrders = () => {
         <button
           onClick={() => setActiveTab("completed")}
           className={`px-4 py-2 rounded-lg font-semibold ${
-            activeTab === "completed" ? "bg-green-600 text-white" : "bg-gray-200"
+            activeTab === "completed"
+              ? "bg-green-600 text-white"
+              : "bg-gray-200"
           }`}
         >
           Completed
@@ -144,7 +146,10 @@ const HandleOrders = () => {
       {/* Action Buttons */}
       <div className="flex justify-between items-center mb-4">
         <div className="flex mr-4">
-          <button onClick={handleDownload} className="btn btn-xs btn-ghost mr-2">
+          <button
+            onClick={handleDownload}
+            className="btn btn-xs btn-ghost mr-2"
+          >
             <img src="/download-icon.png" alt="Download icon" />
           </button>
           <button onClick={handlePrint} className="btn btn-xs btn-ghost mr-2">
@@ -195,7 +200,9 @@ const HandleOrders = () => {
                   <td>
                     <span
                       className={`px-2 py-1 rounded text-white ${
-                        order.status === "pending" ? "bg-yellow-500" : "bg-green-600"
+                        order.status === "pending"
+                          ? "bg-yellow-500"
+                          : "bg-green-600"
                       }`}
                     >
                       {order.status}
@@ -204,7 +211,10 @@ const HandleOrders = () => {
                   {activeTab === "pending" && (
                     <td>
                       <button
-                        onClick={() => handleStatusUpdate(order.orderId)}
+                        onClick={() => {
+                          console.log("Updating order with ID:", order.orderId);
+                          handleStatusUpdate(order.orderId);
+                        }}
                         className="btn btn-xs btn-success"
                       >
                         Mark Completed
@@ -215,7 +225,10 @@ const HandleOrders = () => {
               ))
             ) : (
               <tr>
-                <td colSpan={activeTab === "pending" ? 11 : 10} className="text-center">
+                <td
+                  colSpan={activeTab === "pending" ? 11 : 10}
+                  className="text-center"
+                >
                   No {activeTab} orders found.
                 </td>
               </tr>

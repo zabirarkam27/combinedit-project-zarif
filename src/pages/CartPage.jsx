@@ -1,11 +1,13 @@
 import { useState } from "react";
 import { useCart } from "../context/CartContext";
+import { useNavigate } from "react-router-dom";
 import design from "../styles/design";
 import useOrderForm from "../hooks/useOrderForm";
 
 const CartPage = () => {
-  const { cartItems, removeFromCart, updateQuantity } = useCart();
+const { cartItems, removeFromCart, updateQuantity, clearCart } = useCart();
   const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const navigate = useNavigate();
 
   const totalPrice = cartItems.reduce(
     (sum, item) => sum + item.price * item.quantity,
@@ -35,7 +37,9 @@ const CartPage = () => {
     };
 
     handleOrderSubmit(e, orderPayload);
+    clearCart();
     setCheckoutOpen(false);
+    navigate("/");
   };
 
   return (
