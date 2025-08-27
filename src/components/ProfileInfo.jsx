@@ -1,13 +1,14 @@
 import useProfileData from "../hooks/useProfileData";
+import { useRef, forwardRef } from "react";
 
-const ProfileInfo = () => {
+const ProfileInfo = forwardRef((props, ref) => {
   const { profile, loading } = useProfileData();
 
   if (loading) return <p>Loading...</p>;
   if (!profile) return <p>Profile not found</p>;
 
   return (
-    <div className="max-w-2xl mx-auto">
+    <div className="pt-10 max-w-2xl mx-auto">
       {/* company info */}
       <div className="mx-auto pt-10">
         <img src={profile.logo} alt="Company Logo" className="w-1/3 mx-auto" />
@@ -30,7 +31,7 @@ const ProfileInfo = () => {
       </div>
 
       {/* Contacts info */}
-      <section className="text-white my-4">
+      <section ref={ref} className="text-white my-4">
         <div className="text-white mx-auto my-4 flex gap-6 flex-wrap justify-center">
           {/* Fixed links */}
           <a href={profile.emailLink} className="hover:animate-bounce">
@@ -79,6 +80,6 @@ const ProfileInfo = () => {
       </section>
     </div>
   );
-};
+});
 
 export default ProfileInfo;

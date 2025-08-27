@@ -5,7 +5,7 @@ import design from "../styles/design";
 import useOrderForm from "../hooks/useOrderForm";
 
 const CartPage = () => {
-const { cartItems, removeFromCart, updateQuantity, clearCart } = useCart();
+  const { cartItems, removeFromCart, updateQuantity, clearCart } = useCart();
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -43,8 +43,13 @@ const { cartItems, removeFromCart, updateQuantity, clearCart } = useCart();
   };
 
   return (
-    <div className="max-w-4xl mx-auto p-6 bg-[#e6e6d7] rounded-xl mt-6 shadow-md">
-      <h2 className="text-2xl font-bold mb-4 text-center text-black">
+    <div
+      className={
+        design.colors.primaryGradient +
+        " max-w-4xl mx-auto p-6 bg-[#e6e6d7] rounded-xl mb-16 md:mt-16 shadow-md"
+      }
+    >
+      <h2 className="text-2xl font-bold mb-4 text-center text-white">
         🛒 Added Items
       </h2>
 

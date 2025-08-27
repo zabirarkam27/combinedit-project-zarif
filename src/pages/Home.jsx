@@ -1,19 +1,23 @@
 import AllProducts from "../components/AllProducts";
 import Banner from "../components/Banner";
 import ProfileInfo from "../components/ProfileInfo";
-import NavBar from "../components/NavBar";
 import design from "../styles/design";
 
-const Home = () => {
+const Home = ({ refs }) => {
+  const { profileRef, allProductsRef, contactRef } = refs;
+
   return (
     <section
-      className={`min-h-screen ${design.container} ${design.colors.primaryGradient} rounded-xl my-6`}
+      className={`min-h-screen ${design.container} ${design.colors.primaryGradient} rounded-xl md:my-6 sm:mt-3`}
     >
-      <div className={` text-white text-center`}>
-        <NavBar/>
-        <ProfileInfo />
+      <div className="text-white text-center">
+        <div ref={profileRef}>
+          <ProfileInfo ref={contactRef} />
+        </div>
         <Banner />
-        <AllProducts />
+        <div ref={allProductsRef}>
+          <AllProducts />
+        </div>
       </div>
     </section>
   );

@@ -1,15 +1,133 @@
-import { useRef, useState } from "react";
+import { useRef, useState, useEffect } from "react";
 import { motion } from "framer-motion";
+import useProfileData from "../hooks/useProfileData";
+import design from "../styles/design";
+import React from "react";
+import { Link } from "react-router-dom";
 
-const NavBar = () => {
+const NavBar = ({ refs }) => {
+  const { profileRef, allProductsRef, contactRef } = refs || {};
+  const profile = useProfileData();
+  const [showMobileNav, setShowMobileNav] = useState(false);
+
+  const scrollToSection = (ref) => {
+    if (ref?.current) {
+      ref.current.scrollIntoView({ behavior: "smooth", block: "start" });
+    }
+  };
+
+  // scroll listener (শুধু scroll করলে navbar show হবে)
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 50) {
+        setShowMobileNav(true);
+      } else {
+        setShowMobileNav(false);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  // পুরো স্ক্রিনে ট্যাপ করলে hide/unhide টগল হবে
+  const handleScreenTap = () => {
+    setShowMobileNav((prev) => !prev);
+  };
+
   return (
-    <div className="bg-white/1 py-5">
-      <SlideTabs />
+    <div>
+      {/* Large screen Navbar */}
+      <div className="hidden md:flex fixed top-0 left-0 w-full bg-[#10b2d7]/75 backdrop-blur-md shadow-sm z-50">
+        <div
+          className={
+            design.navbarContainer +
+            " flex items-center justify-between gap-x-12"
+          }
+        >
+          {/* logo */}
+          <div className="navbar-start">
+            <a className="btn btn-ghost text-xl">
+              <img
+                src={profile.logo}
+                alt="Company Logo"
+                className="w-1/3 mx-auto"
+              />
+            </a>
+          </div>
+
+          {/* center */}
+          <div className="navbar-center">
+            <SlideTabs>
+              <TabItem onClick={() => scrollToSection(profileRef)}>
+                <Link to="/">Home</Link>
+              </TabItem>
+              <TabItem onClick={() => scrollToSection(allProductsRef)}>
+                All products
+              </TabItem>
+              <TabItem onClick={() => scrollToSection(contactRef)}>
+                Contact Us
+              </TabItem>
+            </SlideTabs>
+          </div>
+
+          {/* right */}
+          <div className="navbar-end gap-4 pr-4">
+            <Link to="/cart">
+              <img src="/nav-icon/cart.png" alt="cart" className="w-8" />
+            </Link>
+            <a>
+              <img
+                src="/nav-icon/tracking.png"
+                alt="tracking"
+                className="w-8"
+              />
+            </a>
+          </div>
+        </div>
+      </div>
+
+      {/* Mobile Bottom Navbar */}
+      {/* overlay div for tap detection */}
+      <div
+        className="md:hidden fixed inset-0 z-40"
+        onClick={handleScreenTap}
+      ></div>
+
+      <motion.div
+        initial={{ y: 80, opacity: 0 }}
+        animate={showMobileNav ? { y: 0, opacity: 1 } : { y: 80, opacity: 0 }}
+        transition={{ duration: 0.4, ease: "easeInOut" }}
+        className="block md:hidden fixed bottom-0 left-0 w-full bg-gray-900/40 backdrop-blur-md border-t border-white/20 py-2 shadow-lg z-50"
+      >
+        <SlideTabs>
+          <TabItem onClick={() => scrollToSection(allProductsRef)}>
+            <img src="/nav-icon/hamburger.png" alt="Details" className="w-8" />
+          </TabItem>
+          <TabItem onClick={() => scrollToSection(contactRef)}>
+            <img src="/nav-icon/message.png" alt="message" className="w-8" />
+          </TabItem>
+          <TabItem onClick={() => scrollToSection(profileRef)}>
+            <Link to="/">
+              <img src="/nav-icon/home.png" alt="home" className="w-8" />
+            </Link>
+          </TabItem>
+          <TabItem>
+            <Link to="/cart">
+              <img src="/nav-icon/cart.png" alt="cart" className="w-8" />
+            </Link>
+          </TabItem>
+          <TabItem>
+            <img src="/nav-icon/tracking.png" alt="tracking" className="w-8" />
+          </TabItem>
+        </SlideTabs>
+      </motion.div>
     </div>
   );
 };
 
-const SlideTabs = () => {
+// SlideTabs wrapper
+const SlideTabs = ({ children }) => {
   const [position, setPosition] = useState({
     left: 0,
     width: 0,
@@ -18,59 +136,61 @@ const SlideTabs = () => {
 
   return (
     <ul
-      onMouseLeave={() => {
+      onMouseLeave={() =>
         setPosition((pv) => ({
           ...pv,
-          opacity: 0,
-        }));
-      }}
-      className="relative mx-auto flex w-fit rounded-full border-1 border-white p-1"
+          opacity: 1,
+        }))
+      }
+      className="relative mx-auto flex w-fit rounded-full bg-transparent p-2"
     >
-      <Tab setPosition={setPosition}>
-        <img src="/nav-icon/hamburger.png" alt="" className="w-8" />
-      </Tab>
-      <Tab setPosition={setPosition}>
-        <img src="/nav-icon/message.png" alt="" className="w-8" />
-      </Tab>
-      <Tab setPosition={setPosition}>
-        <img src="/nav-icon/home.png" alt="" className="w-8" />
-      </Tab>
-      <Tab setPosition={setPosition}>
-        <img src="/nav-icon/cart.png" alt="" className="w-8" />
-      </Tab>
-      <Tab setPosition={setPosition}>
-        <img src="/nav-icon/tracking.png" alt="" className="w-8" />
-      </Tab>
+      {React.Children.map(children, (child) =>
+        React.isValidElement(child)
+          ? React.cloneElement(child, { setPosition })
+          : child
+      )}
 
       <Cursor position={position} />
     </ul>
   );
 };
 
-const Tab = ({ children, setPosition }) => {
+// TabItem
+const TabItem = ({ children, setPosition, onClick }) => {
   const ref = useRef(null);
+
+  const handleActivate = () => {
+    if (!ref?.current) return;
+    const { width, left } = ref.current.getBoundingClientRect();
+    const parentLeft = ref.current.parentElement.getBoundingClientRect().left;
+
+    setPosition({
+      left: left - parentLeft,
+      width,
+      opacity: 1,
+    });
+  };
 
   return (
     <li
       ref={ref}
-      onMouseEnter={() => {
-        if (!ref?.current) return;
-
-        const { width } = ref.current.getBoundingClientRect();
-
-        setPosition({
-          left: ref.current.offsetLeft,
-          width,
-          opacity: 1,
-        });
+      onMouseEnter={handleActivate}
+      onClick={() => {
+        handleActivate();
+        if (onClick) onClick();
       }}
-      className="relative z-10 block cursor-pointer md:px-5 md:py-2"
+      onTouchStart={() => {
+        handleActivate();
+        if (onClick) onClick();
+      }}
+      className="relative z-10 block cursor-pointer px-4 py-2 text-white font-medium"
     >
       {children}
     </li>
   );
 };
 
+// Cursor
 const Cursor = ({ position }) => {
   return (
     <motion.li
@@ -78,7 +198,7 @@ const Cursor = ({ position }) => {
         ...position,
       }}
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
-      className="absolute z-0 h-7 rounded-full bg-black md:h-12"
+      className="absolute z-0 h-12 md:10 rounded-full bg-black/40"
     />
   );
 };

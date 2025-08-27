@@ -36,7 +36,7 @@ const AllProducts = () => {
     setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
 
   return (
-    <div>
+    <div className="sm:mb-18 md:mb-0">
       <input id="order-drawer" type="checkbox" className="drawer-toggle" />
 
       <div className="drawer-content">

@@ -2,13 +2,11 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import "./index.css";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
+
 import Home from "./pages/Home";
 import Login from "./pages/Login";
 import Dashboard from "./pages/DashBoard/Dashboard";
 import ProductDetails from "./components/ProductDetails";
-import { AuthProvider } from "./context/AuthContext";
-import { CartProvider } from "./context/CartContext";
-import PrivateRoute from "./components/PrivateRoute";
 import EditProfile from "./pages/DashBoard/EditProfile";
 import EditProducts from "./pages/DashBoard/EditProducts";
 import UpdateProduct from "./pages/DashBoard/UpdateProduct";
@@ -17,14 +15,34 @@ import AddProducts from "./pages/DashBoard/AddProducts";
 import HandleOrders from "./pages/DashBoard/HandleOrders";
 import CartPage from "./pages/CartPage";
 
+import { AuthProvider } from "./context/AuthContext";
+import { CartProvider } from "./context/CartContext";
+import PrivateRoute from "./components/PrivateRoute";
+
+import MainLayout from "./Layout/MainLayout";
+
+// Section refs
+const profileRef = { current: null };
+const allProductsRef = { current: null };
+const contactRef = { current: null };
+
+// Router setup
 const router = createBrowserRouter([
   {
     path: "/",
-    element: <Home />,
+    element: (
+      <MainLayout refs={{ profileRef, allProductsRef, contactRef }}>
+        <Home refs={{ profileRef, allProductsRef, contactRef }} />
+      </MainLayout>
+    ),
   },
   {
     path: "/products/:id",
-    element: <ProductDetails />,
+    element: (
+      <MainLayout>
+        <ProductDetails />
+      </MainLayout>
+    ),
   },
   {
     path: "/login",
@@ -32,7 +50,11 @@ const router = createBrowserRouter([
   },
   {
     path: "/cart",
-    element: <CartPage />,
+    element: (
+      <MainLayout>
+        <CartPage />
+      </MainLayout>
+    ),
   },
   {
     path: "/dashboard",
