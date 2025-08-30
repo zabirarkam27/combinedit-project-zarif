@@ -30,10 +30,46 @@ const NavBar = ({ refs }) => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // পুরো স্ক্রিনে ট্যাপ করলে hide/unhide টগল হবে
-  const handleScreenTap = () => {
+  // double tap anywhere => toggle navbar
+useEffect(() => {
+  let lastTapTime = 0;
+
+  const handleDoubleTap = () => {
+    const currentTime = Date.now();
+    const tapInterval = currentTime - lastTapTime;
+
+    if (tapInterval > 0 && tapInterval < 300) {
+      setShowMobileNav((prev) => !prev);
+      lastTapTime = 0;
+    } else {
+      lastTapTime = currentTime;
+    }
+  };
+
+  const handleDoubleClick = () => {
     setShowMobileNav((prev) => !prev);
   };
+
+  const isMobile = "ontouchstart" in window || navigator.maxTouchPoints > 0;
+
+  if (isMobile) {
+    // 👉 মোবাইলে double tap
+    document.addEventListener("touchstart", handleDoubleTap);
+  } else {
+    // 👉 ডেস্কটপে double click
+    document.addEventListener("dblclick", handleDoubleClick);
+  }
+
+  return () => {
+    if (isMobile) {
+      document.removeEventListener("touchstart", handleDoubleTap);
+    } else {
+      document.removeEventListener("dblclick", handleDoubleClick);
+    }
+  };
+}, []);
+
+
 
   return (
     <div>
@@ -88,12 +124,6 @@ const NavBar = ({ refs }) => {
       </div>
 
       {/* Mobile Bottom Navbar */}
-      {/* overlay div for tap detection */}
-      <div
-        className="md:hidden fixed inset-0 z-40"
-        onClick={handleScreenTap}
-      ></div>
-
       <motion.div
         initial={{ y: 80, opacity: 0 }}
         animate={showMobileNav ? { y: 0, opacity: 1 } : { y: 80, opacity: 0 }}
@@ -149,7 +179,6 @@ const SlideTabs = ({ children }) => {
           ? React.cloneElement(child, { setPosition })
           : child
       )}
-
       <Cursor position={position} />
     </ul>
   );

@@ -20,6 +20,8 @@ import { CartProvider } from "./context/CartContext";
 import PrivateRoute from "./components/PrivateRoute";
 
 import MainLayout from "./Layout/MainLayout";
+import { ToastContainer } from "react-toastify";
+
 
 // Section refs
 const profileRef = { current: null };
@@ -119,6 +121,7 @@ createRoot(document.getElementById("root")).render(
     <AuthProvider>
       <CartProvider>
         <RouterProvider router={router} />
+        <ToastContainer position="top-right" autoClose={2000} />
       </CartProvider>
     </AuthProvider>
   </StrictMode>
