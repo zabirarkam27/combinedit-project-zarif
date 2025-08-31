@@ -78,7 +78,7 @@ const AllProducts = () => {
                 <img
                   src={product.images}
                   alt={product.name}
-                  className="w-full h-[200px] sm:h-[130px] md:h-[180px] object-cover lg:h-[210px] transition-transform duration-500 group-hover:scale-105"
+                  className="w-full h-[200px] sm:h-[200px] md:h-[220px] object-cover lg:h-[240px] transition-transform duration-500 group-hover:scale-105"
                 />
               </Link>
 
@@ -97,13 +97,13 @@ const AllProducts = () => {
                   </p>
                 </div>
 
-                <div className="flex gap-3 items-center">
+                <div className="flex gap-0 md:gap-3 items-center">
                   <button
                     onClick={() => handleAddToCart(product)}
                     className="bg-transparent hover:scale-110 transition cursor-pointer"
                   >
                     <img
-                      src="/public/cart-icon.png"
+                      src="/cart-icon.png"
                       alt="cart icon"
                       className="w-12"
                     />
@@ -111,7 +111,7 @@ const AllProducts = () => {
 
                   <button
                     onClick={() => handleOrderClick(product)}
-                    className={`w-full ${design.buttons}`}
+                    className={`w-full text-xs md:text-sm p-0 ${design.buttons}`}
                   >
                     Order Now
                   </button>

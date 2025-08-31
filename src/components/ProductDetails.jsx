@@ -106,7 +106,7 @@ const ProductDetails = () => {
 
             <button
               onClick={() => setOrderOpen(true)}
-              className="block w-full text-center bg-[#8f94a0] text-white font-semibold px-4 py-2 rounded-md hover:bg-black transition"
+              className={`w-full ${design.buttons}`}
             >
               Order Now
             </button>
@@ -196,7 +196,7 @@ const ProductDetails = () => {
                 className={design.inputs}
                 rows="3"
               />
-              <button type="submit" className={`${design.buttons} w-full`}>
+              <button type="submit" className={`w-full ${design.buttons}`}>
                 Submit Order
               </button>
             </form>

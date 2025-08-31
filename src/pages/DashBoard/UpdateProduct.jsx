@@ -85,7 +85,7 @@ const UpdateProduct = () => {
   if (!product) return <p className="text-center mt-8">Loading...</p>;
 
   return (
-    <div className="max-w-3xl mx-auto p-6 bg-[#e6e6d7] shadow-md rounded-xl mt-6">
+    <div className="max-w-7xl w-full mx-auto p-6 bg-[#e6e6d7] shadow-md rounded-xl mt-6">
       <h2 className="text-2xl font-bold text-center mb-4">Update Product</h2>
 
       <form

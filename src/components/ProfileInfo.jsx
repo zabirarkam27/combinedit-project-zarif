@@ -1,5 +1,5 @@
 import useProfileData from "../hooks/useProfileData";
-import { useRef, forwardRef } from "react";
+import {forwardRef } from "react";
 
 const ProfileInfo = forwardRef((props, ref) => {
   const { profile, loading } = useProfileData();

@@ -1,14 +1,16 @@
 import { useRef, useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import useProfileData from "../hooks/useProfileData";
+// import useProfileData from "../hooks/useProfileData";
 import design from "../styles/design";
 import React from "react";
 import { Link } from "react-router-dom";
+import { useCart } from "../context/CartContext";
 
 const NavBar = ({ refs }) => {
   const { profileRef, allProductsRef, contactRef } = refs || {};
-  const profile = useProfileData();
+  // const { profile} = useProfileData();
   const [showMobileNav, setShowMobileNav] = useState(false);
+  const { cartItems } = useCart();
 
   const scrollToSection = (ref) => {
     if (ref?.current) {
@@ -16,7 +18,7 @@ const NavBar = ({ refs }) => {
     }
   };
 
-  // scroll listener (শুধু scroll করলে navbar show হবে)
+  // scroll listener
   useEffect(() => {
     const handleScroll = () => {
       if (window.scrollY > 50) {
@@ -31,45 +33,41 @@ const NavBar = ({ refs }) => {
   }, []);
 
   // double tap anywhere => toggle navbar
-useEffect(() => {
-  let lastTapTime = 0;
+  useEffect(() => {
+    let lastTapTime = 0;
 
-  const handleDoubleTap = () => {
-    const currentTime = Date.now();
-    const tapInterval = currentTime - lastTapTime;
+    const handleDoubleTap = () => {
+      const currentTime = Date.now();
+      const tapInterval = currentTime - lastTapTime;
 
-    if (tapInterval > 0 && tapInterval < 300) {
+      if (tapInterval > 0 && tapInterval < 300) {
+        setShowMobileNav((prev) => !prev);
+        lastTapTime = 0;
+      } else {
+        lastTapTime = currentTime;
+      }
+    };
+
+    const handleDoubleClick = () => {
       setShowMobileNav((prev) => !prev);
-      lastTapTime = 0;
-    } else {
-      lastTapTime = currentTime;
-    }
-  };
+    };
 
-  const handleDoubleClick = () => {
-    setShowMobileNav((prev) => !prev);
-  };
+    const isMobile = "ontouchstart" in window || navigator.maxTouchPoints > 0;
 
-  const isMobile = "ontouchstart" in window || navigator.maxTouchPoints > 0;
-
-  if (isMobile) {
-    // 👉 মোবাইলে double tap
-    document.addEventListener("touchstart", handleDoubleTap);
-  } else {
-    // 👉 ডেস্কটপে double click
-    document.addEventListener("dblclick", handleDoubleClick);
-  }
-
-  return () => {
     if (isMobile) {
-      document.removeEventListener("touchstart", handleDoubleTap);
+      document.addEventListener("touchstart", handleDoubleTap);
     } else {
-      document.removeEventListener("dblclick", handleDoubleClick);
+      document.addEventListener("dblclick", handleDoubleClick);
     }
-  };
-}, []);
 
-
+    return () => {
+      if (isMobile) {
+        document.removeEventListener("touchstart", handleDoubleTap);
+      } else {
+        document.removeEventListener("dblclick", handleDoubleClick);
+      }
+    };
+  }, []);
 
   return (
     <div>
@@ -83,11 +81,24 @@ useEffect(() => {
         >
           {/* logo */}
           <div className="navbar-start">
-            <a className="btn btn-ghost text-xl">
+            <a
+              className="
+                 btn btn-ghost 
+    bg-transparent 
+    border-none 
+    shadow-none 
+    hover:bg-transparent 
+    hover:border-none 
+    hover:shadow-none 
+    focus:outline-none 
+    active:bg-transparent
+    p-0
+  "
+            >
               <img
-                src={profile.logo}
+                src="/nav-icon/logo.png"
                 alt="Company Logo"
-                className="w-1/3 mx-auto"
+                className="w-16 mx-auto"
               />
             </a>
           </div>
@@ -109,8 +120,13 @@ useEffect(() => {
 
           {/* right */}
           <div className="navbar-end gap-4 pr-4">
-            <Link to="/cart">
+            <Link to="/cart" className="relative">
               <img src="/nav-icon/cart.png" alt="cart" className="w-8" />
+              {cartItems.length > 0 && (
+                <span className="absolute -top-2 -right-2 bg-[#ee9714] text-white text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full">
+                  {cartItems.length}
+                </span>
+              )}
             </Link>
             <a>
               <img
@@ -143,8 +159,13 @@ useEffect(() => {
             </Link>
           </TabItem>
           <TabItem>
-            <Link to="/cart">
+            <Link to="/cart" className="relative">
               <img src="/nav-icon/cart.png" alt="cart" className="w-8" />
+              {cartItems.length > 0 && (
+                <span className="absolute -top-2 -right-2 bg-[#ee9714] text-white text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full">
+                  {cartItems.length}
+                </span>
+              )}
             </Link>
           </TabItem>
           <TabItem>
