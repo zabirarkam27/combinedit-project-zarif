@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom"; // <-- useNavigate import
+import { useParams, useNavigate } from "react-router-dom";
 import useProductDetails from "../hooks/useProductDetails";
 import useOrderForm from "../hooks/useOrderForm";
 import design from "../styles/design";
@@ -8,12 +8,12 @@ import "react-toastify/dist/ReactToastify.css";
 
 const ProductDetails = () => {
   const { id } = useParams();
-  const navigate = useNavigate(); // <-- hook init
+  const navigate = useNavigate();
   const { product, mainImage, setMainImage } = useProductDetails(id);
   const [orderOpen, setOrderOpen] = useState(false);
   const [quantity, setQuantity] = useState(1);
 
-  const { orderInfo, handleOrderChange, handleOrderSubmit, setProduct } =
+  const { orderInfo, handleOrderChange, handleOrderSubmit } =
     useOrderForm(product);
 
   if (!product) {
@@ -28,22 +28,41 @@ const ProductDetails = () => {
   const decreaseQuantity = () =>
     setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
 
+  // ✅ Order Submit Handler (CartPage-এর মতো)
   const handleOrderFormSubmit = (e) => {
+    e.preventDefault();
+
+    const orderPayload = {
+      name: orderInfo.name,
+      phone: orderInfo.phone,
+      address: orderInfo.address,
+      note: orderInfo.note,
+      items: [
+        {
+          productId: product._id || product.id,
+          productName: product.name,
+          unitPrice: product.price,
+          quantity,
+          finalPrice: product.price * quantity,
+          images: Array.isArray(product.images)
+            ? product.images
+            : [product.images], // ✅ images পাঠানো হলো
+          status: "pending",
+        },
+      ],
+      grandTotal: product.price * quantity,
+      createdAt: new Date().toISOString(), // ✅ order date/time পাঠানো হলো
+    };
+
     try {
-      handleOrderSubmit(e, {
-        productId: product._id || product.id,
-        productName: product.name,
-        unitPrice: product.price,
-        quantity,
-        finalPrice: product.price * quantity,
-      });
+      handleOrderSubmit(e, orderPayload);
       toast.success(`✅ Order for ${product.name} submitted!`);
       setOrderOpen(false);
 
-      // Redirect to home page after a short delay (to show toast)
+      // Redirect after success
       setTimeout(() => {
-        navigate("/"); // <-- home page route
-      }, 1000);
+        navigate("/");
+      }, 1200);
     } catch (err) {
       console.error(err);
       toast.error(`❌ Failed to submit order. Try again!`);

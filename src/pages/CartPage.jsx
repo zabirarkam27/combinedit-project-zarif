@@ -38,10 +38,13 @@ const CartPage = () => {
         unitPrice: item.price,
         quantity: item.quantity,
         finalPrice: item.price * item.quantity,
+        images: Array.isArray(item.images) ? item.images : [item.images], // ✅ images পাঠানো হলো
         status: "pending",
       })),
       grandTotal: totalPrice,
+      createdAt: new Date().toISOString(), // ✅ order date/time পাঠানো হলো
     };
+
 
     try {
       handleOrderSubmit(e, orderPayload);

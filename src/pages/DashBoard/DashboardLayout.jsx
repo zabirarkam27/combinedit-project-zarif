@@ -4,7 +4,7 @@ import DashItems from "./DashItems";
 const DashboardLayout = () => {
   return (
     <div className="relative bg-[#ebf0f0] min-h-screen flex flex-col items-center">
-      <h1 className="text-3xl md:text-4xl font-bold text-center text-black my-10">
+      <h1 className="text-2xl md:text-4xl font-bold text-center text-black my-10">
         Admin Dashboard
       </h1>
       <div className="px-6 mb-6 w-full">

@@ -11,7 +11,7 @@ const AllProducts = () => {
   const [products, setProducts] = useState([]);
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [quantity, setQuantity] = useState(1);
-  const [orderOpen, setOrderOpen] = useState(false); // drawer toggle state
+  const [orderOpen, setOrderOpen] = useState(false);
 
   const { orderInfo, handleOrderChange, handleOrderSubmit, setProduct } =
     useOrderForm(selectedProduct);
@@ -31,7 +31,7 @@ const AllProducts = () => {
     setSelectedProduct(product);
     setProduct(product);
     setQuantity(1);
-    setOrderOpen(true); // open drawer
+    setOrderOpen(true);
   };
 
   const increaseQuantity = () => setQuantity((prev) => prev + 1);
@@ -44,19 +44,38 @@ const AllProducts = () => {
   };
 
   const handleOrderFormSubmit = (e) => {
+    e.preventDefault();
+    if (!selectedProduct) return;
+
+    const orderPayload = {
+      name: orderInfo.name,
+      phone: orderInfo.phone,
+      address: orderInfo.address,
+      note: orderInfo.note,
+      items: [
+        {
+          productId: selectedProduct._id || selectedProduct.id,
+          productName: selectedProduct.name,
+          unitPrice: selectedProduct.price,
+          quantity,
+          finalPrice: selectedProduct.price * quantity,
+          images: Array.isArray(selectedProduct.images)
+            ? selectedProduct.images
+            : [selectedProduct.images], // ✅ image support
+          status: "pending",
+        },
+      ],
+      grandTotal: selectedProduct.price * quantity,
+      createdAt: new Date().toISOString(),
+    };
+
     try {
-      handleOrderSubmit(e, {
-        productId: selectedProduct._id || selectedProduct.id,
-        productName: selectedProduct.name,
-        unitPrice: selectedProduct.price,
-        quantity,
-        finalPrice: selectedProduct.price * quantity,
-      });
+      handleOrderSubmit(e, orderPayload);
       toast.success(`✅ Order for ${selectedProduct.name} submitted!`);
       setOrderOpen(false);
     } catch (err) {
       console.error(err);
-      toast.error(`❌ Failed to submit order. Try again!`);
+      toast.error("❌ Failed to submit order. Try again!");
     }
   };
 
@@ -126,8 +145,8 @@ const AllProducts = () => {
         )}
       </div>
 
-      {/* Drawer Side (Order Form) */}
-      {orderOpen && (
+      {/* Drawer (Order Form) */}
+      {orderOpen && selectedProduct && (
         <div className="fixed inset-0 z-50 flex">
           {/* overlay */}
           <div
@@ -135,82 +154,81 @@ const AllProducts = () => {
             onClick={() => setOrderOpen(false)}
           ></div>
 
-          {selectedProduct && (
-            <div className="flex flex-col gap-4 p-4 w-72 sm:w-96 min-h-full bg-[#ccccb7] text-base-content shadow-lg">
-              {/* Selected product info */}
-              <div className="flex items-center gap-3">
-                <img
-                  src={selectedProduct.images}
-                  alt={selectedProduct.name}
-                  className="w-16 h-16 object-cover rounded"
-                />
-                <div>
-                  <h3 className="font-semibold">{selectedProduct.name}</h3>
-                  <p className="text-sm text-gray-600">
-                    Price: BDT {selectedProduct.price * quantity}
-                  </p>
+          {/* Drawer content */}
+          <div className="flex flex-col gap-4 p-4 w-72 sm:w-96 min-h-full bg-[#ccccb7] text-base-content shadow-lg">
+            {/* Selected product info */}
+            <div className="flex items-center gap-3">
+              <img
+                src={selectedProduct.images}
+                alt={selectedProduct.name}
+                className="w-16 h-16 object-cover rounded"
+              />
+              <div>
+                <h3 className="font-semibold">{selectedProduct.name}</h3>
+                <p className="text-sm text-gray-600">
+                  Total: BDT {selectedProduct.price * quantity}
+                </p>
 
-                  <div className="flex items-center gap-2 mt-1">
-                    <button
-                      onClick={decreaseQuantity}
-                      className="px-2 py-1 bg-gray-300 rounded"
-                    >
-                      -
-                    </button>
-                    <span>{quantity}</span>
-                    <button
-                      onClick={increaseQuantity}
-                      className="px-2 py-1 bg-gray-300 rounded"
-                    >
-                      +
-                    </button>
-                  </div>
+                <div className="flex items-center gap-2 mt-1">
+                  <button
+                    onClick={decreaseQuantity}
+                    className="px-2 py-1 bg-gray-300 rounded"
+                  >
+                    -
+                  </button>
+                  <span>{quantity}</span>
+                  <button
+                    onClick={increaseQuantity}
+                    className="px-2 py-1 bg-gray-300 rounded"
+                  >
+                    +
+                  </button>
                 </div>
               </div>
-
-              {/* Order Form */}
-              <form onSubmit={handleOrderFormSubmit} className="space-y-3">
-                <input
-                  type="text"
-                  name="name"
-                  placeholder="Your Name"
-                  value={orderInfo.name}
-                  onChange={handleOrderChange}
-                  className={design.inputs}
-                  required
-                />
-                <input
-                  type="tel"
-                  name="phone"
-                  placeholder="Phone Number"
-                  value={orderInfo.phone}
-                  onChange={handleOrderChange}
-                  className={design.inputs}
-                  required
-                />
-                <textarea
-                  name="address"
-                  placeholder="Delivery Address"
-                  value={orderInfo.address}
-                  onChange={handleOrderChange}
-                  className={design.inputs}
-                  rows="3"
-                  required
-                />
-                <textarea
-                  name="note"
-                  placeholder="Note"
-                  value={orderInfo.note}
-                  onChange={handleOrderChange}
-                  className={design.inputs}
-                  rows="3"
-                />
-                <button type="submit" className={`${design.buttons} w-full`}>
-                  Submit Order
-                </button>
-              </form>
             </div>
-          )}
+
+            {/* Order Form */}
+            <form onSubmit={handleOrderFormSubmit} className="space-y-3">
+              <input
+                type="text"
+                name="name"
+                placeholder="Your Name"
+                value={orderInfo.name}
+                onChange={handleOrderChange}
+                className={design.inputs}
+                required
+              />
+              <input
+                type="tel"
+                name="phone"
+                placeholder="Phone Number"
+                value={orderInfo.phone}
+                onChange={handleOrderChange}
+                className={design.inputs}
+                required
+              />
+              <textarea
+                name="address"
+                placeholder="Delivery Address"
+                value={orderInfo.address}
+                onChange={handleOrderChange}
+                className={design.inputs}
+                rows="3"
+                required
+              />
+              <textarea
+                name="note"
+                placeholder="Note"
+                value={orderInfo.note}
+                onChange={handleOrderChange}
+                className={design.inputs}
+                rows="3"
+              />
+              <button type="submit" className={`${design.buttons} w-full`}>
+                Confirm Order
+              </button>
+            </form>
+          </div>
         </div>
       )}
     </div>

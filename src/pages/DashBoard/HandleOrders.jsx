@@ -4,6 +4,15 @@ import "react-toastify/dist/ReactToastify.css";
 import * as XLSX from "xlsx";
 import { getOrders, updateOrderStatus } from "../../services/orders";
 
+// --- helper to normalize images field ---
+const normalizeImages = (images) => {
+  if (!images) return [];
+  if (Array.isArray(images)) return images;
+  if (typeof images === "string") return [images];
+  if (typeof images === "object") return Object.values(images);
+  return [];
+};
+
 const HandleOrders = () => {
   const [orders, setOrders] = useState([]);
   const [search, setSearch] = useState("");
@@ -14,56 +23,47 @@ const HandleOrders = () => {
     fetchOrders();
   }, []);
 
+  // ✅ Fetch Orders
   const fetchOrders = async () => {
     try {
       const res = await getOrders();
       const data = Array.isArray(res.data) ? res.data : [res.data];
 
-      const groupedOrders = data.map((order) => {
-        const items =
-          order.items && Array.isArray(order.items)
-            ? order.items
-            : [
-                {
-                  productId: order.productId,
-                  productName: order.productName,
-                  unitPrice: order.unitPrice || order.price,
-                  quantity: order.quantity || 1,
-                  finalPrice: order.finalPrice || order.price,
-                  status: order.status,
-                },
-              ];
+      const mappedOrders = data.map((order) => {
+        const items = Array.isArray(order.items) ? order.items : [];
 
         return {
-          orderId: order._id.toString(), // <-- ObjectId কে string এ convert করলেই safe
+          orderId: order._id?.toString(),
           name: order.name,
           phone: order.phone,
           address: order.address,
           note: order.note || "",
+          createdAt: order.createdAt,
+          grandTotal: order.grandTotal,
+
+          // Products details
           products: items.map((item) => item.productName).join(", "),
           quantities: items.map((item) => item.quantity).join(", "),
           unitPrices: items.map((item) => item.unitPrice).join(", "),
           finalPrices: items.map((item) => item.finalPrice).join(", "),
-          status: items.every((item) => item.status === "completed")
-            ? "completed"
-            : "pending",
+
+          // ✅ Collect all images from items
+          images: items.flatMap((item) => normalizeImages(item.images)),
+
+          // ✅ Use order.status if exists, otherwise fallback
+          status: order.status || "pending",
         };
       });
 
-      setOrders(groupedOrders);
+      setOrders(mappedOrders);
     } catch (err) {
       toast.error("Failed to load orders.");
       console.error("Error fetching orders:", err);
     }
   };
 
+  // ✅ Update Status
   const handleStatusUpdate = async (orderId) => {
-    console.log("Updating order with ID:", orderId); // debug
-    if (!orderId) {
-      toast.error("Invalid order ID");
-      return;
-    }
-
     try {
       await updateOrderStatus(orderId, "completed");
       toast.success("Order marked as completed");
@@ -74,14 +74,16 @@ const HandleOrders = () => {
     }
   };
 
+  // ✅ Search + Filter by Tab
   const filteredOrders = orders.filter(
     (order) =>
       order.status === activeTab &&
-      (order.name.toLowerCase().includes(search.toLowerCase()) ||
-        order.phone.includes(search) ||
-        order.products.toLowerCase().includes(search.toLowerCase()))
+      (order.name?.toLowerCase().includes(search.toLowerCase()) ||
+        order.phone?.includes(search) ||
+        order.products?.toLowerCase().includes(search.toLowerCase()))
   );
 
+  // ✅ Download Excel
   const handleDownload = () => {
     if (!filteredOrders.length) return toast.info("No orders to download.");
     const worksheet = XLSX.utils.json_to_sheet(filteredOrders);
@@ -90,6 +92,7 @@ const HandleOrders = () => {
     XLSX.writeFile(workbook, `orders-${activeTab}.xlsx`);
   };
 
+  // ✅ Print
   const handlePrint = () => {
     const printContent = tableRef.current?.innerHTML;
     if (!printContent) return toast.info("Nothing to print.");
@@ -116,10 +119,10 @@ const HandleOrders = () => {
   };
 
   return (
-    <div className="max-w-7xl w-full mx-auto p-4 mt-8 bg-white rounded-xl shadow-md">
-      <h2 className="text-3xl font-bold text-center mb-4 text-primary">
+    <div className="w-full mx-auto p-1 md:p-4 bg-[#ebf0f0] shadow-md">
+      <h1 className="text-2xl md:text-4xl font-bold text-center text-black my-10">
         Placed Orders
-      </h2>
+      </h1>
 
       {/* Tabs */}
       <div className="flex justify-center gap-4 mb-6">
@@ -146,10 +149,7 @@ const HandleOrders = () => {
       {/* Action Buttons */}
       <div className="flex justify-between items-center mb-4">
         <div className="flex mr-4">
-          <button
-            onClick={handleDownload}
-            className="btn btn-xs btn-ghost mr-2"
-          >
+          <button onClick={handleDownload} className="btn btn-xs btn-ghost mr-2">
             <img src="/download-icon.png" alt="Download icon" />
           </button>
           <button onClick={handlePrint} className="btn btn-xs btn-ghost mr-2">
@@ -171,32 +171,57 @@ const HandleOrders = () => {
         <table className="table table-zebra w-full text-sm">
           <thead>
             <tr className="bg-base-200">
-              <th>#</th>
+              <th>
+                <input type="checkbox" className="checkbox checkbox-sm" />
+              </th>
+              <th>Order ID</th>
+              <th>Date</th>
               <th>Name</th>
               <th>Phone</th>
-              <th>Address</th>
-              <th>Note</th>
               <th>Products</th>
+              <th>Images</th>
               <th>Quantities</th>
               <th>Unit Prices</th>
-              <th>Final Prices</th>
+              <th>Total Prices</th>
               <th>Status</th>
               {activeTab === "pending" && <th>Actions</th>}
             </tr>
           </thead>
           <tbody>
             {filteredOrders.length ? (
-              filteredOrders.map((order, index) => (
+              filteredOrders.map((order) => (
                 <tr key={order.orderId}>
-                  <td>{index + 1}</td>
+                  <td>
+                    <input type="checkbox" className="checkbox checkbox-sm" />
+                  </td>
+                  <td>{order.orderId}</td>
+                  <td>
+                    {order.createdAt
+                      ? new Date(order.createdAt).toLocaleString()
+                      : "-"}
+                  </td>
                   <td>{order.name}</td>
                   <td>{order.phone}</td>
-                  <td>{order.address}</td>
-                  <td>{order.note}</td>
                   <td>{order.products}</td>
+                  <td>
+                    {order.images?.length > 0 ? (
+                      <div className="flex gap-2 flex-wrap">
+                        {order.images.map((img, idx) => (
+                          <img
+                            key={idx}
+                            src={img}
+                            alt={`product-${idx}`}
+                            className="w-12 h-12 object-cover rounded"
+                          />
+                        ))}
+                      </div>
+                    ) : (
+                      "No Image"
+                    )}
+                  </td>
                   <td>{order.quantities}</td>
                   <td>{order.unitPrices}</td>
-                  <td>{order.finalPrices}</td>
+                  <td>{order.grandTotal}</td>
                   <td>
                     <span
                       className={`px-2 py-1 rounded text-white ${
@@ -211,13 +236,10 @@ const HandleOrders = () => {
                   {activeTab === "pending" && (
                     <td>
                       <button
-                        onClick={() => {
-                          console.log("Updating order with ID:", order.orderId);
-                          handleStatusUpdate(order.orderId);
-                        }}
+                        onClick={() => handleStatusUpdate(order.orderId)}
                         className="btn btn-xs btn-success"
                       >
-                        Completed
+                        <img src="/dot-menu.png" alt="" />
                       </button>
                     </td>
                   )}
@@ -226,7 +248,7 @@ const HandleOrders = () => {
             ) : (
               <tr>
                 <td
-                  colSpan={activeTab === "pending" ? 11 : 10}
+                  colSpan={activeTab === "pending" ? 12 : 11}
                   className="text-center"
                 >
                   No {activeTab} orders found.
