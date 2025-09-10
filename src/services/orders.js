@@ -1,17 +1,21 @@
 import api from "../api";
 
-// create order
+// Create order
 export const createOrder = (orderData) => {
   return api.post("/orders", orderData);
 };
 
-// get all orders
+// Get all orders
 export const getOrders = () => {
   return api.get("/orders");
 };
 
-// update order status
+// Update order status
 export const updateOrderStatus = (orderId, status = "completed") => {
   return api.patch(`/orders/${orderId}`, { status });
 };
 
+// Delete an order
+export const deleteOrder = (orderId) => {
+  return api.delete(`/orders/${orderId}`);
+};

@@ -6,20 +6,22 @@ import useOrderForm from "../hooks/useOrderForm";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
+import OrderDrawer from "../components/OrderDrawer";
+import { createOrder } from "../services/orders"; 
+
 const CartPage = () => {
   const { cartItems, removeFromCart, updateQuantity, clearCart } = useCart();
-  const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const orderFormHook = useOrderForm();
   const navigate = useNavigate();
+
+  const [isOpen, setIsOpen] = useState(false);
 
   const totalPrice = cartItems.reduce(
     (sum, item) => sum + item.price * item.quantity,
     0
   );
 
-  const { orderInfo, handleOrderChange, handleOrderSubmit } = useOrderForm();
-
-  // Checkout Submit Handler
-  const handleCheckoutSubmit = (e) => {
+  const handleCheckoutSubmit = async (e) => {
     e.preventDefault();
 
     if (cartItems.length === 0) {
@@ -28,32 +30,31 @@ const CartPage = () => {
     }
 
     const orderPayload = {
-      name: orderInfo.name,
-      phone: orderInfo.phone,
-      address: orderInfo.address,
-      note: orderInfo.note,
+      name: orderFormHook.orderInfo.name,
+      phone: orderFormHook.orderInfo.phone,
+      address: orderFormHook.orderInfo.address,
+      note: orderFormHook.orderInfo.note,
       items: cartItems.map((item) => ({
         productId: item._id || item.id,
         productName: item.name,
         unitPrice: item.price,
         quantity: item.quantity,
         finalPrice: item.price * item.quantity,
-        images: Array.isArray(item.images) ? item.images : [item.images], // ✅ images পাঠানো হলো
+        images: Array.isArray(item.images) ? item.images : [item.images],
         status: "pending",
       })),
       grandTotal: totalPrice,
-      createdAt: new Date().toISOString(), // ✅ order date/time পাঠানো হলো
+      createdAt: new Date().toISOString(),
     };
 
-
     try {
-      handleOrderSubmit(e, orderPayload);
+      await createOrder(orderPayload); // ✅ call API from orders.js
       clearCart();
-      setCheckoutOpen(false);
+      setIsOpen(false);
       toast.success("✅ Order placed successfully!");
       navigate("/");
     } catch (err) {
-      console.error(err);
+      console.error("Order Error:", err);
       toast.error("❌ Failed to place order. Try again!");
     }
   };
@@ -133,79 +134,32 @@ const CartPage = () => {
             );
           })}
 
-          {/* Total */}
+          {/* Total & Checkout */}
           <div className="text-right mt-6">
             <h3 className="text-xl font-bold">Total: BDT {totalPrice}</h3>
-            <label
-              htmlFor="checkout-drawer"
-              className={`${design.buttons} mt-3 cursor-pointer`}
-              onClick={() => setCheckoutOpen(true)}
+            <button
+              className={`${design.buttons} mt-3`}
+              onClick={() => setIsOpen(true)}
             >
               Checkout
-            </label>
+            </button>
           </div>
         </div>
       )}
 
-      {/* Drawer for Checkout */}
-      {checkoutOpen && (
-        <div className="fixed inset-0 z-50 flex">
-          {/* overlay */}
-          <div
-            className="flex-1 bg-black/50"
-            onClick={() => setCheckoutOpen(false)}
-          ></div>
-
-          <div className="flex flex-col gap-4 p-4 w-72 sm:w-96 min-h-full bg-[#ccccb7] text-base-content shadow-lg">
-            <h3 className="text-lg font-bold text-center">Checkout</h3>
-            <p className="text-center text-sm text-gray-700">
-              Total Payable: <span className="font-bold">BDT {totalPrice}</span>
-            </p>
-
-            {/* Order Form */}
-            <form onSubmit={handleCheckoutSubmit} className="space-y-3">
-              <input
-                type="text"
-                name="name"
-                placeholder="Your Name"
-                value={orderInfo.name}
-                onChange={handleOrderChange}
-                className={design.inputs}
-                required
-              />
-              <input
-                type="tel"
-                name="phone"
-                placeholder="Phone Number"
-                value={orderInfo.phone}
-                onChange={handleOrderChange}
-                className={design.inputs}
-                required
-              />
-              <textarea
-                name="address"
-                placeholder="Delivery Address"
-                value={orderInfo.address}
-                onChange={handleOrderChange}
-                className={design.inputs}
-                rows="3"
-                required
-              />
-              <textarea
-                name="note"
-                placeholder="Note"
-                value={orderInfo.note}
-                onChange={handleOrderChange}
-                className={design.inputs}
-                rows="3"
-              />
-              <button type="submit" className={`${design.buttons} w-full`}>
-                Confirm Order
-              </button>
-            </form>
-          </div>
-        </div>
-      )}
+      <OrderDrawer
+        selectedProduct={null}
+        isOpen={isOpen}
+        quantity={1}
+        grandTotal={totalPrice}
+        productTotal={totalPrice}
+        closeDrawer={() => setIsOpen(false)}
+        increaseQuantity={() => {}}
+        decreaseQuantity={() => {}}
+        handleOrderChange={orderFormHook.handleOrderChange}
+        handleSubmit={handleCheckoutSubmit}
+        orderInfo={orderFormHook.orderInfo}
+      />
     </div>
   );
 };

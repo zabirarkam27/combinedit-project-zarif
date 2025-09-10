@@ -22,6 +22,8 @@ import PrivateRoute from "./components/PrivateRoute";
 import MainLayout from "./Layout/MainLayout";
 import { ToastContainer } from "react-toastify";
 import DashboardLayout from "./pages/DashBoard/DashboardLayout";
+import InvoicePage from "./pages/DashBoard/InvoicePage";
+import ViewOrder from "./pages/DashBoard/ViewOrder";
 
 // Section refs
 const profileRef = { current: null };
@@ -72,6 +74,8 @@ const router = createBrowserRouter([
       { path: "edit-your-products/add", element: <AddProducts /> },
       { path: "edit-your-products/all", element: <AllProductsAdminView /> },
       { path: "update-product/:id", element: <UpdateProduct /> },
+      { path: "view-order/:id", element: <ViewOrder /> },
+      { path: "invoice/:id", element: <InvoicePage /> },
     ],
   },
 ]);
