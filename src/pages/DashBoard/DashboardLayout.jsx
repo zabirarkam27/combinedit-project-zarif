@@ -1,14 +1,32 @@
-import { Link } from "react-router-dom";
+import { useOrdersContext } from "../../context/OrdersContext";
 import DashItems from "./DashItems";
+import Stats from "./Stats";
+import { Link } from "react-router-dom";
 
 const DashboardLayout = () => {
+  const {
+    getOrderCountByStatus,
+    getTodaysOrdersCount,
+    getPendingOrdersCount,
+    getProcessingOrdersCount,
+    getCompletedOrdersCount,
+    getCanceledOrdersCount,
+  } = useOrdersContext(); 
+
   return (
     <div className="relative bg-[#ebf0f0] min-h-screen flex flex-col items-center">
       <h1 className="text-2xl md:text-4xl font-bold text-center text-black my-10">
-        Admin Dashboard
-      </h1>
+        Admin Wallet</h1>
       <div className="px-6 mb-6 w-full">
-        <DashItems />
+        <Stats/>
+        <DashItems
+          getOrderCountByStatus={getOrderCountByStatus}
+          getTodaysOrdersCount={getTodaysOrdersCount}
+          getPendingOrdersCount={getPendingOrdersCount}
+          getProcessingOrdersCount={getProcessingOrdersCount}
+          getCompletedOrdersCount={getCompletedOrdersCount}
+          getCanceledOrdersCount={getCanceledOrdersCount}
+        />
       </div>
 
       {/* Quick action cards */}

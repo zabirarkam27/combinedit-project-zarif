@@ -24,6 +24,7 @@ import { ToastContainer } from "react-toastify";
 import DashboardLayout from "./pages/DashBoard/DashboardLayout";
 import InvoicePage from "./pages/DashBoard/InvoicePage";
 import ViewOrder from "./pages/DashBoard/ViewOrder";
+import OrdersProvider from "./context/OrdersProvider";
 
 // Section refs
 const profileRef = { current: null };
@@ -69,6 +70,12 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <DashboardLayout /> },
       { path: "handle-orders", element: <HandleOrders /> },
+      { path: "all-orders", element: <HandleOrders /> },
+      { path: "pending-orders", element: <HandleOrders /> },
+      { path: "processing-orders", element: <HandleOrders /> },
+      { path: "completed-orders", element: <HandleOrders /> },
+      { path: "canceled-orders", element: <HandleOrders /> },
+
       { path: "edit-your-products", element: <EditProducts /> },
       { path: "edit-your-profile", element: <EditProfile /> },
       { path: "edit-your-products/add", element: <AddProducts /> },
@@ -83,10 +90,12 @@ const router = createBrowserRouter([
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <AuthProvider>
-      <CartProvider>
+      <OrdersProvider>
+         <CartProvider>
         <RouterProvider router={router} />
         <ToastContainer position="top-right" autoClose={2000} />
       </CartProvider>
+     </OrdersProvider>
     </AuthProvider>
   </StrictMode>
 );
