@@ -55,7 +55,6 @@ const FancyBarChart = ({ labels, values }) => {
 
   return (
     <div className="w-full max-w-xl mx-auto">
-      {/* key + redraw = canvas conflict fix */}
       <Bar key={JSON.stringify(values)} data={data} options={options} redraw />
     </div>
   );
