@@ -2,10 +2,11 @@ import { useState, useEffect, useCallback } from "react";
 import OrdersContext from "./OrdersContext";
 import { useOrders } from "../hooks/useOrders";
 import usePagination from "../hooks/usePagination";
-import { toast } from "react-toastify";
+import api from "../api";
 
 const OrdersProvider = ({ children }) => {
-  const { orders, handleStatusUpdate, handleDeleteOrder } = useOrders();
+  const { handleStatusUpdate, handleDeleteOrder } = useOrders();
+  const [orders, setOrders] = useState([]);
 
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState("all");
@@ -14,7 +15,7 @@ const OrdersProvider = ({ children }) => {
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
 
-  // ✅ Filter orders
+  // Filter orders
   const filterOrders = useCallback(() => {
     let data = [...orders];
 
@@ -26,14 +27,13 @@ const OrdersProvider = ({ children }) => {
 
     if (search) {
       const query = search.toLowerCase();
-      data = data.filter((o) => {
-        return (
+      data = data.filter(
+        (o) =>
           (o.orderNumber || "").toLowerCase().includes(query) ||
           (o.name || "").toLowerCase().includes(query) ||
           (o.phone || "").toLowerCase().includes(query) ||
           (o.products || "").toLowerCase().includes(query)
-        );
-      });
+      );
     }
 
     if (fromDate) {
@@ -50,12 +50,54 @@ const OrdersProvider = ({ children }) => {
     setFilteredOrders(data);
   }, [orders, activeTab, search, fromDate, toDate]);
 
+  // Fetch orders
+  useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        const res = await api.get("/orders?limit=50");
+        setOrders(res.data);
+      } catch (err) {
+        console.error("Failed to fetch orders", err);
+      }
+    };
+    fetchOrders();
+  }, []);
+
   useEffect(() => {
     filterOrders();
     setSelectedOrders([]);
   }, [orders, activeTab, search, fromDate, toDate, filterOrders]);
 
-  // ✅ Status counters
+  // Status update
+  const updateOrderStatus = async (id, orderStatus, paymentStatus) => {
+    try {
+      await handleStatusUpdate(id, orderStatus, paymentStatus);
+      setOrders((prev) =>
+        prev.map((o) =>
+          o._id === id
+            ? {
+                ...o,
+                status: { ...(o.status || {}), status: orderStatus },
+                paymentStatus,
+              }
+            : o
+        )
+      );
+    } catch (err) {
+      console.error("Failed to update order status", err);
+    }
+  };
+
+  // Delete order
+  const deleteOrder = async (id) => {
+    try {
+      await handleDeleteOrder(id);
+      setOrders((prev) => prev.filter((o) => o._id !== id));
+    } catch (err) {
+      console.error("Failed to delete order", err);
+    }
+  };
+
   const getOrderCountByStatus = (status) => {
     if (status === "all") return orders.length;
     return orders.filter(
@@ -77,7 +119,7 @@ const OrdersProvider = ({ children }) => {
   const getCompletedOrdersCount = () => getOrderCountByStatus("completed");
   const getCanceledOrdersCount = () => getOrderCountByStatus("cancelled");
 
-  // ✅ Pagination hook
+  // Pagination
   const {
     currentPage,
     totalPages,
@@ -89,6 +131,7 @@ const OrdersProvider = ({ children }) => {
 
   const contextValue = {
     orders,
+    setOrders,
     filteredOrders,
     selectedOrders,
     setSelectedOrders,
@@ -106,8 +149,8 @@ const OrdersProvider = ({ children }) => {
     getProcessingOrdersCount,
     getCompletedOrdersCount,
     getCanceledOrdersCount,
-    handleStatusUpdate,
-    handleDeleteOrder,
+    handleStatusUpdate: updateOrderStatus,
+    handleDeleteOrder: deleteOrder,
     // pagination
     currentPage,
     totalPages,

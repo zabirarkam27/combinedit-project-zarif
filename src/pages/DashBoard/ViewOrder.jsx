@@ -52,6 +52,8 @@ const ViewOrder = () => {
         paymentStatus,
       }));
       toast.success("✅ Order updated successfully!");
+
+      navigate("/dashboard/handle-orders");
     } catch (err) {
       toast.error("❌ Failed to update order");
       console.error(err);

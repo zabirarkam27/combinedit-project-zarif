@@ -52,7 +52,7 @@ const FancyPieChart = ({ orders }) => {
   return (
     <div className="bg-white p-5 rounded-xl shadow-lg flex flex-col items-center">
       <h2 className="text-sm font-semibold">Order Count</h2>
-      <ResponsiveContainer width="100%" height={350}>
+      <ResponsiveContainer width="100%" height={300}>
         <PieChart>
           <Pie
             data={data}
@@ -68,12 +68,16 @@ const FancyPieChart = ({ orders }) => {
             ))}
           </Pie>
           <Tooltip />
-          <Legend verticalAlign="middle" align="right" layout="vertical" />
+          <Legend
+            verticalAlign="bottom"
+            layout="horizontal"
+            wrapperStyle={{ fontSize: 12 }}
+          />
         </PieChart>
       </ResponsiveContainer>
 
       {/* Middle text */}
-      <div className="absolute inset-0 -left-26 top-6 flex flex-col items-center justify-center">
+      <div className="absolute inset-0  -top-3 flex flex-col items-center justify-center">
         <h3 className="text-xs text-gray-800">Total Order</h3>
         <p className="text-2xl font-bold">{totalOrders}</p>
       </div>

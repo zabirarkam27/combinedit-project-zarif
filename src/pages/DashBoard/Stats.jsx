@@ -174,7 +174,7 @@ const Stats = () => {
 
   return (
     <div>
-      <div className="stats-container p-5 bg-gray-50 rounded-lg shadow-lg grid gap-6 grid-cols-1 md:grid-cols-2">
+      <div className="stats-container  rounded-lg grid gap-4 md:gap-6 grid-cols-1 md:grid-cols-2">
         {/* Sales Chart */}
         <div className="order-chart bg-white p-5 rounded-xl shadow-lg">
           <h2 className="text-xs">Monthly Sales</h2>
@@ -229,7 +229,7 @@ const Stats = () => {
         </div>
         {/* Pie Chart */}
       </div>
-      <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="mt-4 md:mt-6 grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
         <div className="relative">
           <FancyPieChart orders={orders} />
         </div>

@@ -1,101 +1,129 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import api from "../../api";
+import { useState, useEffect, useRef, useMemo } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { useOrdersContext } from "../../context/OrdersContext";
 
 const NotificationDropdown = () => {
   const navigate = useNavigate();
-  const [orders, setOrders] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const location = useLocation();
+  const { orders } = useOrdersContext(); // Context থেকে orders
 
+  const [isOpen, setIsOpen] = useState(false);
+  const [seenOrders, setSeenOrders] = useState(() => {
+    // Page load-এর সময় localStorage থেকে load করবো
+    const saved = localStorage.getItem("seenOrders");
+    return saved ? JSON.parse(saved) : [];
+  });
+  const dropdownRef = useRef(null);
+
+  // Pending orders
+  const pendingOrders = useMemo(
+    () =>
+      orders.filter(
+        (order) =>
+          (order.status?.status || order.status || "").toLowerCase() ===
+          "pending"
+      ),
+    [orders]
+  );
+
+  const lastTenOrders = pendingOrders.slice(0, 10);
+
+  // Route change
   useEffect(() => {
-    const fetchOrders = async () => {
-      try {
-        const response = await api.get("/orders?limit=50"); 
-        const pendingOrders = response.data.filter(
-          (order) => order.status === "pending"
-        );
-        setOrders(pendingOrders); 
-        setLoading(false);
-      } catch (error) {
-        console.error("Failed to fetch orders:", error);
-        setLoading(false);
+    const path = location.pathname;
+    const closePaths = ["/dashboard/pending-orders"];
+    const isViewOrderPath = path.startsWith("/dashboard/view-order/");
+    if (closePaths.includes(path) || isViewOrderPath) setIsOpen(false);
+  }, [location]);
+
+  // Outside click
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
+        setIsOpen(false);
       }
     };
-
-    fetchOrders();
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  const handleOrderClick = (orderId) => {
-    navigate(`/dashboard/view-order/${orderId}`);
+  // Save seenOrders to localStorage on change
+  useEffect(() => {
+    localStorage.setItem("seenOrders", JSON.stringify(seenOrders));
+  }, [seenOrders]);
+
+  // Order click
+  const handleOrderClick = (id) => {
+    navigate(`/dashboard/view-order/${id}`);
+    if (!seenOrders.includes(id)) setSeenOrders((prev) => [...prev, id]);
+    setIsOpen(false);
   };
 
   const handleViewAll = () => {
     navigate("/dashboard/pending-orders");
+    setIsOpen(false);
   };
 
-  const lastTenOrders = orders.slice(0, 10);
-
   return (
-    <div className="dropdown dropdown-end">
+    <div ref={dropdownRef} className="relative">
       {/* Bell icon */}
-      <div
-        tabIndex={0}
-        role="button"
-        className="btn btn-ghost bg-transparent border-none shadow-none hover:bg-transparent p-0 indicator"
+      <button
+        className="btn btn-ghost bg-transparent border-none hover:bg-transparent p-0 indicator"
+        onClick={() => setIsOpen((prev) => !prev)}
       >
         <div className="w-7 relative">
           <img src="/nav-icon/notification.png" alt="bell icon" />
-          {/* Pending order count */}
-          {orders.length > 0 && (
+          {pendingOrders.length > 0 && (
             <span className="badge badge-xs badge-primary indicator-item">
-              {orders.length} 
+              {pendingOrders.length}
             </span>
           )}
         </div>
-      </div>
+      </button>
 
       {/* Dropdown content */}
-      <ul
-        tabIndex={0}
-        className="menu menu-sm dropdown-content bg-base-100 rounded-box z-10 mt-3 w-72 p-2 shadow"
-      >
-        {loading ? (
-          <li className="p-2 text-center text-gray-500">Loading...</li>
-        ) : orders.length === 0 ? (
-          <li className="p-2 text-center text-gray-500">No pending orders</li>
-        ) : (
-          lastTenOrders.map((order, index) => (
-            <li key={order._id || index}>
-              <a
-                className="flex GAP-1 cursor-pointer"
-                onClick={() => handleOrderClick(order._id)}
-              >
-                <img
-                  src="https://img.icons8.com/?size=100&id=7819&format=png&color=737373"
-                  alt="profile icon"
-                  className="w-8"
-                />
-                <div className="flex-col gap-0.5 items-start mb-1">
-                  <p className="text-sm">{order.name}</p>
-                  <p className="text-xs text-gray-500">{order.orderNumber}</p>
-                </div>
-              </a>
-            </li>
-          ))
-        )}
+      {isOpen && (
+        <ul className="menu menu-sm absolute right-0 bg-base-100 rounded-box z-10 mt-3 w-72 p-2 shadow">
+          {pendingOrders.length === 0 ? (
+            <li className="p-2 text-center text-gray-500">No pending orders</li>
+          ) : (
+            lastTenOrders.map((o) => {
+              const isSeen = seenOrders.includes(o._id); // Check if seen
+              return (
+                <li key={o._id}>
+                  <a
+                    className={`flex gap-1 cursor-pointer p-1 rounded ${
+                      isSeen ? "bg-gray-100 text-gray-500" : "bg-white"
+                    }`}
+                    onClick={() => handleOrderClick(o._id)}
+                  >
+                    <img
+                      src="https://img.icons8.com/?size=100&id=7819&format=png&color=737373"
+                      alt="profile icon"
+                      className="w-8"
+                    />
+                    <div className="flex flex-col gap-0.5 items-start mb-1">
+                      <p className="text-sm">{o.name}</p>
+                      <p className="text-xs text-gray-500">{o.orderNumber}</p>
+                    </div>
+                  </a>
+                </li>
+              );
+            })
+          )}
 
-        {/* View All button */}
-        {orders.length > 0 && (
-          <li>
-            <button
-              className="btn btn-sm btn-primary w-full mt-2"
-              onClick={handleViewAll}
-            >
-              View All
-            </button>
-          </li>
-        )}
-      </ul>
+          {pendingOrders.length > 0 && (
+            <li>
+              <button
+                className="btn btn-sm btn-primary w-full mt-2"
+                onClick={handleViewAll}
+              >
+                View All
+              </button>
+            </li>
+          )}
+        </ul>
+      )}
     </div>
   );
 };
