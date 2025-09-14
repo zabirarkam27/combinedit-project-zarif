@@ -54,6 +54,8 @@ const Stats = () => {
       }
     };
     fetchOrders();
+    const interval = setInterval(fetchOrders, 30000);
+    return () => clearInterval(interval);
   }, []);
 
   const calculatePercentage = (thisMonth, lastMonth) => {
