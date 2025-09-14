@@ -10,12 +10,11 @@ const NotificationDropdown = () => {
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const response = await api.get("/orders?limit=50"); // সব অর্ডার নিয়ে আসো
-        // শুধুমাত্র pending অর্ডার ফিল্টার করো
+        const response = await api.get("/orders?limit=50"); 
         const pendingOrders = response.data.filter(
           (order) => order.status === "pending"
         );
-        setOrders(pendingOrders); // সব pending অর্ডার রাখা
+        setOrders(pendingOrders); 
         setLoading(false);
       } catch (error) {
         console.error("Failed to fetch orders:", error);
@@ -34,7 +33,6 @@ const NotificationDropdown = () => {
     navigate("/dashboard/pending-orders");
   };
 
-  // ড্রপডাউনে সর্বশেষ ১০টি অর্ডার দেখাবে
   const lastTenOrders = orders.slice(0, 10);
 
   return (
@@ -50,7 +48,7 @@ const NotificationDropdown = () => {
           {/* Pending order count */}
           {orders.length > 0 && (
             <span className="badge badge-xs badge-primary indicator-item">
-              {orders.length} {/* এখানে সব pending অর্ডারের সংখ্যা */}
+              {orders.length} 
             </span>
           )}
         </div>

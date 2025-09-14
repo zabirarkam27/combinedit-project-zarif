@@ -21,7 +21,7 @@ const Dashboard = () => {
       <input id="dashboard-drawer" type="checkbox" className="drawer-toggle" />
 
       {/* Main content */}
-      <div className="drawer-content flex flex-col">
+      <div className="drawer-content flex flex-col ">
         <AdminNav />
         <div className="min-h-screen w-full px-6 py-6">
           <Outlet /> {/* Child routes render here */}
@@ -29,9 +29,9 @@ const Dashboard = () => {
       </div>
 
       {/* Sidebar */}
-      <div className="drawer-side">
+      <div className="drawer-side mt-15">
         <label htmlFor="dashboard-drawer" className="drawer-overlay"></label>
-        <ul className="menu p-4 w-64 min-h-full bg-[#ebf0f0] border-r-white text-base-content">
+        <ul className="menu p-4 w-64 min-h-full bg-[#ebf0f0] border-r-white text-base-content relative">
           <li>
             <Link to="/dashboard">Dashboard Home</Link>
           </li>
