@@ -45,6 +45,9 @@ const Dashboard = () => {
             <Link to="/dashboard/edit-your-profile">Edit Profile</Link>
           </li>
           <li>
+            <Link to="/dashboard/marketing-tools">Marketing Tools</Link>
+          </li>
+          <li>
             <button onClick={handleLogout} className="btn btn-error text-white">
               Logout
             </button>

@@ -10,7 +10,18 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
-    include: ["react", "react-dom", "react-router-dom", "react-toastify"],
+    include: [
+      "react",
+      "react-dom",
+      "firebase/app",
+      "firebase/auth",
+      "framer-motion",
+      "react-icons/bs",
+      "axios",
+      "@react-pdf/renderer",
+      "react-toastify",
+      "sweetalert2",
+    ],
     exclude: ["chart.js", "react-chartjs-2"],
   },
 });
