@@ -50,6 +50,15 @@ const OrdersProvider = ({ children }) => {
     setFilteredOrders(data);
   }, [orders, activeTab, search, fromDate, toDate]);
 
+  const fetchOrders = async () => {
+    try {
+      const res = await api.get("/orders?limit=50");
+      setOrders(res.data);
+    } catch (err) {
+      console.error("Failed to fetch orders", err);
+    }
+  };
+
   // Fetch orders
   useEffect(() => {
     const fetchOrders = async () => {
@@ -132,6 +141,7 @@ const OrdersProvider = ({ children }) => {
   const contextValue = {
     orders,
     setOrders,
+    fetchOrders,
     filteredOrders,
     selectedOrders,
     setSelectedOrders,

@@ -35,6 +35,9 @@ import { initGA, trackPage } from "./analytics/ga4";
 import { initMetaPixel, trackMetaEvent } from "./analytics/metaPixel";
 import MarketingTools from "./pages/DashBoard/MarketingTools";
 import api from "./api";
+import LandingPage from "./pages/DashBoard/landingPages/LandingPage";
+import CreateNew from "./pages/DashBoard/landingPages/CreateNew";
+import ExistingPages from "./pages/DashBoard/landingPages/ExistingPages";
 
 // Section refs
 const profileRef = { current: null };
@@ -57,6 +60,14 @@ const router = createBrowserRouter([
     element: (
       <MainLayout>
         <CartPage />
+      </MainLayout>
+    ),
+  },
+  {
+    path: "/landing-page/:id",
+    element: (
+      <MainLayout>
+        <LandingPage />
       </MainLayout>
     ),
   },
@@ -92,6 +103,8 @@ const router = createBrowserRouter([
       { path: "update-product/:id", element: <UpdateProduct /> },
       { path: "view-order/:id", element: <ViewOrder /> },
       { path: "invoice/:id", element: <InvoicePage /> },
+      { path: "create-landing", element: <CreateNew /> },
+      { path: "existing-pages", element: <ExistingPages /> },
     ],
   },
 ]);

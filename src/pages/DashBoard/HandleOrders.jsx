@@ -445,7 +445,7 @@ const HandleOrders = () => {
                     </td>
                     <td className="align-middle">
                       {/* Individual PDF download */}
-                      <div className="flex flex-row gap-3 items-center">
+                      <div className="flex flex-row gap-3 md:gap-2 items-center">
                         <PDFDownloadLink
                           document={<InvoiceDocument order={order} />}
                           fileName={`invoice_${order.orderNumber}.pdf`}
@@ -454,24 +454,24 @@ const HandleOrders = () => {
                             <img
                               src="/print-dash.png"
                               alt="invoice"
-                              className="w-6 max-w-6 cursor-pointer"
+                              className="w-5 max-w-5 cursor-pointer"
                             />
                           )}
                         </PDFDownloadLink>
                         {/* Edit */}
                         <img
-                          src="/edit-dash.png"
+                          src="/edit-icon.png"
                           alt="edit"
-                          className="w-6 max-w-6 cursor-pointer"
+                          className="w-5 max-w-5 cursor-pointer"
                           onClick={() =>
                             navigate(`/dashboard/view-order/${order.orderId}`)
                           }
                         />
                         {/* Delete */}
                         <img
-                          src="/delete-dash.png"
+                          src="/delete-icon.png"
                           alt="delete"
-                          className="w-5 max-w-5 cursor-pointer"
+                          className="w-5 h-4 max-w-5 cursor-pointer"
                           onClick={() => handleDelete(order.orderId)}
                         />
                       </div>

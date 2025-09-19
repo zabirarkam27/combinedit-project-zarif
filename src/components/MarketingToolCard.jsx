@@ -98,7 +98,7 @@ const MarketingToolCard = ({
             <img
               src="https://img.icons8.com/?size=100&id=7801&format=png&color=228BE6"
               alt="arrow"
-              className={`w-6 transform transition-transform ${
+              className={`w-5 transform transition-transform ${
                 accordionOpen ? "rotate-180" : ""
               }`}
             />
@@ -109,8 +109,8 @@ const MarketingToolCard = ({
             checked={isOn}
             onChange={handleSlideClick}
             onClick={(e) => {
-              e.preventDefault(); // default toggle আটকাচ্ছি
-              handleToggleConfirm(); // sweetalert চালু
+              e.preventDefault(); 
+              handleToggleConfirm(); 
             }}
           />
         </div>

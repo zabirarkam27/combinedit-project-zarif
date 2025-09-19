@@ -48,7 +48,30 @@ const Dashboard = () => {
             <Link to="/dashboard/marketing-tools">Marketing Tools</Link>
           </li>
           <li>
-            <button onClick={handleLogout} className="btn btn-error text-white">
+            <div className="collapse collapse-arrow p-0 mb-2">
+              <input type="checkbox" />
+              <div className="collapse-title pl-3">Landing Page</div>
+              <div className="collapse-content flex flex-col gap-4 pl-6">
+                <Link
+                  to="/dashboard/create-landing"
+                  className="hover:underline"
+                >
+                  Create New
+                </Link>
+                <Link
+                  to="/dashboard/existing-pages"
+                  className="hover:underline"
+                >
+                  Existing Pages
+                </Link>
+              </div>
+            </div>
+          </li>
+          <li>
+            <button
+              onClick={handleLogout}
+              className="btn text-center text-white font-semibold px-4 py-3 rounded-b-xl bg-gradient-to-r from-[#00ad9c] via-[#3a8881] to-[#009e8e] bg-[length:200%_200%] transition-all duration-500 ease-in-out hover:bg-right"
+            >
               Logout
             </button>
           </li>
