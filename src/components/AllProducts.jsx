@@ -19,7 +19,7 @@ const ProductCard = React.memo(({ product, onAddToCart, onOrderNow }) => {
           className="group relative overflow-hidden shadow-md hover:shadow-xl transition"
         >
           <img
-            src={product.image || product.images}
+            src={product.thumbnail || product.image || product.images}
             alt={product.name}
             loading="lazy"
             className="w-full h-[200px] sm:h-[200px] md:h-[220px] object-cover lg:h-[240px] transition-transform duration-500 group-hover:scale-105"

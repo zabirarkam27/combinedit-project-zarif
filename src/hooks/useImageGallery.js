@@ -8,6 +8,36 @@ const useImageGallery = () => {
   const [uploading, setUploading] = useState(false);
   const { uploadImage } = useImageUpload();
 
+  // ---- Single Image ----
+  const addSingleImage = async (file) => {
+    if (!file) return;
+    setUploading(true);
+
+    const imageUrl = await uploadImage(file);
+    if (imageUrl) {
+      setImage(imageUrl);
+      toast.success("Single image uploaded");
+    } else {
+      toast.error("Single image upload failed");
+    }
+    setUploading(false);
+  };
+
+  const addSingleImageFromUrl = (url) => {
+    if (!url) return;
+    setImage(url);
+  };
+
+  const removeSingleImage = () => {
+    setImage(null);
+  };
+
+  const setInitialSingleImage = (initial) => {
+    setImage(initial);
+  };
+
+
+  // ---- Multiple Images ----
   const addImage = async (file) => {
     if (!file) return;
     setUploading(true);
@@ -35,12 +65,22 @@ const useImageGallery = () => {
   };
 
   return {
+    // single
+    image,
+    addSingleImage,
+    addSingleImageFromUrl,
+    removeSingleImage,
+    setInitialSingleImage,
+
+    // multiple
     images,
-    uploading,
     addImage,
     removeImage,
     setInitialImages,
     addImageFromUrl,
+    
+    // common
+    uploading,
   };
 };
 
