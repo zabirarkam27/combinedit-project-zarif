@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import * as XLSX from "xlsx";
@@ -20,115 +20,85 @@ const HandleOrders = () => {
 
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState(status || "all");
-  const [filteredOrders, setFilteredOrders] = useState([]);
   const [selectedOrders, setSelectedOrders] = useState([]);
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
 
-  // ✅ Filter orders
-  const filterOrders = useCallback(() => {
-    let data = [...orders];
+  // ✅ Filtered orders
+  const filteredOrders = useMemo(() => {
+    return orders.filter((o) => {
+      // Tab/Status filter
+      if (activeTab !== "all") {
+        const oStatus = (o.status?.status || o.status || "").toLowerCase();
+        if (oStatus !== activeTab) return false;
+      }
 
-    if (status || activeTab !== "all") {
-      data = data.filter(
-        (o) => (o.status?.status || o.status || "").toLowerCase() === activeTab
-      );
-    }
+      // Search filter
+      if (search) {
+        const q = search.toLowerCase();
+        const match =
+          (o.orderNumber || "").toLowerCase().includes(q) ||
+          (o.name || "").toLowerCase().includes(q) ||
+          (o.phone || "").toLowerCase().includes(q) ||
+          (o.products || "").toLowerCase().includes(q);
+        if (!match) return false;
+      }
 
-    if (search) {
-      const query = search.toLowerCase();
-      data = data.filter((o) => {
-        return (
-          (o.orderNumber || "").toLowerCase().includes(query) ||
-          (o.name || "").toLowerCase().includes(query) ||
-          (o.phone || "").toLowerCase().includes(query) ||
-          (o.products || "").toLowerCase().includes(query)
-        );
-      });
-    }
+      // Date filters
+      const created = new Date(o.createdAt);
+      if (fromDate && created < new Date(fromDate)) return false;
+      if (toDate) {
+        const to = new Date(toDate);
+        to.setHours(23, 59, 59, 999);
+        if (created > to) return false;
+      }
 
-    if (fromDate) {
-      const from = new Date(fromDate);
-      data = data.filter((o) => new Date(o.createdAt) >= from);
-    }
-
-    if (toDate) {
-      const to = new Date(toDate);
-      to.setHours(23, 59, 59, 999);
-      data = data.filter((o) => new Date(o.createdAt) <= to);
-    }
-
-    setFilteredOrders(data);
+      return true;
+    });
   }, [orders, activeTab, search, fromDate, toDate]);
 
-  useEffect(() => {
-    filterOrders();
-    setSelectedOrders([]);
-  }, [orders, activeTab, search, fromDate, toDate, filterOrders]);
+  // ✅ Order counts memoized
+  const orderCounts = useMemo(() => {
+    const counts = {
+      all: orders.length,
+      pending: 0,
+      processing: 0,
+      pickup: 0,
+      completed: 0,
+      cancelled: 0,
+    };
+    orders.forEach((o) => {
+      const s = (o.status?.status || o.status || "").toLowerCase();
+      if (counts[s] !== undefined) counts[s]++;
+    });
+    return counts;
+  }, [orders]);
 
-  // Order count by status
-  const getOrderCountByStatus = (status) => {
-    if (status === "all") {
-      return orders.length;
-    }
-    // Specific status count
+  const getOrderCountByStatus = (status) => orderCounts[status] || 0;
+
+  const getTodaysOrdersCount = useMemo(() => {
+    const today = new Date().toLocaleDateString();
     return orders.filter(
-      (o) => (o.status?.status || o.status || "").toLowerCase() === status
+      (o) => new Date(o.createdAt).toLocaleDateString() === today
     ).length;
-  };
+  }, [orders]);
 
-  // ✅ Today's Orders Count
-  const getTodaysOrdersCount = () => {
-    const today = new Date();
-    return orders.filter(
-      (o) =>
-        new Date(o.createdAt).toLocaleDateString() ===
-        today.toLocaleDateString()
-    ).length;
-  };
-
-  // ✅ Additional functions required by DashItems
-  const getPendingOrdersCount = () => {
-    return orders.filter(
-      (o) => (o.status?.status || o.status || "").toLowerCase() === "pending"
-    ).length;
-  };
-
-  const getProcessingOrdersCount = () => {
-    return orders.filter(
-      (o) => (o.status?.status || o.status || "").toLowerCase() === "processing"
-    ).length;
-  };
-
-  const getCompletedOrdersCount = () => {
-    return orders.filter(
-      (o) => (o.status?.status || o.status || "").toLowerCase() === "completed"
-    ).length;
-  };
-
-  const getCanceledOrdersCount = () => {
-    return orders.filter(
-      (o) => (o.status?.status || o.status || "").toLowerCase() === "cancelled"
-    ).length;
-  };
-
-  // ✅ Context value for the table part
+  // ✅ Context value for table
   const contextValue = {
     orders,
     filteredOrders,
     getOrderCountByStatus,
     getTodaysOrdersCount,
-    getPendingOrdersCount,
-    getProcessingOrdersCount,
-    getCompletedOrdersCount,
-    getCanceledOrdersCount,
+    getPendingOrdersCount: () => orderCounts.pending,
+    getProcessingOrdersCount: () => orderCounts.processing,
+    getCompletedOrdersCount: () => orderCounts.completed,
+    getCanceledOrdersCount: () => orderCounts.cancelled,
     handleStatusUpdate,
     handleDeleteOrder,
     selectedOrders,
     setSelectedOrders,
   };
 
-  // Tabs with count
   const statusTabs = [
     { label: "all", display: "All" },
     { label: "pending", display: "Pending" },
@@ -147,53 +117,29 @@ const HandleOrders = () => {
     setCurrentPage,
   } = usePagination(filteredOrders, 15);
 
-  // ✅ Select all / single
-  const toggleSelectAll = (e) => {
-    setSelectedOrders(
-      e.target.checked ? paginatedData.map((o) => o.orderId) : []
-    );
-  };
+  // ✅ Select all / one optimized
+  const toggleSelectAll = useCallback(
+    (e) => {
+      setSelectedOrders(
+        e.target.checked ? paginatedData.map((o) => o.orderId) : []
+      );
+    },
+    [paginatedData]
+  );
 
-  const toggleSelectOne = (orderId) => {
+  const toggleSelectOne = useCallback((orderId) => {
     setSelectedOrders((prev) =>
       prev.includes(orderId)
         ? prev.filter((id) => id !== orderId)
         : [...prev, orderId]
     );
-  };
+  }, []);
 
-  // ✅ Bulk status update
-  const handleBulkAction = async (status) => {
-    if (!selectedOrders.length) {
-      toast.error("⚠️ No orders selected!");
-      return;
-    }
+  // ✅ Selected orders for PDF / Excel
+  const selectedOrderData = useMemo(() => {
+    return filteredOrders.filter((o) => selectedOrders.includes(o.orderId));
+  }, [filteredOrders, selectedOrders]);
 
-    await Promise.all(
-      selectedOrders.map((id) => handleStatusUpdate(id, status))
-    );
-
-    toast.success(`✅ Order status changed to ${status}`);
-    setSelectedOrders([]);
-    filterOrders();
-    setCurrentPage(1);
-  };
-
-  // ✅ Helper to safely get string
-  const getString = (value) => {
-    if (typeof value === "string") return value;
-    if (typeof value === "object" && value !== null) {
-      return value.status || value.paymentStatus || "Unknown";
-    }
-    return "Unknown";
-  };
-
-  // ✅ Selected orders for PDF
-  const selectedOrderData = filteredOrders.filter((o) =>
-    selectedOrders.includes(o.orderId)
-  );
-
-  // ✅ Export selected orders to Excel
   const exportToExcel = () => {
     if (!selectedOrders.length) {
       toast.error("⚠️ No orders selected!");
@@ -218,18 +164,38 @@ const HandleOrders = () => {
     const ws = XLSX.utils.json_to_sheet(selectedData);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, "Orders");
-
-    // Create and download Excel file
     XLSX.writeFile(wb, "selected_orders.xlsx");
   };
 
-  // ✅ Delete an order
-  const handleDelete = (orderId) => {
-    if (window.confirm("Are you sure you want to delete this order?")) {
-      handleDeleteOrder(orderId);
-      toast.success("✅ Order deleted successfully");
+  const handleBulkAction = async (status) => {
+    if (!selectedOrders.length) {
+      toast.error("⚠️ No orders selected!");
+      return;
     }
+    await Promise.all(
+      selectedOrders.map((id) => handleStatusUpdate(id, status))
+    );
+    toast.success(`✅ Order status changed to ${status}`);
+    setSelectedOrders([]);
+    setCurrentPage(1);
   };
+
+  const getString = useCallback((value) => {
+    if (typeof value === "string") return value;
+    if (typeof value === "object" && value !== null)
+      return value.status || value.paymentStatus || "Unknown";
+    return "Unknown";
+  }, []);
+
+  const handleDelete = useCallback(
+    (orderId) => {
+      if (window.confirm("Are you sure you want to delete this order?")) {
+        handleDeleteOrder(orderId);
+        toast.success("✅ Order deleted successfully");
+      }
+    },
+    [handleDeleteOrder]
+  );
 
   return (
     <div className="w-full mx-auto p-1 md:p-4 bg-[#ebf0f0] shadow-md">
@@ -355,7 +321,6 @@ const HandleOrders = () => {
           onChange={(e) => setSearch(e.target.value)}
         />
       </div>
-
       {/* Orders Table wrapped in Context */}
       <OrdersContext.Provider value={contextValue}>
         <div className="overflow-x-auto">

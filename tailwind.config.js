@@ -21,5 +21,10 @@ export default {
   future: {
     disableColorOpacityUtilitiesByDefault: true,
   },
+  safelist: [
+    {
+      pattern: /bg-\[url\(.*\)\]/,
+    },
+  ],
   plugins: [],
 };

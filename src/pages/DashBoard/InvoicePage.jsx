@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import api from "../../api";
@@ -14,18 +14,17 @@ import {
 } from "@react-pdf/renderer";
 
 // ===== Helper function =====
-const wrapTextByWords = (text, limit = 6) => {
-  if (!text) return "";
-  const words = text.split(" ");
-  let result = "";
-  for (let i = 0; i < words.length; i++) {
-    result += words[i] + " ";
-    if ((i + 1) % limit === 0) {
-      result += "\n";
-    }
-  }
-  return result.trim();
-};
+const wrapTextByWords = (text, limit = 6) =>
+  text
+    ? text
+        .split(" ")
+        .reduce(
+          (acc, word, idx) =>
+            acc + word + ((idx + 1) % limit === 0 ? "\n" : " "),
+          ""
+        )
+        .trim()
+    : "";
 
 // ===== Styles =====
 const styles = StyleSheet.create({
@@ -36,7 +35,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
   },
   header: {
-    backgroundColor: "#06b5d4",
+    backgroundColor: "#eb920d",
     borderTopLeftRadius: 10,
     borderTopRightRadius: 10,
     height: 80,
@@ -54,8 +53,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     marginTop: 20,
-    paddingRight: 8,
-    paddingLeft: 8,
+    paddingHorizontal: 8,
   },
   table: {
     display: "table",
@@ -86,13 +84,16 @@ const styles = StyleSheet.create({
 
 // ===== Invoice Document =====
 const InvoiceDocument = ({ order }) => {
-  const totalProductPrice = order.items?.reduce(
-    (sum, item) => sum + (item.finalPrice || 0),
-    0
+  const totalProductPrice = useMemo(
+    () =>
+      order.items?.reduce((sum, item) => sum + (item.finalPrice || 0), 0) || 0,
+    [order.items]
   );
+
   return (
     <Document>
       <Page size="A4" style={styles.page}>
+        {/* Header */}
         <View style={styles.header}>
           <Image
             src="https://i.ibb.co.com/k25ggjgL/logo.png"
@@ -101,6 +102,7 @@ const InvoiceDocument = ({ order }) => {
           <Text style={styles.headerText}>Invoice</Text>
         </View>
 
+        {/* Bill To & Order Info */}
         <View style={styles.rowBetween}>
           <View>
             <Text style={styles.bold}>Bill To:</Text>
@@ -132,6 +134,7 @@ const InvoiceDocument = ({ order }) => {
           </View>
         </View>
 
+        {/* Bill From */}
         <View style={styles.section}>
           <Text style={styles.bold}>Bill From:</Text>
           <Text>Combined IT</Text>
@@ -142,22 +145,35 @@ const InvoiceDocument = ({ order }) => {
           <Text>09678-321321</Text>
         </View>
 
+        {/* Table */}
         <View style={styles.table}>
           <View style={styles.tableRow}>
-            <Text style={[styles.tableCol, styles.colProduct, styles.bold]}>
-              Product
-            </Text>
-            <Text style={[styles.tableCol, styles.colQty, styles.bold]}>
-              Qty
-            </Text>
-            <Text style={[styles.tableCol, styles.colUnit, styles.bold]}>
-              Unit Price
-            </Text>
-            <Text style={[styles.tableCol, styles.colTotal, styles.bold]}>
-              Total
-            </Text>
+            {[
+              { label: "Product", style: styles.colProduct },
+              { label: "Qty", style: styles.colQty },
+              { label: "Unit Price", style: styles.colUnit },
+              { label: "Total", style: styles.colTotal },
+            ].map((col) => (
+              <Text
+                key={col.label}
+                style={[styles.tableCol, col.style, styles.bold]}
+              >
+                {col.label}
+              </Text>
+            ))}
           </View>
-          {order.items?.map((item, idx) => (
+
+          {(order.items?.length
+            ? order.items
+            : [
+                {
+                  productName: "No items",
+                  quantity: "-",
+                  unitPrice: "-",
+                  finalPrice: "-",
+                },
+              ]
+          ).map((item, idx) => (
             <View style={styles.tableRow} key={idx}>
               <Text style={[styles.tableCol, styles.colProduct]}>
                 {item.productName}
@@ -175,10 +191,10 @@ const InvoiceDocument = ({ order }) => {
           ))}
         </View>
 
+        {/* Totals */}
         <View style={styles.totals}>
           <Text>
-            <Text style={styles.bold}>Product Price:</Text>{" "}
-            {totalProductPrice || 0}
+            <Text style={styles.bold}>Product Price:</Text> {totalProductPrice}
           </Text>
           <Text>
             <Text style={styles.bold}>Shipping:</Text>{" "}
@@ -198,21 +214,31 @@ const InvoicePage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [order, setOrder] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchOrder = async () => {
       try {
+        setLoading(true);
         const res = await api.get(`/orders/${id}`);
         setOrder(res.data);
       } catch (err) {
         toast.error("Failed to load order details");
         console.error(err);
+      } finally {
+        setLoading(false);
       }
     };
     fetchOrder();
   }, [id]);
 
-  if (!order) return <p className="text-center mt-10">Loading...</p>;
+  const memoizedDocument = useMemo(
+    () => order && <InvoiceDocument order={order} />,
+    [order]
+  );
+
+  if (loading) return <p className="text-center mt-10">Loading...</p>;
+  if (!order) return <p className="text-center mt-10">Order not found</p>;
 
   return (
     <>
@@ -227,7 +253,7 @@ const InvoicePage = () => {
         {/* Mobile Download */}
         <div className="md:hidden">
           <PDFDownloadLink
-            document={<InvoiceDocument order={order} />}
+            document={memoizedDocument}
             fileName={`invoice_${order.orderNumber}.pdf`}
           >
             {({ loading }) => (
@@ -242,7 +268,7 @@ const InvoicePage = () => {
       {/* Desktop PDF Preview */}
       <div className="hidden md:block max-w-5xl h-[800px] mx-auto bg-gray-200 shadow-lg rounded-lg p-4 mt-6">
         <PDFViewer width="100%" height="100%" showToolbar={true}>
-          <InvoiceDocument order={order} />
+          {memoizedDocument}
         </PDFViewer>
       </div>
     </>

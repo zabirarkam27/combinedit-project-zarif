@@ -3,14 +3,25 @@ import { useParams, useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
 import useVolumeInput from "../../hooks/useVolumeInput";
 import useImageGallery from "../../hooks/useImageGallery";
-import { getProductById, updateProduct } from "../../services/products"; // ✅ use services
+import { getProductById, updateProduct } from "../../services/products";
 import "react-toastify/dist/ReactToastify.css";
 
 const UpdateProduct = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [product, setProduct] = useState(null);
-  const [urlInput, setUrlInput] = useState("");
+
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
+
+  const [product, setProduct] = useState({
+    name: "",
+    category: "",
+    brand: "",
+    price: "",
+    discountPrice: "",
+    description: "",
+    inStock: true,
+  });
 
   const {
     volumeAmount,
@@ -29,21 +40,38 @@ const UpdateProduct = () => {
     addImageFromUrl,
   } = useImageGallery();
 
-  useEffect(() => {
-    getProductById(id)
-      .then((res) => {
-        const fetchedProduct = res.data;
-        setProduct(fetchedProduct);
+  const [urlInput, setUrlInput] = useState("");
 
-        const [amount, unit] = (fetchedProduct.volume || "").split(" ");
+  // Fetch product once
+  useEffect(() => {
+    const fetchProduct = async () => {
+      try {
+        const res = await getProductById(id);
+        const data = res.data;
+
+        setProduct({
+          name: data.name || "",
+          category: data.category || "",
+          brand: data.brand || "",
+          price: data.price || "",
+          discountPrice: data.discountPrice || "",
+          description: data.description || "",
+          inStock: data.inStock ?? true,
+        });
+
+        const [amount, unit] = (data.volume || "").split(" ");
         setVolumeAmount(amount || "");
         setVolumeUnit(unit || "");
-        setInitialImages(fetchedProduct.images || []);
-      })
-      .catch((err) => {
+        setInitialImages(data.images || []);
+      } catch (err) {
         console.error(err);
         toast.error("Failed to load product.");
-      });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProduct();
   }, [id]);
 
   const handleChange = (e) => {
@@ -59,16 +87,17 @@ const UpdateProduct = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setSubmitting(true);
     try {
-      const { _id, ...rest } = product;
       const updatedProduct = {
-        ...rest,
+        ...product,
         volume: getCombinedVolume(),
         price: parseFloat(product.price),
+        discountPrice: parseFloat(product.discountPrice) || 0,
         images,
       };
 
-      const res = await updateProduct(id, updatedProduct); // ✅ service used
+      const res = await updateProduct(id, updatedProduct);
 
       if (res.data.modifiedCount > 0) {
         toast.success("Product updated successfully!");
@@ -79,21 +108,28 @@ const UpdateProduct = () => {
     } catch (err) {
       console.error(err);
       toast.error("Failed to update product.");
+    } finally {
+      setSubmitting(false);
     }
   };
 
-  if (!product) return <p className="text-center mt-8">Loading...</p>;
+  if (loading) return <p className="text-center mt-8">Loading product...</p>;
 
   return (
-    <div className="max-w-7xl w-full mx-auto p-6 bg-[#e6e6d7] shadow-md rounded-xl mt-6">
-      <h2 className="text-2xl font-bold text-center mb-4">Update Product</h2>
+    <div className="w-full mx-auto p-2 md:p-4 bg-[#ebf0f0] shadow-md min-h-screen">
+      <h1 className="text-lg md:text-3xl font-bold text-black my-10">
+        Update Product
+      </h1>
 
       <form
         onSubmit={handleSubmit}
-        className="grid grid-cols-1 md:grid-cols-2 gap-4"
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4"
       >
-        {["name", "category", "brand", "price", "description"].map((field) => (
-          <div key={field} className="form-control">
+        {["name", "category", "brand", "price",].map((field) => (
+          <div
+            key={field}
+            className="form-control flex flex-col gap-1 justify-between"
+          >
             <label className="label capitalize">
               <span className="label-text">{field}</span>
             </label>
@@ -102,12 +138,42 @@ const UpdateProduct = () => {
               name={field}
               value={product[field] || ""}
               onChange={handleChange}
-              className="input w-full md:w-80 bg-[#f7f7e7] border border-gray-300 focus:border-[#c0c08c] focus:ring focus:ring-[#c0c08c] focus:ring-opacity-30"
+              className="input max-w-80 w-full bg-[#ebf0f0]"
               required
             />
           </div>
         ))}
 
+        {/* Description*/}
+        <div className="form-control flex flex-col gap-1 justify-between">
+          <label className="label capitalize">
+            <span className="label-text">Description</span>
+          </label>
+          <input
+            type="text"
+            name="discountPrice"
+            value={product.description || ""}
+            onChange={handleChange}
+            className="input max-w-80 w-full bg-[#ebf0f0]"
+            placeholder=""
+          />
+        </div>
+        {/* Discount Price */}
+        <div className="form-control flex flex-col gap-1 justify-between">
+          <label className="label capitalize">
+            <span className="label-text">Discount Price</span>
+          </label>
+          <input
+            type="number"
+            name="discountPrice"
+            value={product.discountPrice || ""}
+            onChange={handleChange}
+            className="input max-w-80 w-full bg-[#ebf0f0]"
+            placeholder="Enter discount price"
+          />
+        </div>
+
+        {/* Volume Section */}
         <div className="form-control md:col-span-2">
           <label className="label">
             <span className="label-text">Volume</span>
@@ -117,14 +183,14 @@ const UpdateProduct = () => {
               type="number"
               value={volumeAmount}
               onChange={(e) => setVolumeAmount(e.target.value)}
-              className="input w-full md:w-80 bg-[#f7f7e7] border border-gray-300 focus:border-[#c0c08c] focus:ring focus:ring-[#c0c08c] focus:ring-opacity-30"
+              className="input max-w-80 w-full bg-[#ebf0f0]"
               placeholder="Amount"
               required
             />
             <select
               value={volumeUnit}
               onChange={(e) => setVolumeUnit(e.target.value)}
-              className="select w-full md:w-80 bg-[#f7f7e7] border border-gray-300 focus:border-[#c0c08c] focus:ring focus:ring-[#c0c08c] focus:ring-opacity-30"
+              className="select max-w-80 w-full bg-[#ebf0f0]"
               required
             >
               <option value="" disabled>
@@ -140,50 +206,51 @@ const UpdateProduct = () => {
           </div>
         </div>
 
-        <div className="form-control md:col-span-2 ">
-          <div>
-            <label className="label">
-              <span className="label-text">Product Images</span>
-            </label>
-            <div className="flex gap-4 flex-wrap my-2">
-              {images.map((imgUrl, index) => (
-                <div key={index} className="relative group">
-                  <img
-                    src={imgUrl}
-                    alt={`Product ${index}`}
-                    className="w-28 h-28 object-cover rounded shadow"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removeImage(index)}
-                    className="absolute top-[-6px] right-[-6px] bg-red-500 text-white rounded-full p-1 text-xs opacity-90 hover:opacity-100 cursor-pointer"
-                    title="Remove"
-                  >
-                    ✕
-                  </button>
-                </div>
-              ))}
-              <label className="w-28 h-28 flex items-center justify-center border border-dashed border-gray-400 rounded cursor-pointer hover:bg-gray-100">
-                <span className="text-3xl text-gray-500">+</span>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => addImage(e.target.files[0])}
-                  className="hidden"
+        {/* Images Section */}
+        <div className="form-control md:col-span-2">
+          <label className="label">
+            <span className="label-text">Product Images</span>
+          </label>
+          <div className="flex gap-4 flex-wrap my-2">
+            {images.map((imgUrl, index) => (
+              <div key={index} className="relative group">
+                <img
+                  src={imgUrl}
+                  alt={`Product ${index}`}
+                  className="w-28 h-28 object-cover rounded shadow"
                 />
-              </label>
-            </div>
+                <button
+                  type="button"
+                  onClick={() => removeImage(index)}
+                  className="absolute top-[-6px] right-[-6px] bg-red-500 text-white rounded-full p-1 text-xs opacity-90 hover:opacity-100 cursor-pointer"
+                  title="Remove"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+            <label className="w-28 h-28 flex items-center justify-center border border-dashed border-gray-400 rounded cursor-pointer hover:bg-gray-100">
+              <span className="text-3xl text-gray-500">+</span>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => addImage(e.target.files[0])}
+                className="hidden"
+              />
+            </label>
           </div>
+
           <label className="label">
             <span className="label-text">----------OR----------</span>
           </label>
+
           <div className="flex items-center gap-2 mt-2">
             <input
               type="text"
               value={urlInput}
               onChange={(e) => setUrlInput(e.target.value)}
               placeholder="Enter image URL"
-              className="input w-full md:w-80 bg-[#f7f7e7] border border-gray-300 focus:border-[#c0c08c] focus:ring focus:ring-[#c0c08c] focus:ring-opacity-30"
+              className="input max-w-80 w-full bg-[#ebf0f0]"
             />
             <button
               type="button"
@@ -219,8 +286,12 @@ const UpdateProduct = () => {
         </div>
 
         <div className="col-span-full mt-4 text-center">
-          <button type="submit" className="btn btn-primary">
-            Update Product
+          <button
+            type="submit"
+            className="w-full btn text-center text-white font-semibold px-4 py-3 rounded-b-xl bg-gradient-to-r from-[#00ad9c] via-[#3a8881] to-[#009e8e] bg-[length:200%_200%] transition-all duration-500 ease-in-out hover:bg-right mt-4"
+            disabled={submitting}
+          >
+            {submitting ? "Updating..." : "Update Product"}
           </button>
         </div>
       </form>

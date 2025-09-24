@@ -72,7 +72,7 @@ const NavBar = ({ refs }) => {
   return (
     <div>
       {/* Large screen Navbar */}
-      <div className="hidden md:flex fixed top-0 left-0 w-full bg-[#10b2d7]/75 backdrop-blur-md shadow-sm z-50">
+      <div className="hidden md:flex fixed top-0 left-0 w-full shadow-lg bg-gradient-to-r from-[#00ad9c] via-[#3a8881] to-[#009e8e] bg-[length:200%_200%] transition-all duration-500 ease-in-out hover:bg-right backdrop-blur- z-50">
         <div
           className={
             design.navbarContainer +
@@ -81,20 +81,7 @@ const NavBar = ({ refs }) => {
         >
           {/* logo */}
           <div className="navbar-start">
-            <a
-              className="
-                 btn btn-ghost 
-    bg-transparent 
-    border-none 
-    shadow-none 
-    hover:bg-transparent 
-    hover:border-none 
-    hover:shadow-none 
-    focus:outline-none 
-    active:bg-transparent
-    p-0
-  "
-            >
+            <a className="btn btn-ghost bg-transparent border-none shadow-none hover:bg-transparent hover:border-none hover:shadow-none focus:outline-none  active:bg-transparent p-0">
               <img
                 src="/nav-icon/logo.png"
                 alt="Company Logo"
@@ -123,7 +110,7 @@ const NavBar = ({ refs }) => {
             <Link to="/cart" className="relative">
               <img src="/nav-icon/cart.png" alt="cart" className="w-8" />
               {cartItems.length > 0 && (
-                <span className="absolute -top-2 -right-2 bg-[#ee9714] text-white text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full">
+                <span className="absolute -top-2 -right-2 bg-[#c40000] text-white text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full">
                   {cartItems.length}
                 </span>
               )}

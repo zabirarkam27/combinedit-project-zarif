@@ -16,7 +16,7 @@ export const useOrderDrawer = (orderFormHook) => {
   useEffect(() => {
     if (selectedProduct) {
       const shipping = Number(orderInfo.shippingCharge) || 0;
-      setGrandTotal(selectedProduct.price * quantity + shipping);
+      setGrandTotal(selectedProduct.discountPrice? selectedProduct.discountPrice * quantity + shipping : selectedProduct.price * quantity + shipping);
     }
   }, [selectedProduct, quantity, orderInfo.shippingCharge]);
 
@@ -38,7 +38,7 @@ export const useOrderDrawer = (orderFormHook) => {
   const decreaseQuantity = () =>
     setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
 
-  const productTotal = selectedProduct ? selectedProduct.price * quantity : 0;
+  const productTotal = selectedProduct ? (selectedProduct.discountPrice ? selectedProduct.discountPrice * quantity : selectedProduct.price * quantity) : 0;
 
   const handleSubmit = (e) => {
     e.preventDefault();

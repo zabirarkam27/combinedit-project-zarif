@@ -1,4 +1,12 @@
-import { PieChart, Pie, Cell, Tooltip, Legend, ResponsiveContainer } from "recharts";
+import { useMemo } from "react";
+import {
+  PieChart,
+  Pie,
+  Cell,
+  Tooltip,
+  Legend,
+  ResponsiveContainer,
+} from "recharts";
 
 const statusColors = {
   pending: "#facc15",
@@ -9,49 +17,56 @@ const statusColors = {
   paid: "#f59e0b",
 };
 
-// Pie Chart Component
-const FancyPieChart = ({ orders }) => {
-  // Order count by status
-  const data = [
-    {
-      name: "Completed",
-      value: orders.filter((o) => o.status === "completed").length,
-      color: statusColors.completed,
-    },
-    {
-      name: "Paid",
-      value: orders.filter((o) => o.paymentStatus === "completed").length,
-      color: statusColors.paid,
-    },
-    {
-      name: "Pickup",
-      value: orders.filter((o) => o.status === "pickup").length,
-      color: statusColors.pickup,
-    },
-    {
-      name: "Processing",
-      value: orders.filter((o) => o.status === "processing").length,
-      color: statusColors.processing,
-    },
-    {
-      name: "Pending",
-      value: orders.filter((o) => o.status === "pending").length,
-      color: statusColors.pending,
-    },
-    {
-      name: "Cancelled",
-      value: orders.filter((o) => o.status === "cancelled").length,
-      color: statusColors.cancelled,
-    },
-  ];
+const FancyPieChart = ({ orders = [] }) => {
+  // Memoized data generation
+  const data = useMemo(() => {
+    const counts = {
+      pending: 0,
+      processing: 0,
+      pickup: 0,
+      completed: 0,
+      cancelled: 0,
+      paid: 0,
+    };
 
-  const totalOrders = data
-    .filter((item) => item.name !== "Paid")
-    .reduce((acc, item) => acc + item.value, 0);
+    orders.forEach((o) => {
+      if (o.status && counts[o.status] !== undefined) counts[o.status]++;
+      if (o.paymentStatus === "completed") counts.paid++;
+    });
+
+    return [
+      {
+        name: "Completed",
+        value: counts.completed,
+        color: statusColors.completed,
+      },
+      { name: "Paid", value: counts.paid, color: statusColors.paid },
+      { name: "Pickup", value: counts.pickup, color: statusColors.pickup },
+      {
+        name: "Processing",
+        value: counts.processing,
+        color: statusColors.processing,
+      },
+      { name: "Pending", value: counts.pending, color: statusColors.pending },
+      {
+        name: "Cancelled",
+        value: counts.cancelled,
+        color: statusColors.cancelled,
+      },
+    ];
+  }, [orders]);
+
+  const totalOrders = useMemo(
+    () =>
+      data
+        .filter((item) => item.name !== "Paid")
+        .reduce((acc, item) => acc + item.value, 0),
+    [data]
+  );
 
   return (
-    <div className="bg-white p-5 rounded-xl shadow-lg flex flex-col items-center">
-      <h2 className="text-sm font-semibold">Order Count</h2>
+    <div className="bg-white p-5 rounded-xl shadow-lg flex flex-col items-center relative">
+      <h2 className="text-sm font-semibold mb-2">Order Count</h2>
       <ResponsiveContainer width="100%" height={300}>
         <PieChart>
           <Pie
@@ -77,8 +92,8 @@ const FancyPieChart = ({ orders }) => {
       </ResponsiveContainer>
 
       {/* Middle text */}
-      <div className="absolute inset-0  -top-3 flex flex-col items-center justify-center">
-        <h3 className="text-xs text-gray-800">Total Order</h3>
+      <div className="absolute inset-0 -top-3 flex flex-col items-center justify-center pointer-events-none">
+        <h3 className="text-xs text-gray-800">Total Orders</h3>
         <p className="text-2xl font-bold">{totalOrders}</p>
       </div>
     </div>

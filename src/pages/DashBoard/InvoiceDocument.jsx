@@ -8,25 +8,24 @@ import {
 } from "@react-pdf/renderer";
 
 // Helper function for word wrapping
-const wrapTextByWords = (text, limit = 6) => {
-  if (!text) return "";
-  const words = text.split(" ");
-  let result = "";
-  for (let i = 0; i < words.length; i++) {
-    result += words[i] + " ";
-    if ((i + 1) % limit === 0) {
-      result += "\n"; // Add line break after 6 words
-    }
-  }
-  return result.trim();
-};
+const wrapTextByWords = (text, limit = 6) =>
+  text
+    ? text
+        .split(" ")
+        .reduce(
+          (acc, word, idx) =>
+            acc + word + ((idx + 1) % limit === 0 ? "\n" : " "),
+          ""
+        )
+        .trim()
+    : "";
 
 const styles = StyleSheet.create({
   page: {
     fontFamily: "Helvetica",
     fontSize: 11,
     padding: 20,
-    backgroundColor: "#ffffff",
+    backgroundColor: "#fff",
   },
   header: {
     backgroundColor: "#06b5d4",
@@ -38,48 +37,27 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 15,
   },
-  logo: {
-    width: 80,
-    height: 50,
-    objectFit: "contain",
-  },
-  headerText: {
-    fontSize: 20,
-    fontWeight: "bold",
-    color: "#fff",
-  },
-  section: {
-    marginTop: 15,
-    marginLeft: 8,
-  },
-  orderSection: {
-    flex: 1,
-    alignItems: "flex-end",
-  },
-  bold: {
-    fontWeight: "bold",
-  },
+  logo: { width: 80, height: 50, objectFit: "contain" },
+  headerText: { fontSize: 20, fontWeight: "bold", color: "#fff" },
   rowBetween: {
     flexDirection: "row",
     justifyContent: "space-between",
     marginTop: 20,
-    paddingRight: 8,
-    paddingLeft: 8,
+    paddingHorizontal: 8,
   },
+  orderSection: { alignItems: "flex-end" },
+  bold: { fontWeight: "bold" },
+  section: { marginTop: 15, marginLeft: 8 },
   table: {
     display: "table",
-    width: "99%",
+    width: "100%",
     marginTop: 20,
     borderStyle: "solid",
     borderWidth: 1,
     borderRightWidth: 0,
     borderBottomWidth: 0,
-    marginRight: 20,
-    marginLeft: 8,
   },
-  tableRow: {
-    flexDirection: "row",
-  },
+  tableRow: { flexDirection: "row" },
   tableCol: {
     borderStyle: "solid",
     borderWidth: 1,
@@ -88,45 +66,29 @@ const styles = StyleSheet.create({
     padding: 5,
     fontSize: 10,
   },
-  colProduct: {
-    flexBasis: "40%",
-  },
-  colQty: {
-    flexBasis: "20%",
-    textAlign: "center",
-  },
-  colUnit: {
-    flexBasis: "20%",
-    textAlign: "center",
-  },
-  colTotal: {
-    flexBasis: "20%",
-    textAlign: "center",
-  },
-  totals: {
-    marginTop: 20,
-    rowGap: 8,
-    textAlign: "right",
-  },
+  colProduct: { flexBasis: "40%" },
+  colQty: { flexBasis: "20%", textAlign: "center" },
+  colUnit: { flexBasis: "20%", textAlign: "center" },
+  colTotal: { flexBasis: "20%", textAlign: "center" },
+  totals: { marginTop: 20, rowGap: 8, textAlign: "right" },
 });
 
 const InvoiceDocument = ({ order, orders }) => {
-  const list = orders || (order ? [order] : []);
+  const list = orders ?? (order ? [order] : []);
 
   return (
     <Document>
       {list.map((o, idx) => {
-        const totalProductPrice = o.items?.reduce(
-          (sum, item) => sum + (item.finalPrice || 0),
-          0
-        );
+        // Precompute total product price only once
+        const totalProductPrice =
+          o.items?.reduce((sum, item) => sum + (item.finalPrice || 0), 0) ?? 0;
 
         return (
           <Page key={idx} size="A4" style={styles.page}>
             {/* Header */}
             <View style={styles.header}>
               <Image
-                src="https://i.ibb.co.com/k25ggjgL/logo.png"
+                src="https://i.ibb.co/k25ggjgL/logo.png"
                 style={styles.logo}
               />
               <Text style={styles.headerText}>Invoice</Text>
@@ -136,32 +98,35 @@ const InvoiceDocument = ({ order, orders }) => {
             <View style={styles.rowBetween}>
               <View>
                 <Text style={styles.bold}>Bill To:</Text>
-                <Text>{wrapTextByWords(o.name, 6)}</Text>
-                <Text>{wrapTextByWords(o.address, 6)}</Text>
+                {["name", "address"].map((field) => (
+                  <Text key={field}>{wrapTextByWords(o[field], 6)}</Text>
+                ))}
                 <Text>{o.phone}</Text>
               </View>
 
               <View style={styles.orderSection}>
-                <Text style={{ textAlign: "right" }}>
-                  <Text style={styles.bold}>Order#:</Text> {o.orderNumber}
-                </Text>
-                <Text style={{ textAlign: "right" }}>
-                  <Text style={styles.bold}>Order Date:</Text>{" "}
-                  {o.createdAt
-                    ? new Date(o.createdAt).toLocaleDateString()
-                    : "-"}
-                </Text>
-                <Text style={{ textAlign: "right" }}>
-                  <Text style={styles.bold}>Payment Method:</Text>{" "}
-                  {o.paymentMethod}
-                </Text>
-                <Text style={{ textAlign: "right" }}>
-                  <Text style={styles.bold}>Payment Status:</Text>{" "}
-                  {o.paymentStatus}
-                </Text>
-                <Text style={{ textAlign: "right" }}>
-                  <Text style={styles.bold}>Status:</Text> {o.status}
-                </Text>
+                {[
+                  "orderNumber",
+                  "createdAt",
+                  "paymentMethod",
+                  "paymentStatus",
+                  "status",
+                ].map((field) => (
+                  <Text key={field} style={{ textAlign: "right" }}>
+                    <Text style={styles.bold}>
+                      {field === "createdAt"
+                        ? "Order Date:"
+                        : field
+                            .replace(/([A-Z])/g, " $1")
+                            .replace(/^./, (str) => str.toUpperCase()) + ":"}
+                    </Text>{" "}
+                    {field === "createdAt"
+                      ? o.createdAt
+                        ? new Date(o.createdAt).toLocaleDateString()
+                        : "-"
+                      : o[field]}
+                  </Text>
+                ))}
               </View>
             </View>
 
@@ -179,53 +144,54 @@ const InvoiceDocument = ({ order, orders }) => {
             {/* Table */}
             <View style={styles.table}>
               <View style={styles.tableRow}>
-                <Text style={[styles.tableCol, styles.colProduct, styles.bold]}>
-                  Product
-                </Text>
-                <Text style={[styles.tableCol, styles.colQty, styles.bold]}>
-                  Qty
-                </Text>
-                <Text style={[styles.tableCol, styles.colUnit, styles.bold]}>
-                  Unit Price
-                </Text>
-                <Text style={[styles.tableCol, styles.colTotal, styles.bold]}>
-                  Total
-                </Text>
-              </View>
-              {o.items && o.items.length > 0 ? (
-                o.items.map((item, idx) => (
-                  <View style={styles.tableRow} key={idx}>
-                    <Text style={[styles.tableCol, styles.colProduct]}>
-                      {item.productName}
-                    </Text>
-                    <Text style={[styles.tableCol, styles.colQty]}>
-                      {item.quantity}
-                    </Text>
-                    <Text style={[styles.tableCol, styles.colUnit]}>
-                      {item.unitPrice}
-                    </Text>
-                    <Text style={[styles.tableCol, styles.colTotal]}>
-                      {item.finalPrice}
-                    </Text>
-                  </View>
-                ))
-              ) : (
-                <View style={styles.tableRow}>
-                  <Text style={[styles.tableCol, styles.colProduct]}>
-                    No items
+                {[
+                  { label: "Product", style: styles.colProduct },
+                  { label: "Qty", style: styles.colQty },
+                  { label: "Unit Price", style: styles.colUnit },
+                  { label: "Total", style: styles.colTotal },
+                ].map((col) => (
+                  <Text
+                    key={col.label}
+                    style={[styles.tableCol, col.style, styles.bold]}
+                  >
+                    {col.label}
                   </Text>
-                  <Text style={[styles.tableCol, styles.colQty]}>-</Text>
-                  <Text style={[styles.tableCol, styles.colUnit]}>-</Text>
-                  <Text style={[styles.tableCol, styles.colTotal]}>-</Text>
+                ))}
+              </View>
+
+              {(o.items && o.items.length > 0
+                ? o.items
+                : [
+                    {
+                      productName: "No items",
+                      quantity: "-",
+                      unitPrice: "-",
+                      finalPrice: "-",
+                    },
+                  ]
+              ).map((item, idx) => (
+                <View style={styles.tableRow} key={idx}>
+                  <Text style={[styles.tableCol, styles.colProduct]}>
+                    {item.productName}
+                  </Text>
+                  <Text style={[styles.tableCol, styles.colQty]}>
+                    {item.quantity}
+                  </Text>
+                  <Text style={[styles.tableCol, styles.colUnit]}>
+                    {item.unitPrice}
+                  </Text>
+                  <Text style={[styles.tableCol, styles.colTotal]}>
+                    {item.finalPrice}
+                  </Text>
                 </View>
-              )}
+              ))}
             </View>
 
             {/* Totals */}
             <View style={styles.totals}>
               <Text>
                 <Text style={styles.bold}>Product Price:</Text>{" "}
-                {totalProductPrice || 0}
+                {totalProductPrice}
               </Text>
               <Text>
                 <Text style={styles.bold}>Shipping:</Text>{" "}

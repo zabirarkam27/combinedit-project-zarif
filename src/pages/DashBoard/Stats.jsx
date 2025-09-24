@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import {
   BsFillArrowUpCircleFill,
   BsFillArrowDownCircleFill,
@@ -8,162 +8,135 @@ import FancyBarChart from "./FancyBarChart";
 import FancyCityBarChart from "./FancyCityBarChart";
 import FancyPieChart from "./FancyPieChart";
 
+const months = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
+
 const Stats = () => {
   const [orders, setOrders] = useState([]);
-  const [totalSales, setTotalSales] = useState(0);
 
-  const [activeOrders, setActiveOrders] = useState(0);
-  const [completedOrders, setCompletedOrders] = useState(0);
-  const [cancelledOrders, setCancelledOrders] = useState(0);
-
-  const [percentChange, setPercentChange] = useState(0);
-  const [activePercent, setActivePercent] = useState(0);
-  const [completedPercent, setCompletedPercent] = useState(0);
-  const [cancelledPercent, setCancelledPercent] = useState(0);
-
-  const [activeAmount, setActiveAmount] = useState(0);
-  const [completedAmount, setCompletedAmount] = useState(0);
-  const [cancelledAmount, setCancelledAmount] = useState(0);
-
-  const [chartValues, setChartValues] = useState([]);
-
-  const months = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
-  ];
-
-  // Fetch orders data
+  // Fetch orders once + polling every 30s
   useEffect(() => {
     const fetchOrders = async () => {
       try {
         const response = await api.get("/orders");
         setOrders(response.data);
-        calculateStats(response.data);
-      } catch (error) {
-        console.error("Error fetching orders:", error);
+      } catch (err) {
+        console.error("Error fetching orders:", err);
       }
     };
+
     fetchOrders();
     const interval = setInterval(fetchOrders, 30000);
     return () => clearInterval(interval);
   }, []);
 
-  const calculatePercentage = (thisMonth, lastMonth) => {
-    if (lastMonth === 0) {
-      return thisMonth > 0 ? 100 : 0;
-    }
-    return ((thisMonth - lastMonth) / lastMonth) * 100;
-  };
+  // Memoized calculation of stats
+  const stats = useMemo(() => {
+    const totalSales = orders.reduce((acc, o) => acc + o.grandTotal, 0);
 
-  const calculateStats = (orders) => {
-    const total = orders.reduce((acc, order) => acc + order.grandTotal, 0);
-    setTotalSales(total);
-
-    const completed = orders.filter((o) => o.status === "completed").length;
-    const cancelled = orders.filter((o) => o.status === "cancelled").length;
-    const active = orders.filter(
+    const activeOrders = orders.filter(
       (o) => o.status !== "completed" && o.status !== "cancelled"
-    ).length;
+    );
+    const completedOrders = orders.filter((o) => o.status === "completed");
+    const cancelledOrders = orders.filter((o) => o.status === "cancelled");
 
-    setCompletedOrders(completed);
-    setCancelledOrders(cancelled);
-    setActiveOrders(active);
-
+    // Monthly data
     const monthlySales = new Array(12).fill(0);
     const monthlyActive = new Array(12).fill(0);
     const monthlyCompleted = new Array(12).fill(0);
     const monthlyCancelled = new Array(12).fill(0);
 
-    orders.forEach((order) => {
-      const date = new Date(order.createdAt);
-      const monthIndex = date.getMonth();
+    orders.forEach((o) => {
+      const monthIndex = new Date(o.createdAt).getMonth();
+      monthlySales[monthIndex] += o.grandTotal;
 
-      monthlySales[monthIndex] += order.grandTotal;
-
-      if (order.status === "completed") {
-        monthlyCompleted[monthIndex] += order.grandTotal;
-      } else if (order.status === "cancelled") {
-        monthlyCancelled[monthIndex] += order.grandTotal;
-      } else {
-        monthlyActive[monthIndex] += order.grandTotal;
-      }
+      if (o.status === "completed")
+        monthlyCompleted[monthIndex] += o.grandTotal;
+      else if (o.status === "cancelled")
+        monthlyCancelled[monthIndex] += o.grandTotal;
+      else monthlyActive[monthIndex] += o.grandTotal;
     });
 
-    setChartValues(monthlySales);
+    const currentMonth = new Date().getMonth();
+    const calculatePercentage = (thisMonth, lastMonth) =>
+      lastMonth === 0
+        ? thisMonth > 0
+          ? 100
+          : 0
+        : ((thisMonth - lastMonth) / lastMonth) * 100;
 
-    const currentMonthIndex = new Date().getMonth();
+    return {
+      totalSales,
+      activeOrders: activeOrders.length,
+      completedOrders: completedOrders.length,
+      cancelledOrders: cancelledOrders.length,
+      monthlySales,
+      monthlyActive,
+      monthlyCompleted,
+      monthlyCancelled,
+      percentChange: calculatePercentage(
+        monthlySales[currentMonth],
+        currentMonth > 0 ? monthlySales[currentMonth - 1] : 0
+      ),
+      activePercent: calculatePercentage(
+        monthlyActive[currentMonth],
+        currentMonth > 0 ? monthlyActive[currentMonth - 1] : 0
+      ),
+      completedPercent: calculatePercentage(
+        monthlyCompleted[currentMonth],
+        currentMonth > 0 ? monthlyCompleted[currentMonth - 1] : 0
+      ),
+      cancelledPercent: calculatePercentage(
+        monthlyCancelled[currentMonth],
+        currentMonth > 0 ? monthlyCancelled[currentMonth - 1] : 0
+      ),
+      activeAmount: monthlyActive[currentMonth],
+      completedAmount: monthlyCompleted[currentMonth],
+      cancelledAmount: monthlyCancelled[currentMonth],
+    };
+  }, [orders]);
 
-    const thisMonth = monthlySales[currentMonthIndex];
-    const lastMonth =
-      currentMonthIndex > 0 ? monthlySales[currentMonthIndex - 1] : 0;
-    setPercentChange(calculatePercentage(thisMonth, lastMonth));
-
-    // Active %
-    const thisActive = monthlyActive[currentMonthIndex];
-    const lastActive =
-      currentMonthIndex > 0 ? monthlyActive[currentMonthIndex - 1] : 0;
-    setActiveAmount(thisActive);
-    setActivePercent(calculatePercentage(thisActive, lastActive));
-
-    // Completed %
-    const thisCompleted = monthlyCompleted[currentMonthIndex];
-    const lastCompleted =
-      currentMonthIndex > 0 ? monthlyCompleted[currentMonthIndex - 1] : 0;
-    setCompletedAmount(thisCompleted);
-    setCompletedPercent(calculatePercentage(thisCompleted, lastCompleted));
-
-    // Cancelled %
-    const thisCancelled = monthlyCancelled[currentMonthIndex];
-    const lastCancelled =
-      currentMonthIndex > 0 ? monthlyCancelled[currentMonthIndex - 1] : 0;
-    setCancelledAmount(thisCancelled);
-    setCancelledPercent(calculatePercentage(thisCancelled, lastCancelled));
-  };
-
-  const renderCancelledChange = (percent) => (
+  const renderChange = (percent, isCancelled = false) => (
     <div className="flex flex-col mt-3 items-start gap-1">
       {percent > 0 ? (
         <div className="flex items-center gap-1">
-          <BsFillArrowDownCircleFill className="text-red-500" />
-          <span className="text-red-600 font-medium">
+          {isCancelled ? (
+            <BsFillArrowDownCircleFill className="text-red-500" />
+          ) : (
+            <BsFillArrowUpCircleFill className="text-green-500" />
+          )}
+          <span
+            className={`${
+              isCancelled ? "text-red-600" : "text-green-600"
+            } font-medium`}
+          >
             +{Math.abs(percent).toFixed(2)}%
           </span>
         </div>
       ) : (
         <div className="flex items-center gap-1">
-          <BsFillArrowUpCircleFill className="text-green-500" />
-          <span className="text-green-600 font-medium">
-            -{Math.abs(percent).toFixed(2)}%
-          </span>
-        </div>
-      )}
-      <h3 className="text-xs text-gray-500">from last month</h3>
-    </div>
-  );
-
-  const renderChange = (percent) => (
-    <div className="flex flex-col mt-3 items-start gap-1">
-      {percent > 0 ? (
-        <div className="flex items-center gap-1">
-          <BsFillArrowUpCircleFill className="text-green-500" />
-          <span className="text-green-600 font-medium">
-            +{Math.abs(percent).toFixed(2)}%
-          </span>
-        </div>
-      ) : (
-        <div className="flex items-center gap-1">
-          <BsFillArrowDownCircleFill className="text-red-500" />
-          <span className="text-red-600 font-medium">
+          {isCancelled ? (
+            <BsFillArrowUpCircleFill className="text-green-500" />
+          ) : (
+            <BsFillArrowDownCircleFill className="text-red-500" />
+          )}
+          <span
+            className={`${
+              isCancelled ? "text-green-600" : "text-red-600"
+            } font-medium`}
+          >
             -{Math.abs(percent).toFixed(2)}%
           </span>
         </div>
@@ -174,65 +147,60 @@ const Stats = () => {
 
   return (
     <div>
-      <div className="stats-container  rounded-lg grid gap-4 md:gap-6 grid-cols-1 md:grid-cols-2">
+      <div className="stats-container rounded-lg grid gap-4 md:gap-6 grid-cols-1 md:grid-cols-2">
         {/* Sales Chart */}
         <div className="order-chart bg-white p-5 rounded-xl shadow-lg">
           <h2 className="text-xs">Monthly Sales</h2>
-          <p className="font-bold text-xl">৳ {totalSales}</p>
-          <FancyBarChart labels={months} values={chartValues} />
+          <p className="font-bold text-xl">৳ {stats.totalSales}</p>
+          <FancyBarChart labels={months} values={stats.monthlySales} />
         </div>
 
         {/* Stats Section */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* Total sales */}
           <div className="bg-white p-5 rounded-xl shadow-lg">
             <h2 className="text-sm font-semibold">Total Sales</h2>
-            <p className="text-xl font-bold">৳ {totalSales}</p>
-            {renderChange(percentChange)}
+            <p className="text-xl font-bold">৳ {stats.totalSales}</p>
+            {renderChange(stats.percentChange)}
           </div>
 
-          {/* Active Orders */}
           <div className="bg-white p-5 rounded-xl shadow-lg">
             <h2 className="text-sm font-semibold">Active Orders</h2>
             <p className="text-xl font-bold">
-              {activeOrders}{" "}
+              {stats.activeOrders}{" "}
               <span className="text-sm font-thin text-gray-500">
-                (৳ {activeAmount})
+                (৳ {stats.activeAmount})
               </span>
             </p>
-            {renderChange(activePercent)}
+            {renderChange(stats.activePercent)}
           </div>
 
-          {/* Completed Orders */}
           <div className="bg-white p-5 rounded-xl shadow-lg">
             <h2 className="text-sm font-semibold">Completed Orders</h2>
             <p className="text-xl font-bold">
-              {completedOrders}{" "}
+              {stats.completedOrders}{" "}
               <span className="text-sm font-thin text-gray-500">
-                (৳ {completedAmount})
+                (৳ {stats.completedAmount})
               </span>
             </p>
-            {renderChange(completedPercent)}
+            {renderChange(stats.completedPercent)}
           </div>
 
-          {/* Cancelled Orders */}
           <div className="bg-white p-5 rounded-xl shadow-lg">
             <h2 className="text-sm font-semibold">Cancelled Orders</h2>
             <p className="text-xl font-bold">
-              {cancelledOrders}{" "}
+              {stats.cancelledOrders}{" "}
               <span className="text-sm font-thin text-gray-500">
-                (৳ {cancelledAmount})
+                (৳ {stats.cancelledAmount})
               </span>
             </p>
-            {renderCancelledChange(cancelledPercent)}
+            {renderChange(stats.cancelledPercent, true)}
           </div>
         </div>
-        {/* Pie Chart */}
       </div>
+
+      {/* Pie Chart and City Chart */}
       <div className="mt-4 md:mt-6 grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-        <div className="relative">
-          <FancyPieChart orders={orders} />
-        </div>
+        <FancyPieChart orders={orders} />
         <FancyCityBarChart orders={orders} />
       </div>
     </div>

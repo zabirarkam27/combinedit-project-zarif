@@ -29,7 +29,7 @@ const Banner = () => {
 
   return (
     <div className="max-w-5xl mx-auto mt-6 pb-8">
-      <h1 className="text-white font-semibold text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-4 sm:mb-6 md:mb-8 text-center">
+      <h1 className="text-gray-700 font-semibold text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-4 sm:mb-6 md:mb-8 text-center">
         My Products
       </h1>
 

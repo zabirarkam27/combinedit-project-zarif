@@ -3,6 +3,7 @@ import useImageUpload from "./useImageUpload";
 import { toast } from "react-toastify";
 
 const useImageGallery = () => {
+  const [image, setImage] = useState([]);
   const [images, setImages] = useState([]);
   const [uploading, setUploading] = useState(false);
   const { uploadImage } = useImageUpload();

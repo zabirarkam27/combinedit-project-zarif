@@ -8,9 +8,9 @@ const design = {
 
   // Colors
   colors: {
-    primaryGradient: "bg-gradient-to-b from-[#06b5d4] to-[#3b82f5]",
+    primaryGradient: "bg-[#b5e4e0]",
     sectionBg: "bg-white",
-    cardBg: "bg-[#f7f7e7]",
+    cardBg: "bg-white",
     borderColor: "border-gray-300",
     focusRing:
       "focus:border-[#c0c08c] focus:ring focus:ring-[#c0c08c] focus:ring-opacity-30",

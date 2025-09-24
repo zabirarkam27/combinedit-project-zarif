@@ -1,22 +1,88 @@
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LabelList } from "recharts";
+import { useMemo } from "react";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  LabelList,
+} from "recharts";
 import Fuse from "fuse.js";
 
-// বাংলাদেশের ৬৪ জেলা
 const districts = [
-  "bagerhat","bandarban","barguna","barisal","bhola","bogura","brahmanbaria","chandpur","chapainawabganj","chattogram",
-  "chuadanga","cox's bazar","cumilla","dhaka","dinajpur","faridpur","feni","gaibandha","gazipur","gopalganj","habiganj",
-  "jamalpur","jashore","jhalokati","jhenaidah","joypurhat","khagrachhari","khulna","kishoreganj","kurigram","kushtia",
-  "lakshmipur","lalmonirhat","madaripur","magura","manikganj","meherpur","moulvibazar","munshiganj","mymensingh","naogaon",
-  "narail","narayanganj","narsingdi","netrokona","nilphamari","noakhali","pabna","panchagarh","patuakhali","pirojpur",
-  "rajbari","rajshahi","rangamati","rangpur","satkhira","shariatpur","sherpur","sirajganj","sunamganj","sylhet","tangail","thakurgaon"
+  "bagerhat",
+  "bandarban",
+  "barguna",
+  "barisal",
+  "bhola",
+  "bogura",
+  "brahmanbaria",
+  "chandpur",
+  "chapainawabganj",
+  "chattogram",
+  "chuadanga",
+  "cox's bazar",
+  "cumilla",
+  "dhaka",
+  "dinajpur",
+  "faridpur",
+  "feni",
+  "gaibandha",
+  "gazipur",
+  "gopalganj",
+  "habiganj",
+  "jamalpur",
+  "jashore",
+  "jhalokati",
+  "jhenaidah",
+  "joypurhat",
+  "khagrachhari",
+  "khulna",
+  "kishoreganj",
+  "kurigram",
+  "kushtia",
+  "lakshmipur",
+  "lalmonirhat",
+  "madaripur",
+  "magura",
+  "manikganj",
+  "meherpur",
+  "moulvibazar",
+  "munshiganj",
+  "mymensingh",
+  "naogaon",
+  "narail",
+  "narayanganj",
+  "narsingdi",
+  "netrokona",
+  "nilphamari",
+  "noakhali",
+  "pabna",
+  "panchagarh",
+  "patuakhali",
+  "pirojpur",
+  "rajbari",
+  "rajshahi",
+  "rangamati",
+  "rangpur",
+  "satkhira",
+  "shariatpur",
+  "sherpur",
+  "sirajganj",
+  "sunamganj",
+  "sylhet",
+  "tangail",
+  "thakurgaon",
 ];
 
-// Fuse.js config
+// Fuse.js একবার initialization
 const fuse = new Fuse(districts, {
   includeScore: true,
-  threshold: 0.4, 
+  threshold: 0.4,
 });
 
+// ফাংশন district খুঁজতে
 const findDistrict = (address) => {
   if (!address) return null;
   const lowerAddress = address.toLowerCase();
@@ -25,32 +91,28 @@ const findDistrict = (address) => {
   if (exact) return exact;
 
   const result = fuse.search(lowerAddress);
-  if (result.length > 0) {
-    return result[0].item; 
-  }
-
-  return null;
+  return result.length > 0 ? result[0].item : null;
 };
 
 const FancyCityBarChart = ({ orders = [] }) => {
-  // জেলা অনুযায়ী কাউন্ট
-  const cityCount = {};
-    orders.forEach((order) => {
-    const district = findDistrict(order.address);
-    if (district) {
-      cityCount[district] = (cityCount[district] || 0) + 1;
-    }
-  });
+  // orders থেকে memoized top 5 city count
+  const sortedCities = useMemo(() => {
+    const cityCount = {};
 
-  // sort + top 5
-  const sortedCities = Object.entries(cityCount)
-    .map(([name, count]) => ({ name, count }))
-    .sort((a, b) => b.count - a.count)
-    .slice(0, 5);
+    orders.forEach((order) => {
+      const district = findDistrict(order.address);
+      if (district) cityCount[district] = (cityCount[district] || 0) + 1;
+    });
+
+    return Object.entries(cityCount)
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
+  }, [orders]);
 
   return (
     <div className="bg-white p-5 rounded-xl shadow-lg">
-      <h2 className="text-sm font-semibold mb-3">Top sales by City</h2>
+      <h2 className="text-sm font-semibold mb-3">Top Sales by City</h2>
       <ResponsiveContainer width="100%" height={290}>
         <BarChart
           data={sortedCities}
@@ -73,6 +135,4 @@ const FancyCityBarChart = ({ orders = [] }) => {
   );
 };
 
-
 export default FancyCityBarChart;
-

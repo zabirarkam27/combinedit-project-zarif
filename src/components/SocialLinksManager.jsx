@@ -1,26 +1,33 @@
-import { useState } from "react";
+import { useState, useCallback, useRef, memo } from "react";
 import useImageUpload from "../hooks/useImageUpload";
 import design from "../styles/design";
+import debounce from "lodash/debounce";
 
 const SocialLinksManager = ({ socialLinks = [], onChange }) => {
   const [links, setLinks] = useState(socialLinks);
   const { uploadImage } = useImageUpload();
 
+  const linksRef = useRef(links);
+
+  // Use a callback to update state
   const handleAdd = () => {
-    const newLinks = [...links, { icon: "", url: "" }];
-    setLinks(newLinks);
+    const newLinks = [...linksRef.current, { icon: "", url: "" }];
+    linksRef.current = newLinks; // Update reference without re-rendering
+    setLinks(newLinks); // Trigger state update for render
     onChange(newLinks);
   };
 
   const handleRemove = (index) => {
-    const newLinks = links.filter((_, i) => i !== index);
+    const newLinks = linksRef.current.filter((_, i) => i !== index);
+    linksRef.current = newLinks; // Update reference without re-rendering
     setLinks(newLinks);
     onChange(newLinks);
   };
 
   const handleChange = (index, field, value) => {
-    const newLinks = [...links];
+    const newLinks = [...linksRef.current];
     newLinks[index][field] = value;
+    linksRef.current = newLinks; // Update reference without re-rendering
     setLinks(newLinks);
     onChange(newLinks);
   };
@@ -33,8 +40,16 @@ const SocialLinksManager = ({ socialLinks = [], onChange }) => {
     if (imageUrl) handleChange(index, "icon", imageUrl);
   };
 
+  // Debounced function to avoid excessive API calls when user types quickly
+  const handleUrlChange = useCallback(
+    debounce((index, value) => {
+      handleChange(index, "url", value);
+    }, 500),
+    []
+  );
+
   return (
-    <div className="col-span-full bg-[#dbdbc9] p-4 rounded-md">
+    <div className="col-span-full bg-[#d8e2e2] p-4 rounded-md">
       <h3 className="font-semibold text-lg mb-3">Custom Social Links</h3>
 
       {links.map((link, index) => (
@@ -43,7 +58,7 @@ const SocialLinksManager = ({ socialLinks = [], onChange }) => {
           className="grid md:grid-cols-3 gap-3 mb-3 items-center"
         >
           {/* Icon Preview & Upload */}
-          <div className="col-span-1  flex flex-col items-center">
+          <div className="col-span-1 flex flex-col items-center">
             {link.icon && (
               <img
                 src={link.icon}
@@ -55,28 +70,29 @@ const SocialLinksManager = ({ socialLinks = [], onChange }) => {
 
           {/* URL Input */}
           <div className="col-span-2">
-            <div className="grid grid-cols-8 gap-2">
-              <div className="col-span-7">
+            <div className="grid grid-cols-12 gap-2">
+              <div className="col-span-11">
                 <input
                   type="text"
                   placeholder="Enter link (https://...)"
                   value={link.url}
-                  onChange={(e) => handleChange(index, "url", e.target.value)}
-                  className="w-full bg-white border border-gray-300 px-3 py-2 rounded-md"
+                  onChange={(e) => handleUrlChange(index, e.target.value)}
+                  className="w-full bg-[#ebf0f0] border border-gray-300 px-3 py-2 rounded-md"
                 />
                 <input
                   type="file"
                   accept="image/*"
                   onChange={(e) => handleIconUpload(index, e)}
-                  className="input w-full bg-white border border-gray-300 px-2 py-1 rounded-md"
+                  className="input w-full bg-[#ebf0f0] border border-gray-300 px-2 py-1 rounded-md"
                 />
               </div>
+
               {/* Remove Button */}
               <div className="col-span-1 h-full">
                 <button
                   type="button"
                   onClick={() => handleRemove(index)}
-                  className="bg-red-500 text-white px-3 py-2 rounded-md hover:bg-red-700 transition h-[80px]"
+                  className="bg-red-600 text-white px-3 py-2 rounded-md hover:bg-red-700 transition h-[80px]"
                 >
                   ✕
                 </button>
@@ -99,4 +115,4 @@ const SocialLinksManager = ({ socialLinks = [], onChange }) => {
   );
 };
 
-export default SocialLinksManager;
+export default memo(SocialLinksManager);

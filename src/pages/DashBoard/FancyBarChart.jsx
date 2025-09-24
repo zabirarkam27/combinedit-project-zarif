@@ -1,3 +1,4 @@
+import { memo, useMemo } from "react";
 import { Bar } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -18,46 +19,56 @@ ChartJS.register(
   Legend
 );
 
-const FancyBarChart = ({ labels, values }) => {
-  const data = {
-    labels,
-    datasets: [
-      {
-        label: "Sales",
-        data: values,
-        backgroundColor: "rgba(59,130,246,0.8)", // blue-500
-        borderRadius: 20,
-        borderSkipped: false,
-      },
-    ],
-  };
-
-  const options = {
-    responsive: true,
-    plugins: {
-      legend: { display: false },
-    },
-    scales: {
-      x: {
-        ticks: {
-          color: "#374151",
-          callback: (value) => labels[value].substring(0, 3),
-          maxRotation: 0,
-          minRotation: 0,
+const FancyBarChart = ({ labels = [], values = [] }) => {
+  // Memoize data to prevent unnecessary recalculations
+  const data = useMemo(
+    () => ({
+      labels,
+      datasets: [
+        {
+          label: "Sales",
+          data: values,
+          backgroundColor: "rgba(59,130,246,0.8)", // blue-500
+          borderRadius: 20,
+          borderSkipped: false,
         },
-        grid: { display: false },
+      ],
+    }),
+    [labels, values]
+  );
+
+  // Memoize options
+  const options = useMemo(
+    () => ({
+      responsive: true,
+      plugins: {
+        legend: { display: false },
       },
-      y: {
-        beginAtZero: true,
+      scales: {
+        x: {
+          ticks: {
+            color: "#374151",
+            callback: function (value) {
+              return labels[value]?.substring(0, 3) || "";
+            },
+            maxRotation: 0,
+            minRotation: 0,
+          },
+          grid: { display: false },
+        },
+        y: {
+          beginAtZero: true,
+        },
       },
-    },
-  };
+    }),
+    [labels]
+  );
 
   return (
     <div className="w-full max-w-xl mx-auto">
-      <Bar key={JSON.stringify(values)} data={data} options={options} redraw />
+      <Bar data={data} options={options} />
     </div>
   );
 };
 
-export default FancyBarChart;
+export default memo(FancyBarChart);

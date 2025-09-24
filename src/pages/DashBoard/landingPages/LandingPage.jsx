@@ -373,7 +373,7 @@
 
 
 import { useParams } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -391,9 +391,9 @@ const LandingPage = () => {
   const { id } = useParams();
 
   const [product, setProduct] = useState(null);
+  const [page, setPage] = useState(null);
   const [quantity, setQuantity] = useState(1);
   const [loading, setLoading] = useState(true);
-  const [page, setPage] = useState(null);
 
   const [orderInfo, setOrderInfo] = useState({
     name: "",
@@ -403,47 +403,70 @@ const LandingPage = () => {
     shippingCharge: 70,
     paymentMethod: "Cash on Delivery",
   });
-  
-  const increaseQuantity = () => setQuantity((prev) => prev + 1);
-  const decreaseQuantity = () =>
-    setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
-  
-  const productTotal = product ? product.price * quantity : 0;
+
+  // productTotal memoized
+  const productTotal = useMemo(
+    () => (product ? product.price * quantity : 0),
+    [product, quantity]
+  );
+
+  const increaseQuantity = useCallback(
+    () => setQuantity((prev) => prev + 1),
+    []
+  );
+  const decreaseQuantity = useCallback(
+    () => setQuantity((prev) => (prev > 1 ? prev - 1 : 1)),
+    []
+  );
 
   useEffect(() => {
+    const controller = new AbortController();
+
     const fetchData = async () => {
       try {
+        setLoading(true);
+
         // Landing page data আনো
-        const { data: landingPage } = await getLandingPageById(id);
+        const { data: landingPage } = await getLandingPageById(id, {
+          signal: controller.signal,
+        });
         setPage(landingPage);
 
-        // তার সাথে product আনো
+        // Product ফেচ parallel এ
         if (landingPage?.productId) {
-          const { data: productData } = await getProductById(
-            landingPage.productId
-          );
+          const [{ data: productData }] = await Promise.all([
+            getProductById(landingPage.productId, {
+              signal: controller.signal,
+            }),
+          ]);
           setProduct(productData);
         }
       } catch (err) {
-        toast.error("Failed to fetch landing page");
-        console.error(err);
+        if (err.name !== "CanceledError" && err.name !== "AbortError") {
+          toast.error(
+            err?.response?.data?.message || "❌ Failed to fetch landing page"
+          );
+          console.error(err);
+        }
       } finally {
         setLoading(false);
       }
     };
 
     fetchData();
+
+    return () => controller.abort();
   }, [id]);
 
-  const handleInputChange = (e) => {
+  const handleInputChange = useCallback((e) => {
     const { name, value } = e.target;
     setOrderInfo((prev) => ({ ...prev, [name]: value }));
-  };
+  }, []);
 
-  const handleOrderChange = (e) => {
+  const handleOrderChange = useCallback((e) => {
     const { name, value } = e.target;
     setOrderInfo((prev) => ({ ...prev, [name]: value }));
-  };
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -497,7 +520,7 @@ const LandingPage = () => {
   if (loading) {
     return (
       <div className="min-h-screen flex justify-center items-center text-lg">
-        লোড হচ্ছে...
+        ⏳ ডাটা লোড হচ্ছে...
       </div>
     );
   }
@@ -514,7 +537,7 @@ const LandingPage = () => {
           {page.nameEn} || {page.nameBn}
         </h1>
 
-              {product && (
+        {product && (
           <>
             <img
               src={product?.images?.[0]}
@@ -532,6 +555,7 @@ const LandingPage = () => {
           </>
         )}
 
+        {/* Order Form + Summary */}
         <div className="border border-gray-200 rounded-lg ">
           <h3 className="text-center font-semibold py-4 md:text-xl">
             অর্ডার করতে নিচের তথ্যগুলো দিন
@@ -630,8 +654,8 @@ const LandingPage = () => {
               </form>
             </div>
 
+            {/* Order Summary */}
             <div className="space-y-4 px-2 md:px-0 mb-4">
-              {/* Product Display + Quantity */}
               <div className="border border-gray-200 rounded-lg px-4 py-2">
                 {product && (
                   <div className="flex items-center gap-3 justify-center">
@@ -664,34 +688,27 @@ const LandingPage = () => {
                   </div>
                 )}
               </div>
-              {/* Total */}
               <div className="border border-gray-200 rounded-lg space-y-3 px-5 py-4">
                 <div className="text-sm">
-                  {product && (
-                    <div className="total-price flex justify-between text-gray-700">
-                      <p>মোট </p>
-                      <p>৳ {productTotal}</p>
-                    </div>
-                  )}
+                  <div className="flex justify-between text-gray-700">
+                    <p>মোট </p>
+                    <p>৳ {productTotal}</p>
+                  </div>
                 </div>
                 <div className="text-sm">
-                  {product && (
-                    <div className="total-price flex justify-between text-gray-700">
-                      <p>ডেলিভারি চার্জ</p>
-                      <p>৳ {Number(orderInfo.shippingCharge)}</p>
-                    </div>
-                  )}
+                  <div className="flex justify-between text-gray-700">
+                    <p>ডেলিভারি চার্জ</p>
+                    <p>৳ {Number(orderInfo.shippingCharge)}</p>
+                  </div>
                 </div>
                 <div className="border-t-1 border-gray-200"></div>
                 <div>
-                  {product && (
-                    <div className="total-price flex justify-between text-sm">
-                      <p className="font-semibold">সর্বমোট </p>
-                      <p className="font-semibold">
-                        ৳ {productTotal + Number(orderInfo.shippingCharge)}
-                      </p>
-                    </div>
-                  )}
+                  <div className="flex justify-between text-sm">
+                    <p className="font-semibold">সর্বমোট </p>
+                    <p className="font-semibold">
+                      ৳ {productTotal + Number(orderInfo.shippingCharge)}
+                    </p>
+                  </div>
                 </div>
               </div>
               {/* Payment Method */}

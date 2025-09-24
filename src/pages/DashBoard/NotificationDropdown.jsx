@@ -8,27 +8,34 @@ const NotificationDropdown = () => {
   const { orders } = useOrdersContext(); // Context থেকে orders
 
   const [isOpen, setIsOpen] = useState(false);
+
+  // ✅ Seen orders lazy-loaded from localStorage
   const [seenOrders, setSeenOrders] = useState(() => {
-    // Page load-এর সময় localStorage থেকে load করবো
-    const saved = localStorage.getItem("seenOrders");
-    return saved ? JSON.parse(saved) : [];
+    try {
+      const saved = localStorage.getItem("seenOrders");
+      return saved ? JSON.parse(saved) : [];
+    } catch (err) {
+      console.error("Failed to load seenOrders from localStorage:", err);
+      return [];
+    }
   });
+
   const dropdownRef = useRef(null);
 
-  // Pending orders
-  const pendingOrders = useMemo(
-    () =>
-      orders.filter(
-        (order) =>
-          (order.status?.status || order.status || "").toLowerCase() ===
-          "pending"
-      ),
-    [orders]
+  // ✅ Pending orders memoized
+  const pendingOrders = useMemo(() => {
+    return orders.filter((order) => {
+      const status = order?.status?.status || order?.status || "";
+      return status.toLowerCase() === "pending";
+    });
+  }, [orders]);
+
+  const lastTenOrders = useMemo(
+    () => pendingOrders.slice(0, 10),
+    [pendingOrders]
   );
 
-  const lastTenOrders = pendingOrders.slice(0, 10);
-
-  // Route change
+  // ✅ Route change effect: close dropdown on specific paths
   useEffect(() => {
     const path = location.pathname;
     const closePaths = ["/dashboard/pending-orders"];
@@ -36,7 +43,7 @@ const NotificationDropdown = () => {
     if (closePaths.includes(path) || isViewOrderPath) setIsOpen(false);
   }, [location]);
 
-  // Outside click
+  // ✅ Outside click handler
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
@@ -47,15 +54,19 @@ const NotificationDropdown = () => {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // Save seenOrders to localStorage on change
+  // ✅ Save seenOrders to localStorage efficiently
   useEffect(() => {
-    localStorage.setItem("seenOrders", JSON.stringify(seenOrders));
+    try {
+      localStorage.setItem("seenOrders", JSON.stringify(seenOrders));
+    } catch (err) {
+      console.error("Failed to save seenOrders:", err);
+    }
   }, [seenOrders]);
 
-  // Order click
+  // ✅ Order click handler
   const handleOrderClick = (id) => {
     navigate(`/dashboard/view-order/${id}`);
-    if (!seenOrders.includes(id)) setSeenOrders((prev) => [...prev, id]);
+    setSeenOrders((prev) => (prev.includes(id) ? prev : [...prev, id]));
     setIsOpen(false);
   };
 
@@ -84,11 +95,11 @@ const NotificationDropdown = () => {
       {/* Dropdown content */}
       {isOpen && (
         <ul className="menu menu-sm absolute right-0 bg-base-100 rounded-box z-10 mt-3 w-72 p-2 shadow">
-          {pendingOrders.length === 0 ? (
+          {lastTenOrders.length === 0 ? (
             <li className="p-2 text-center text-gray-500">No pending orders</li>
           ) : (
             lastTenOrders.map((o) => {
-              const isSeen = seenOrders.includes(o._id); // Check if seen
+              const isSeen = seenOrders.includes(o._id);
               return (
                 <li key={o._id}>
                   <a

@@ -1,10 +1,14 @@
 import { Link, useNavigate } from "react-router-dom";
 import { auth } from "../../firebase/firebase.config";
 import { signOut } from "firebase/auth";
-import NotificationDropdown from "./NotificationDropdown"; // ইমপোর্ট করো
+import { Suspense, lazy } from "react";
+
+// Lazy load notification dropdown
+const NotificationDropdown = lazy(() => import("./NotificationDropdown"));
 
 const AdminNav = () => {
   const navigate = useNavigate();
+
   const handleLogout = async () => {
     try {
       await signOut(auth);
@@ -15,7 +19,9 @@ const AdminNav = () => {
   };
 
   return (
-    <div className="navbar sticky top-0 z-50 px-3 md:px-8 bg-gray-500 shadow-sm">
+    <div
+      className="navbar sticky top-0 z-50 px-3 md:px-8 shadow-lg bg-gradient-to-r from-[#00ad9c] via-[#3a8881] to-[#009e8e] bg-[length:200%_200%] transition-all duration-500 ease-in-out hover:bg-right"
+    >
       {/* Left section */}
       <div className="flex-1">
         <div className="flex items-center gap-6">
@@ -23,7 +29,7 @@ const AdminNav = () => {
             htmlFor="dashboard-drawer"
             className="btn btn-ghost bg-transparent border-none shadow-none hover:bg-transparent p-0 lg:hidden"
           >
-            <img src="/nav-icon/hamburger.png" alt="" className="w-6" />
+            <img src="/nav-icon/hamburger.png" alt="Menu" className="w-6" />
           </label>
 
           <a
@@ -36,9 +42,10 @@ const AdminNav = () => {
               className="w-10 mx-auto"
             />
           </a>
+
           <a
             href="https://digital-card-5a0e5.web.app/"
-            className="font-bold text-white"
+            className="font-bold text-gray-800"
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -49,8 +56,12 @@ const AdminNav = () => {
 
       {/* Right section */}
       <div className="flex items-center gap-2 md:gap-6">
-        {/* Notification dropdown */}
-        <NotificationDropdown />
+        {/* Notification dropdown with Suspense */}
+        <Suspense
+          fallback={<div className="w-6 h-6 bg-gray-300 rounded-full" />}
+        >
+          <NotificationDropdown />
+        </Suspense>
 
         {/* Admin avatar dropdown */}
         <div className="dropdown dropdown-end">
@@ -63,9 +74,10 @@ const AdminNav = () => {
               <img alt="Admin Avatar" src="/nav-icon/admin.png" />
             </div>
           </div>
+
           <ul
             tabIndex={0}
-            className="menu menu-sm dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow"
+            className="menu menu-sm dropdown-content bg-[#ebf0f0] rounded-box z-50 mt-3 w-52 p-2 shadow"
           >
             <li>
               <Link to="/dashboard/edit-your-profile">Edit Profile</Link>

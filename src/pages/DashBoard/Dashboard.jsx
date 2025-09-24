@@ -32,41 +32,33 @@ const Dashboard = () => {
       <div className="drawer-side mt-15">
         <label htmlFor="dashboard-drawer" className="drawer-overlay"></label>
         <ul className="menu p-4 w-64 min-h-full bg-[#ebf0f0] border-r-white text-base-content relative">
-          <li>
+          <li className="border-b-2 border-gray-300">
             <Link to="/dashboard">Dashboard Home</Link>
           </li>
-          <li>
+          <li className="border-b-2 border-gray-300">
             <Link to="/dashboard/handle-orders">Handle Orders</Link>
           </li>
-          <li>
+          <li className="border-b-2 border-gray-300">
             <Link to="/dashboard/edit-your-products">Edit Products</Link>
           </li>
-          <li>
+          <li className="border-b-2 border-gray-300">
             <Link to="/dashboard/edit-your-profile">Edit Profile</Link>
           </li>
-          <li>
+          <li className="border-b-2 border-gray-300">
             <Link to="/dashboard/marketing-tools">Marketing Tools</Link>
           </li>
-          <li>
-            <div className="collapse collapse-arrow p-0 mb-2">
-              <input type="checkbox" />
-              <div className="collapse-title pl-3">Landing Page</div>
-              <div className="collapse-content flex flex-col gap-4 pl-6">
-                <Link
-                  to="/dashboard/create-landing"
-                  className="hover:underline"
-                >
-                  Create New
-                </Link>
-                <Link
-                  to="/dashboard/existing-pages"
-                  className="hover:underline"
-                >
-                  Existing Pages
-                </Link>
-              </div>
+          <ul className="collapse collapse-arrow p-0 mb-2">
+            <input type="checkbox" />
+            <div className="collapse-title pl-3">Landing Page</div>
+            <div className="collapse-content flex flex-col pl-6 w-full">
+              <li className="border-b-2 border-gray-300 w-full block">
+                <Link to="/dashboard/create-landing">Create New</Link>
+              </li>
+              <li className="border-b-2 border-gray-300 w-full block">
+                <Link to="/dashboard/existing-pages">Existing Pages</Link>
+              </li>
             </div>
-          </li>
+          </ul>
           <li>
             <button
               onClick={handleLogout}

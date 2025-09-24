@@ -1,66 +1,63 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { Link } from "react-router-dom";
-import { getProducts, deleteProduct } from "../../services/products"; 
+import { getProducts, deleteProduct } from "../../services/products";
+
 const AllProductsAdminView = () => {
   const [products, setProducts] = useState([]);
   const [search, setSearch] = useState("");
 
-  // Fetch products on mount
-  useEffect(() => {
-    fetchProducts();
-  }, []);
-
-  const fetchProducts = async () => {
+  // Fetch products
+  const fetchProducts = useCallback(async () => {
     try {
       const res = await getProducts();
       const data = Array.isArray(res.data) ? res.data : [];
-      if (!Array.isArray(res.data)) {
-        console.warn("API did not return an array:", res.data);
-      }
       setProducts(data);
     } catch (err) {
       toast.error("Failed to load products.");
       console.error(err);
-      setProducts([]); // fallback
+      setProducts([]);
     }
-  };
+  }, []);
+
+  useEffect(() => {
+    fetchProducts();
+  }, [fetchProducts]);
 
   const handleDelete = async (id) => {
     if (!confirm("Are you sure you want to delete this product?")) return;
     try {
       await deleteProduct(id);
       toast.success("Product deleted!");
-      fetchProducts(); // Refresh
+      setProducts((prev) => prev.filter((p) => p._id !== id));
     } catch (err) {
       toast.error("Failed to delete product.");
       console.error(err);
     }
   };
 
-  const filteredProducts = Array.isArray(products)
-    ? products
-        .filter(
-          (product) =>
-            product?.name?.toLowerCase()?.includes(search.toLowerCase()) ||
-            false
-        )
-        .sort((a, b) => (a?.name || "").localeCompare(b?.name || ""))
-    : [];
+  // Memoized filtered products
+  const filteredProducts = useMemo(() => {
+    return products
+      .filter((product) =>
+        product?.name?.toLowerCase().includes(search.toLowerCase())
+      )
+      .sort((a, b) => (a?.name || "").localeCompare(b?.name || ""));
+  }, [products, search]);
 
   return (
-    <div className="max-w-7xl w-full mx-auto p-6 mt-8 bg-[#e6e6d7] rounded-xl shadow-md">
-      <h2 className="text-3xl font-bold text-center mb-4 text-primary">
+    <div className="w-full mx-auto p-2 md:p-4 bg-[#ebf0f0] shadow-md min-h-screen">
+      <h1 className="text-lg md:text-3xl font-bold text-black my-10">
         All Products
-      </h2>
+      </h1>
 
       {/* Search Bar */}
       <div className="mb-4 flex justify-end">
         <input
           type="text"
           placeholder="Search by name..."
-          className="input w-full md:w-80 bg-[#f7f7e7] border border-gray-300 focus:border-[#c0c08c] focus:ring focus:ring-[#c0c08c] focus:ring-opacity-30"
+          className="input w-full md:w-80 bg-[#ebf0f0] border border-gray-300"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
@@ -68,9 +65,9 @@ const AllProductsAdminView = () => {
 
       {/* Product Table */}
       <div className="overflow-x-auto">
-        <table className="table table-zebra w-full text-sm">
+        <table className="table table-zebra w-full text-sm bg-[#ebf0f0]">
           <thead>
-            <tr className="bg-[#d6d6c7]">
+            <tr className="bg-[#dce7e7]">
               <th>#</th>
               <th>Name</th>
               <th>Brand</th>
@@ -84,8 +81,8 @@ const AllProductsAdminView = () => {
             {filteredProducts.length ? (
               filteredProducts.map((product, index) => (
                 <tr
-                  key={product._id || product.id}
-                  className="hover:bg-[#f7f7e7]"
+                  key={product._id}
+                  className="hover:bg-[#f7f7f7] transition-colors"
                 >
                   <td>{index + 1}</td>
                   <td>{product.name}</td>
@@ -98,21 +95,21 @@ const AllProductsAdminView = () => {
                       <img
                         src="/edit-icon.png"
                         alt="edit icon"
-                        className="w-5 h-5 cursor-pointer hover:scale-110 transition"
+                        className="w-5 h-5 cursor-pointer hover:scale-110 transition-transform"
                       />
                     </Link>
                     <img
                       src="/delete-icon.png"
                       alt="delete icon"
                       onClick={() => handleDelete(product._id)}
-                      className="w-5 h-4 cursor-pointer hover:scale-110 transition"
+                      className="w-5 h-5 cursor-pointer hover:scale-110 transition-transform"
                     />
                   </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan="7" className="text-center">
+                <td colSpan="7" className="text-center py-4">
                   No products found.
                 </td>
               </tr>
