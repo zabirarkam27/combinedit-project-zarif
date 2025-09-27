@@ -2,6 +2,7 @@
 @plugin "daisyui";
 @import "react-responsive-carousel/lib/styles/carousel.min.css";
 
+
 body {
   @apply font-sans; 
   font-family: 'Montserrat', sans-serif;

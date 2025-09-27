@@ -72,7 +72,7 @@ const NavBar = ({ refs }) => {
   return (
     <div>
       {/* Large screen Navbar */}
-      <div className="hidden md:flex fixed top-0 left-0 w-full shadow-lg bg-gradient-to-r from-[#00ad9c] via-[#3a8881] to-[#009e8e] bg-[length:200%_200%] transition-all duration-500 ease-in-out hover:bg-right backdrop-blur- z-50">
+      <div className="hidden md:flex fixed top-0 left-0 w-full shadow-lg bg-gradient-to-r from-[#00ad9c] via-[#3a8881] to-[#009e8e] bg-[length:200%_200%] transition-all duration-500 ease-in-out hover:bg-right z-50">
         <div
           className={
             design.navbarContainer +
@@ -105,8 +105,9 @@ const NavBar = ({ refs }) => {
             </SlideTabs>
           </div>
 
-          {/* right */}
-          <div className="navbar-end gap-4 pr-4">
+          {/* navbar end */}
+          <div className="navbar-end gap-4 pr-4 flex items-center !justify-center !items-center">
+
             <Link to="/cart" className="relative">
               <img src="/nav-icon/cart.png" alt="cart" className="w-8" />
               {cartItems.length > 0 && (

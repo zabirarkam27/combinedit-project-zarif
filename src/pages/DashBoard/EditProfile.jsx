@@ -5,12 +5,14 @@ import "react-toastify/dist/ReactToastify.css";
 import useImageUpload from "../../hooks/useImageUpload";
 import { updateProfile } from "../../services/profile";
 import SocialLinksManager from "../../components/SocialLinksManager";
-import design from "../../styles/design";
 import debounce from "lodash/debounce";
+import { useProfileSection } from "../../context/ProfileSectionContext";
+
 
 const EditProfile = () => {
   const { profile, loading } = useProfileData();
   const { uploadImage } = useImageUpload();
+  const { showProfileSection, setShowProfileSection } = useProfileSection();
 
   // initialize once when profile loads
   const [formData, setFormData] = useState(null);
@@ -19,7 +21,11 @@ const EditProfile = () => {
     if (profile && !formData) {
       setFormData(profile);
     }
-  }, [profile]);
+  }, [profile, formData]);
+  
+  useEffect(() => {
+    console.log("[EditProfile] showProfileSection =", showProfileSection);
+  }, [showProfileSection]);
 
   // debounced change handler (typing এ কম render হবে)
   const handleChange = useCallback(
@@ -77,8 +83,19 @@ const EditProfile = () => {
 
   return (
     <div className="bg-[#d8e2e2] min-h-screen p-6 mx-auto">
-      <h2 className="text-2xl font-bold mb-8">Edit Profile</h2>
+      <div className="flex flex-col md:flex-row justify-between items-center mb-8">
+        <h2 className="text-2xl font-bold">Edit Profile</h2>
+        {/* Controlled toggle: */}
+        <input
+          type="checkbox"
+          aria-label="Show profile section on home"
+          checked={!!showProfileSection}
+          onChange={(e) => setShowProfileSection(e.target.checked)}
+          className="toggle"
+        />
 
+
+      </div>
       <form
         onSubmit={handleSubmit}
         className="grid grid-cols-1 md:grid-cols-2 gap-4"
@@ -137,6 +154,19 @@ const EditProfile = () => {
             name="description"
             defaultValue={formData.description || ""}
             onChange={(e) => handleChange("description", e.target.value)}
+            rows={4}
+            className="textarea w-full bg-[#ebf0f0] border border-gray-300"
+          />
+        </div>
+        {/* Address */}
+        <div className="form-control md:col-span-2">
+          <label className="label capitalize">
+            <span className="label-text">Address</span>
+          </label>
+          <textarea
+            name="address"
+            defaultValue={formData.address || ""}
+            onChange={(e) => handleChange("address", e.target.value)}
             rows={4}
             className="textarea w-full bg-[#ebf0f0] border border-gray-300"
           />

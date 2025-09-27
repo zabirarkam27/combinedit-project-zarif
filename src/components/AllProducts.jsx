@@ -19,7 +19,7 @@ const ProductCard = React.memo(({ product, onAddToCart, onOrderNow }) => {
           className="group relative overflow-hidden shadow-md hover:shadow-xl transition"
         >
           <img
-            src={product.thumbnail || product.image || product.images}
+            src={product.thumbnail ||product.image || product.images}
             alt={product.name}
             loading="lazy"
             className="w-full h-[200px] sm:h-[200px] md:h-[220px] object-cover lg:h-[240px] transition-transform duration-500 group-hover:scale-105"
@@ -70,8 +70,6 @@ const ProductCard = React.memo(({ product, onAddToCart, onOrderNow }) => {
             )}
           </div>
 
-
-
           {/* Cart & Order now btn */}
           <div className="flex gap-3 items-center">
             <button
@@ -111,7 +109,7 @@ const AllProducts = () => {
     handleOrderChange,
     handleSubmit,
   } = useOrderDrawer(orderFormHook);
-
+  
   const { addToCart } = useCart();
 
   // ✅ Memoized handlers
@@ -149,7 +147,7 @@ const AllProducts = () => {
   }, []);
 
   return (
-    <div className="sm:mb-18 md:mb-0">
+    <div className=" md:mb-0">
       {loading ? (
         <p className="text-center py-6 text-gray-500">Loading products...</p>
       ) : (
@@ -184,6 +182,7 @@ const AllProducts = () => {
         handleSubmit={handleSubmit}
         orderInfo={orderFormHook.orderInfo}
       />
+        <div className="h-3 md:h-6"></div>
     </div>
   );
 };

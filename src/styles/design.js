@@ -8,19 +8,17 @@ const design = {
 
   // Colors
   colors: {
-    primaryGradient: "bg-[#b5e4e0]",
+    primaryGradient: "bg-[#398881]",
     sectionBg: "bg-white",
     cardBg: "bg-white",
     borderColor: "border-gray-300",
-    focusRing:
-      "focus:border-[#c0c08c] focus:ring focus:ring-[#c0c08c] focus:ring-opacity-30",
   },
 
   // Input / Buttons
   inputs:
-    "input w-full bg-[#f7f7e7] border border-gray-300 focus:border-[#c0c08c] focus:ring focus:ring-[#c0c08c] focus:ring-opacity-30",
+    "input w-full bg-white border border-[#398881] px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#398881] focus:ring-opacity-50",
   buttons:
-    "block text-center text-sm md:text-md bg-[#ee9714] text-white font-semibold px-4 py-2 rounded-md hover:bg-black transition cursor-pointer",
+    "block text-center text-sm md:text-md bg-[#398881]  text-white font-semibold px-4 py-2 rounded-md hover:bg-black transition cursor-pointer",
 
   // Responsive containers
   container:

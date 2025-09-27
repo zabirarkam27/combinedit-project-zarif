@@ -73,6 +73,7 @@ export const useOrderDrawer = (orderFormHook) => {
     quantity,
     grandTotal,
     productTotal,
+    shippingCharge: Number(orderInfo.shippingCharge),
     openDrawer,
     closeDrawer,
     increaseQuantity,

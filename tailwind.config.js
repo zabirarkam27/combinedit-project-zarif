@@ -18,13 +18,18 @@ export default {
       },
     },
   },
-  future: {
-    disableColorOpacityUtilitiesByDefault: true,
+  plugins: [require("daisyui")],
+  daisyui: {
+    themes: [
+      {
+        mytheme: {
+          primary: "#009e8e", 
+          secondary: "#f000b8",
+          accent: "#37cdbe",
+          neutral: "#3d4451",
+          "base-100": "#ffffff",
+        },
+      },
+    ],
   },
-  safelist: [
-    {
-      pattern: /bg-\[url\(.*\)\]/,
-    },
-  ],
-  plugins: [],
 };

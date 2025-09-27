@@ -19,3 +19,5 @@ export const updateOrderStatus = (orderId, status = "completed") => {
 export const deleteOrder = (orderId) => {
   return api.delete(`/orders/${orderId}`);
 };
+
+

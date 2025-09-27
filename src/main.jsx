@@ -30,7 +30,7 @@ import InvoicePage from "./pages/DashBoard/InvoicePage";
 import ViewOrder from "./pages/DashBoard/ViewOrder";
 import OrdersProvider from "./context/OrdersProvider";
 
-// 📌 Analytics imports
+// Analytics imports
 import { initGA, trackPage } from "./analytics/ga4";
 import { initMetaPixel, trackMetaEvent } from "./analytics/metaPixel";
 import MarketingTools from "./pages/DashBoard/MarketingTools";
@@ -38,6 +38,9 @@ import api from "./api";
 import LandingPage from "./pages/DashBoard/landingPages/LandingPage";
 import CreateNew from "./pages/DashBoard/landingPages/CreateNew";
 import ExistingPages from "./pages/DashBoard/landingPages/ExistingPages";
+import { ProfileSectionProvider } from "./context/ProfileSectionContext";
+// import { ProfileSectionProvider } from "./context/ProfileSectionContext";
+
 
 // Section refs
 const profileRef = { current: null };
@@ -143,10 +146,12 @@ createRoot(document.getElementById("root")).render(
     <AuthProvider>
       <OrdersProvider>
         <CartProvider>
-          <RouterProvider router={router}>
-            <AnalyticsWrapper /> 
-          </RouterProvider>
-          <ToastContainer position="top-right" autoClose={2000} />
+          <ProfileSectionProvider>
+            <RouterProvider router={router}>
+              <AnalyticsWrapper />
+            </RouterProvider>
+            <ToastContainer position="top-right" autoClose={2000} />
+          </ProfileSectionProvider>
         </CartProvider>
       </OrdersProvider>
     </AuthProvider>
