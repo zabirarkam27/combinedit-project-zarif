@@ -1,32 +1,25 @@
-import { createContext, useEffect, useState, useContext } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
+import useProfileData from "../hooks/useProfileData";
 
-const ProfileSectionContext = createContext();
-
-const getInitial = () => {
-  try {
-    if (typeof window === "undefined") return true;
-    const stored = localStorage.getItem("showProfileSection");
-    return stored !== null ? JSON.parse(stored) : true;
-  } catch (err) {
-    return true;
-  }
-};
+const ProfileSectionContext = createContext({
+  showProfileSection: true,
+  setShowProfileSection: () => {},
+});
 
 export const ProfileSectionProvider = ({ children }) => {
-  const [showProfileSection, setShowProfileSection] = useState(getInitial);
+  const { profile, loading } = useProfileData();
+  const [showProfileSection, setShowProfileSection] = useState(true);
 
-  // Persist to localStorage whenever it changes
+  // backend থেকে মান এলে Context এ বসাও
   useEffect(() => {
-    try {
-      localStorage.setItem("showProfileSection", JSON.stringify(showProfileSection));
-    } catch (err) {
-      console.warn("Could not write showProfileSection to localStorage", err);
+    if (profile && typeof profile.showProfileSection === "boolean") {
+      setShowProfileSection(profile.showProfileSection);
     }
-  }, [showProfileSection]);
+  }, [profile]);
 
   return (
     <ProfileSectionContext.Provider value={{ showProfileSection, setShowProfileSection }}>
-      {children}
+      {!loading && children}
     </ProfileSectionContext.Provider>
   );
 };

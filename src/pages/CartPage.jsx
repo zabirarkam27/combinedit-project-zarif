@@ -93,7 +93,7 @@ const CartPage = () => {
   return (
     <div className="bg-[#a8e2dd] py-6 min-h-screen">
       <div className="max-w-4xl mx-auto p-6 bg-[#8cdad2] pt-6 rounded-xl shadow-md mb-16 md:mb-0 md:mt-16">
-        <h2 className="text-2xl font-bold mb-4 text-center text-black">🛒 Added Items</h2>
+        <h2 className="text-2xl font-bold mb-4 text-center text-black">Added Items</h2>
 
         <div className="space-y-4">
           {cartItems.map((item) => {

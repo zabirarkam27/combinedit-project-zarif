@@ -6,26 +6,26 @@ import useImageUpload from "../../hooks/useImageUpload";
 import { updateProfile } from "../../services/profile";
 import SocialLinksManager from "../../components/SocialLinksManager";
 import debounce from "lodash/debounce";
-import { useProfileSection } from "../../context/ProfileSectionContext";
 
 
 const EditProfile = () => {
   const { profile, loading } = useProfileData();
   const { uploadImage } = useImageUpload();
-  const { showProfileSection, setShowProfileSection } = useProfileSection();
 
   // initialize once when profile loads
   const [formData, setFormData] = useState(null);
 
   useEffect(() => {
-    if (profile && !formData) {
+    if (profile) {
       setFormData(profile);
     }
-  }, [profile, formData]);
-  
-  useEffect(() => {
-    console.log("[EditProfile] showProfileSection =", showProfileSection);
-  }, [showProfileSection]);
+  }, [profile]);
+
+  // Toggle handler
+  const handleToggle = (e) => {
+    const value = e.target.checked;
+    setFormData((prev) => ({ ...prev, showProfileSection: value }));
+  };
 
   // debounced change handler (typing এ কম render হবে)
   const handleChange = useCallback(
@@ -46,19 +46,19 @@ const EditProfile = () => {
   };
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      const res = await updateProfile(formData);
-      if (res.data.modifiedCount > 0 || res.data.acknowledged) {
-        toast.success("Profile updated successfully!");
-      } else {
-        toast.info("No changes detected.");
-      }
-    } catch (err) {
-      toast.error("Failed to update profile.");
-      console.error(err);
+  e.preventDefault();
+  try {
+    const res = await updateProfile(formData); 
+    if (res.data.modifiedCount > 0 || res.data.acknowledged) {
+      toast.success("Profile updated successfully!");
+    } else {
+      toast.info("No changes detected.");
     }
-  };
+  } catch (err) {
+    toast.error("Failed to update profile.");
+    console.error(err);
+  }
+};
 
   if (loading || !formData) {
     return (
@@ -89,11 +89,10 @@ const EditProfile = () => {
         <input
           type="checkbox"
           aria-label="Show profile section on home"
-          checked={!!showProfileSection}
-          onChange={(e) => setShowProfileSection(e.target.checked)}
+          checked={!!formData?.showProfileSection}
+          onChange={handleToggle}
           className="toggle"
         />
-
 
       </div>
       <form

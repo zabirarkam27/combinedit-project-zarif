@@ -11,10 +11,10 @@ const Footer = () => {
                 design.navbarContainer +
                 "flex flex-col mx-auto"
             }>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center justify-center justify-center mb-4">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-center justify-center justify-center mb-4  xs:max-w-screen md:w-[700px] w-full">
                     <a href={profile.emailLink} target="_blank"
                         rel="noopener noreferrer">
-                        <div className="bg-[#3a8881]/60 border border-[#a8e2dd] hover:shadow-xl transition duration-300 hover:-translate-y-1 ease-in-out rounded-lg grid grid-cols-4 gap-2 p-3 w-full h-20">
+                        <div className="bg-[#3a8881]/60 border border-[#a8e2dd] hover:shadow-xl transition duration-300 hover:-translate-y-1 ease-in-out rounded-lg grid grid-cols-5 gap-1 p-1 h-20 items-center">
                             <div className="rounded-lg col-span-1 flex items-center justify-center">
                                 <img
                                     src={profile.emailIcon}
@@ -22,7 +22,7 @@ const Footer = () => {
                                     className="p-1 h-10 w-10 "
                                 />
                             </div>
-                            <div className="text-wite col-span-3">
+                            <div className="text-wite col-span-4">
                                 <h2 className="text-[12px] font-black">Email Us</h2>
                                 <p className="text-[11px] font-semibold break-all">zabirarkam27@gmail.com</p>
                             </div>
@@ -30,7 +30,7 @@ const Footer = () => {
                     </a>
                     <a href={profile.phoneLink} target="_blank"
                         rel="noopener noreferrer">
-                        <div className="bg-[#3a8881]/60 border border-[#a8e2dd] hover:shadow-xl transition duration-300 hover:-translate-y-1 ease-in-out rounded-lg grid grid-cols-4 gap-2 p-3 w-full h-20">
+                        <div className="bg-[#3a8881]/60 border border-[#a8e2dd] hover:shadow-xl transition duration-300 hover:-translate-y-1 ease-in-out rounded-lg grid grid-cols-5 gap-1 p-1 h-20 items-center">
                             <div className="rounded-lg col-span-1 flex items-center justify-center">
                                 <img
                                     src={profile.phoneIcon}
@@ -38,7 +38,7 @@ const Footer = () => {
                                     className="p-2 h-10 w-10 "
                                 />
                             </div>
-                            <div className="text-white col-span-3">
+                            <div className="text-white col-span-4">
                                 <h2 className="text-[12px] font-black">Call Us</h2>
                                 <p className="text-[11px] font-semibold break-all">+8801838600619</p>
                             </div>
@@ -46,15 +46,15 @@ const Footer = () => {
                     </a>
                     <a href="https://maps.app.goo.gl/gNuBTVRF4E49yr7d7" target="_blank"
                         rel="noopener noreferrer">
-                        <div className="bg-[#3a8881]/60 border border-[#a8e2dd] hover:shadow-xl transition duration-300 hover:-translate-y-1 ease-in-out rounded-lg grid grid-cols-4 gap-2 p-3 w-full h-20">
+                        <div className="bg-[#3a8881]/60 border border-[#a8e2dd] hover:shadow-xl transition duration-300 hover:-translate-y-1 ease-in-out rounded-lg grid grid-cols-5 gap-1 p-1 h-20 items-center">
                             <div className="rounded-lg col-span-1 flex items-center justify-center">
                                 <img
                                     src="/footer-location-icon.png"
                                     alt="location icon"
-                                    className="p-2 h-10 w-10 "
+                                    className="px-1 h-8 w-8 "
                                 />
                             </div>
-                            <div className="text-white col-span-3">
+                            <div className="text-white col-span-4">
                                 <h2 className="text-[12px] font-black">Visit Us</h2>
                                 <p className="text-[11px] font-semibold break-all">26, Nayapaltan, Dhaka-1000</p>
                             </div>

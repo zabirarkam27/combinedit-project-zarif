@@ -14,7 +14,7 @@ const Home = ({ refs }) => {
   }, [showProfileSection]);
 
   return (
-    <div className="bg-[#a8e2dd] md:pt-6 ">
+    <div className="bg-[#a8e2dd] pt-6 ">
       <div className={`md:min-h-screen`}>
         <div className="text-center">
           {showProfileSection && (

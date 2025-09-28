@@ -114,11 +114,11 @@ const ProductDetails = () => {
 
       {/* Product Card */}
       <div className="bg-[#a8e2dd] max-w-2xl md:max-w-4xl w-full mx-auto flex rounded-xl items-center justify-center">
-        <div className="bg-white rounded-2xl shadow-2xl">
+        <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full">
           <div className="p-4 md:p-8 flex flex-col md:flex-row gap-6">
             {/* Image Section */}
-            <div className="md:max-w-sm w-full">
-              <div className="overflow-hidden rounded-xl mb-6 relative">
+            <div className="max-w-sm w-full">
+              <div className="overflow-hidden rounded-xl mb-6 relative w-fit mx-auto">
                 <img
                   src={mainImage || product.thumbnail || product.image || product.images?.[0]}
                   alt={product.name}
@@ -191,7 +191,7 @@ const ProductDetails = () => {
 
               {/* Product Details */}
               <div>
-                <div className="flex gap-3 flex-col flex-row justify-between w-full">
+                <div className="flex gap-2 justify-between w-full">
                   <p className="text-[#0c2955] text-base mb-1">
                     <span className="font-semibold">Category:</span> {product.category}
                   </p>
@@ -199,7 +199,7 @@ const ProductDetails = () => {
                     <span className="font-semibold">In Stock:</span> {product.inStock ? "Yes" : "No"}
                   </p>
                 </div>
-                <div className="flex flex-col md:flex-row justify-between w-full">
+                <div className="flex gap-2 justify-between w-full">
                   <p className="text-[#0c2955] text-base mb-1">
                     <span className="font-semibold">Brand:</span> {product.brand}
                   </p>

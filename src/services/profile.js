@@ -1,3 +1,4 @@
+// services/profile.js
 import api from "../api";
 
 // Get Profile
