@@ -165,8 +165,8 @@ const CartPage = () => {
           grandTotal={totalPrice}
           productTotal={totalPrice}
           closeDrawer={() => setIsOpen(false)}
-          increaseQuantity={() => {}}
-          decreaseQuantity={() => {}}
+          increaseQuantity={(id) => updateQuantity(id, cartItems.find(i => i._id === id || i.id === id).quantity + 1)}
+          decreaseQuantity={(id) => updateQuantity(id, Math.max(cartItems.find(i => i._id === id || i.id === id).quantity - 1, 1))}
           handleOrderChange={orderFormHook.handleOrderChange}
           handleSubmit={handleCheckoutSubmit}
           orderInfo={orderFormHook.orderInfo}

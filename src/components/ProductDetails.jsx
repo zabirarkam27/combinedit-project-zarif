@@ -117,7 +117,7 @@ const ProductDetails = () => {
         <div className="bg-white rounded-2xl shadow-2xl">
           <div className="p-4 md:p-8 flex flex-col md:flex-row gap-6">
             {/* Image Section */}
-            <div className="md:max-w-xl w-full">
+            <div className="md:max-w-sm w-full">
               <div className="overflow-hidden rounded-xl mb-6 relative">
                 <img
                   src={mainImage || product.thumbnail || product.image || product.images?.[0]}
@@ -191,7 +191,7 @@ const ProductDetails = () => {
 
               {/* Product Details */}
               <div>
-                <div className="flex flex-col md:flex-row justify-between w-full">
+                <div className="flex gap-3 flex-col flex-row justify-between w-full">
                   <p className="text-[#0c2955] text-base mb-1">
                     <span className="font-semibold">Category:</span> {product.category}
                   </p>
