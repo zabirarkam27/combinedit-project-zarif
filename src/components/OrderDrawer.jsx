@@ -40,9 +40,11 @@ const OrderDrawer = ({
                 >
                   <img
                     src={
-                      Array.isArray(item.images)
+                      Array.isArray(item.images) && item.images.length > 0
                         ? item.images[0]
-                        : item.images || item.thumbnail
+                        : item.image
+                          ? item.image
+                          : item.thumbnail
                     }
                     alt={item.name}
                     className="w-16 h-16 object-cover rounded border border-[#009e8e]"
@@ -257,7 +259,7 @@ const OrderDrawer = ({
             className="bg-gradient-to-r from-[#00ad9c] via-[#3a8881] to-[#009e8e] bg-[length:200%_200%] transition-all duration-500 ease-in-out border-0 hover:bg-right shadow-none hover:scale-105 w-full text-white font-semibold py-2 rounded-md text-sm flex items-center justify-center gap-4 mb-4"
           >
             <p>Confirm Order</p>
-             <p>TK {grandTotal}</p>
+            <p>TK {grandTotal}</p>
           </button>
         </form>
       </div>

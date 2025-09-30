@@ -109,12 +109,12 @@ const ProductDetails = () => {
   }
 
   return (
-    <div className="bg-[#a8e2dd] py-6 md:mt-18">
+    <div className="bg-[#a8e2dd] pb-6 md:py-6 md:mt-18">
       <ToastContainer position="top-right" autoClose={2500} />
 
       {/* Product Card */}
-      <div className="bg-[#a8e2dd] max-w-2xl md:max-w-4xl w-full mx-auto flex rounded-xl items-center justify-center">
-        <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full">
+      <div className="bg-[#a8e2dd] max-w-4xl md:max-w-6xl w-full mx-auto flex rounded-xl items-center justify-center">
+        <div className="bg-white md:rounded-2xl shadow-2xl max-w-4xl w-full">
           <div className="p-4 md:p-8 flex flex-col md:flex-row gap-6">
             {/* Image Section */}
             <div className="max-w-sm w-full">
@@ -203,10 +203,29 @@ const ProductDetails = () => {
                   <p className="text-[#0c2955] text-base mb-1">
                     <span className="font-semibold">Brand:</span> {product.brand}
                   </p>
-                  <p className="text-[#0c2955] text-base mb-1">
-                    <span className="font-semibold">Weight:</span> {product.weight || product.volume}
-                  </p>
+                  {(product.weight || product.volume) && (
+                    <p className="text-[#0c2955] text-base mb-1">
+                      <span className="font-semibold">Weight:</span> {product.weight || product.volume}
+                    </p>
+                  )}
                 </div>
+
+                {/* Color Box Section */}
+                {product.colors && Array.isArray(product.colors) && product.colors.length > 0 && (
+                  <div className="flex gap-2 w-full mt-1 items-center">
+                    <p className="text-[#0c2955] text-base mb-1 font-semibold">Colors:</p>
+                    <div className="flex gap-2 flex-wrap">
+                      {product.colors.map((clr, idx) => (
+                        <div
+                          key={idx}
+                          className="h-6 w-6 rounded border border-gray-300"
+                          style={{ backgroundColor: clr }}
+                        ></div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
               </div>
             </div>
           </div>

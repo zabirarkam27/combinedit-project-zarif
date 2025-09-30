@@ -107,7 +107,7 @@ const CartPage = () => {
               >
                 <div className="flex items-center gap-3">
                   <img
-                    src={Array.isArray(item.images) ? item.images[0] : item.images}
+                    src={item.images?.[0] || item.image || item.thumbnail}
                     alt={item.name}
                     className="w-20 h-20 object-cover rounded border border-[#009e8e]"
                   />

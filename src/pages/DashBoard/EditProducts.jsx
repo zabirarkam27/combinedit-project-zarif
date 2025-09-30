@@ -5,7 +5,7 @@ const EditProducts = () => {
     <div className="bg-[#ebf0f0] min-h-screen p-6 mx-auto">
       <h1 className="text-2xl font-bold mb-8">Edit Products</h1>
       <div className="mx-auto  my-6 rounded-xl flex items-center justify-center flex-col">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 px-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:px-12">
           {/* Add Product */}
           <Link
             to="/dashboard/edit-your-products/add"
