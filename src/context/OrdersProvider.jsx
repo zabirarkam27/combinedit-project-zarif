@@ -3,9 +3,13 @@ import OrdersContext from "./OrdersContext";
 import { useOrders } from "../hooks/useOrders";
 import usePagination from "../hooks/usePagination";
 import api from "../api";
+import { useAuth } from "./AuthContext";
 
 const OrdersProvider = ({ children }) => {
-  const { handleStatusUpdate, handleDeleteOrder } = useOrders();
+  const { handleStatusUpdate, handleDeleteOrder } = useOrders({
+    autoFetch: false,
+  });
+  const { user, loading: authLoading } = useAuth();
   const [orders, setOrders] = useState([]);
 
   const [search, setSearch] = useState("");
@@ -50,27 +54,29 @@ const OrdersProvider = ({ children }) => {
     setFilteredOrders(data);
   }, [orders, activeTab, search, fromDate, toDate]);
 
-  const fetchOrders = async () => {
+  const fetchOrders = useCallback(async () => {
+    if (authLoading || !user) return;
+
     try {
       const res = await api.get("/orders?limit=50");
-      setOrders(res.data);
+      setOrders(Array.isArray(res.data) ? res.data : []);
     } catch (err) {
       console.error("Failed to fetch orders", err);
     }
-  };
+  }, [authLoading, user]);
 
   // Fetch orders
   useEffect(() => {
-    const fetchOrders = async () => {
-      try {
-        const res = await api.get("/orders?limit=50");
-        setOrders(res.data);
-      } catch (err) {
-        console.error("Failed to fetch orders", err);
-      }
-    };
+    if (authLoading || !user) {
+      setOrders([]);
+      return;
+    }
+
     fetchOrders();
-  }, []);
+    const intervalId = window.setInterval(fetchOrders, 30000);
+
+    return () => window.clearInterval(intervalId);
+  }, [authLoading, user, fetchOrders]);
 
   useEffect(() => {
     filterOrders();

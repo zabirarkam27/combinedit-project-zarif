@@ -82,7 +82,7 @@ const EditProfile = () => {
   const contactFields = ["email", "phone", "website", "facebook"];
 
   return (
-    <div className="bg-[#d8e2e2] min-h-screen p-6 mx-auto">
+    <div className="theme-dashboard-bg min-h-screen p-6 mx-auto">
       <div className="flex flex-col md:flex-row justify-between items-center mb-8">
         <h2 className="text-2xl font-bold">Edit Profile</h2>
         {/* Controlled toggle: */}
@@ -223,7 +223,7 @@ const EditProfile = () => {
         <div className="col-span-full md:mt-6 text-center">
           <button
             type="submit"
-            className={`btn text-white font-semibold px-4 py-3 rounded-b-xl bg-gradient-to-r from-[#00ad9c] via-[#3a8881] to-[#009e8e] bg-[length:200%_200%] transition-all duration-500 ease-in-out hover:bg-right mx-auto w-full`}
+            className="btn text-white font-semibold px-4 py-3 rounded-b-xl theme-gradient theme-gradient-hover mx-auto w-full"
           >
             Update Profile
           </button>

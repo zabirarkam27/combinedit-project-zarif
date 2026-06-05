@@ -1,86 +1,85 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { getProducts } from "../services/products";
-import { useCart } from "../context/CartContext";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
+import { useCart } from "../context/CartContext";
 import useOrderForm from "../hooks/useOrderForm";
 import { useOrderDrawer } from "../hooks/useOrderDrawer";
+import { getProducts } from "../services/products";
 import OrderDrawer from "../components/OrderDrawer";
 
-// ✅ Reusable product card (memoized)
 const ProductCard = React.memo(({ product, onAddToCart, onOrderNow }) => {
-  return (
-    <div className="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-lg transition duration-300 flex flex-col relative">
-      <div>
-        <Link
-          to={`/products/${product._id}`}
-          className="group relative overflow-hidden shadow-md hover:shadow-xl transition"
-        >
-          <img
-            src={product.thumbnail ||product.image || product.images}
-            alt={product.name}
-            loading="lazy"
-            className="w-full h-[200px] sm:h-[200px] md:h-[220px] object-cover lg:h-[240px] transition-transform duration-500 group-hover:scale-105"
-          />
-          <div className="bg-gradient-to-r from-[#00ad9c] via-[#3a8881] to-[#009e8e] bg-[length:200%_200%] transition-all duration-500 ease-in-out border-0 hover:bg-right h-1 max-w-full w-10/12 mx-auto"></div>
+  const productImage = Array.isArray(product.images)
+    ? product.images[0]
+    : product.thumbnail || product.image || product.images;
+  const discount =
+    product.discountPrice && product.price
+      ? Math.round(((product.price - product.discountPrice) * 100) / product.price)
+      : 0;
 
-          {product.discountPrice ? (
-            <div
-              className="absolute top-3 right-3 bg-red-600 text-white text-xs h-10 w-10 rounded-full shadow-xl flex items-center justify-center transform hover:scale-125 transition-all duration-300 ease-in-out bg-gradient-to-r from-[#00ad9c] via-[#3a8881] to-[#009e8e] bg-[length:200%_200%] transition-all duration-500 ease-in-out border-0 hover:bg-right shadow-xl">
-              <p className="font-bold">
-                -{Math.round(((product.price - product.discountPrice) * 100) / product.price)}%
-              </p>
-            </div>
-          ):""}
-        </Link>
-      </div>
+  return (
+    <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition duration-300 flex flex-col relative">
+      <Link
+        to={`/products/${product._id}`}
+        className="group relative block overflow-hidden shadow-md hover:shadow-xl transition"
+      >
+        <img
+          src={productImage || "/nav-icon/logo.png"}
+          alt={product.name}
+          loading="lazy"
+          decoding="async"
+          className="w-full h-[200px] sm:h-[200px] md:h-[220px] lg:h-[240px] object-cover transition-transform duration-500 group-hover:scale-105"
+        />
+        <div className="theme-gradient theme-gradient-hover border-0 h-1 max-w-full w-10/12 mx-auto" />
+
+        {discount > 0 && (
+          <div className="absolute top-3 right-3 bg-red-600 text-white text-xs h-10 w-10 rounded-full shadow-xl flex items-center justify-center transform hover:scale-110 transition-all duration-300 ease-in-out">
+            <p className="font-bold">-{discount}%</p>
+          </div>
+        )}
+      </Link>
+
       <div className="p-4 flex-1 flex flex-col justify-between">
         <div className="text-left">
-          <div className="space-y-0 mb-1">
-            <h1 className="text-[#0c2955] md:text-lg font-bold">
-              {product.name.length > 10
-                ? product.name.substring(0, 10) + "..."
-                : product.name}
-            </h1>
-            <p className="text-gray-500 text-xs md:text-sm">{product.category}</p>
-          </div>
+          <h1 className="theme-text md:text-lg font-bold leading-tight">
+            {product.name?.length > 18
+              ? `${product.name.substring(0, 18)}...`
+              : product.name}
+          </h1>
+          <p className="text-gray-500 text-xs md:text-sm">{product.category}</p>
         </div>
 
-        <div>
-          {/* Price & discount price */}
-          <div className="mb-1">
+        <div className="mt-3">
+          <div className="mb-2 min-h-6">
             {product.discountPrice ? (
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-2">
                 <p className="text-gray-500 text-xs md:text-sm line-through">
                   ৳{product.price}
                 </p>
-                <p className="font-semibold text-red-700">
-                  ৳{product.discountPrice}
-                </p>
+                <p className="font-semibold text-red-700">৳{product.discountPrice}</p>
               </div>
             ) : (
-              <div className="flex items-center justify-between">
-                <p className="text-[#03ac9c] text-xs font-semibold">Special Price</p>
-                <p className="font-semibold text-red-700">
-                  ৳{product.price}
-                </p>
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-[var(--theme-accent)] text-xs font-semibold">Special Price</p>
+                <p className="font-semibold text-red-700">৳{product.price}</p>
               </div>
             )}
           </div>
 
-          {/* Cart & Order now btn */}
           <div className="flex gap-3 items-center">
             <button
+              type="button"
               onClick={() => onAddToCart(product)}
-              className="hover:scale-110 hover:cursor-pointer transition-all duration-500 ease-in-out transition"
+              className="shrink-0 hover:scale-110 hover:cursor-pointer transition-all duration-500 ease-in-out"
+              aria-label={`Add ${product.name} to cart`}
             >
-              <img src="/cart-icon.svg" alt="cart icon" className="w-12 p-1" />
+              <img src="/cart-icon.svg" alt="" className="w-12 p-1" />
             </button>
             <button
+              type="button"
               onClick={() => onOrderNow(product)}
-              className="w-6/8 text-xs md:text-sm p-0 btn text-center text-white font-semibold px-4 py-3 rounded-md bg-gradient-to-r from-[#00ad9c] via-[#3a8881] to-[#009e8e] bg-[length:200%_200%] transition-all duration-500 ease-in-out border-0 hover:bg-right shadow-none hover:scale-105 transition"
+              className="flex-1 min-w-0 text-xs md:text-sm btn text-center text-white font-semibold px-4 py-3 rounded-md theme-gradient theme-gradient-hover border-0 shadow-none hover:scale-105"
             >
               Order Now
             </button>
@@ -91,10 +90,22 @@ const ProductCard = React.memo(({ product, onAddToCart, onOrderNow }) => {
   );
 });
 
+ProductCard.displayName = "ProductCard";
+
+const ProductSkeleton = () => (
+  <div className="bg-white rounded-lg shadow-md overflow-hidden animate-pulse">
+    <div className="h-[200px] md:h-[220px] lg:h-[240px] bg-slate-200" />
+    <div className="p-4 space-y-3">
+      <div className="h-4 bg-slate-200 rounded w-3/4" />
+      <div className="h-3 bg-slate-200 rounded w-1/2" />
+      <div className="h-9 bg-slate-200 rounded" />
+    </div>
+  </div>
+);
+
 const AllProducts = () => {
   const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true); // ✅ loading state
-
+  const [loading, setLoading] = useState(true);
   const orderFormHook = useOrderForm();
   const {
     selectedProduct,
@@ -109,14 +120,12 @@ const AllProducts = () => {
     handleOrderChange,
     handleSubmit,
   } = useOrderDrawer(orderFormHook);
-  
   const { addToCart } = useCart();
 
-  // ✅ Memoized handlers
   const handleAddToCart = useCallback(
     (product) => {
       addToCart(product);
-      toast.success(`🛒 ${product.name} added to cart!`);
+      toast.success(`${product.name} added to cart!`);
     },
     [addToCart]
   );
@@ -128,46 +137,56 @@ const AllProducts = () => {
     [openDrawer]
   );
 
-  // ✅ Optimized API fetch
   useEffect(() => {
+    let ignore = false;
+
     const fetchProducts = async () => {
       try {
         const res = await getProducts();
         const data = Array.isArray(res.data) ? res.data : [];
-        setProducts(data);
+        const visibleProducts = data
+          .filter((product) => product.active !== false)
+          .sort((a, b) => Number(Boolean(b.featured)) - Number(Boolean(a.featured)));
+        if (!ignore) setProducts(visibleProducts);
       } catch (err) {
         console.error("Failed to load products:", err);
-        toast.error("❌ Failed to load products. Try again later.");
+        toast.error("Failed to load products. Try again later.");
       } finally {
-        setLoading(false);
+        if (!ignore) setLoading(false);
       }
     };
 
     fetchProducts();
+
+    return () => {
+      ignore = true;
+    };
   }, []);
 
   return (
-    <div className=" md:mb-0">
-      {loading ? (
-        <p className="text-center py-6 text-gray-500">Loading products...</p>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 py-3">
-          {products.length > 0 ? (
-            products.map((product) => (
-              <ProductCard
-                key={product._id || product.id}
-                product={product}
-                onAddToCart={handleAddToCart}
-                onOrderNow={handleOrderNow}
-              />
-            ))
-          ) : (
-            <p className="text-center col-span-2 text-gray-500">
-              No products found.
-            </p>
-          )}
-        </div>
-      )}
+    <div className="md:mb-0">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 py-3">
+        {loading &&
+          Array.from({ length: 8 }).map((_, index) => (
+            <ProductSkeleton key={index} />
+          ))}
+
+        {!loading &&
+          products.map((product) => (
+            <ProductCard
+              key={product._id || product.id}
+              product={product}
+              onAddToCart={handleAddToCart}
+              onOrderNow={handleOrderNow}
+            />
+          ))}
+
+        {!loading && products.length === 0 && (
+          <p className="text-center col-span-full text-gray-500">
+            No products found.
+          </p>
+        )}
+      </div>
 
       <OrderDrawer
         selectedProduct={selectedProduct}
@@ -182,7 +201,7 @@ const AllProducts = () => {
         handleSubmit={handleSubmit}
         orderInfo={orderFormHook.orderInfo}
       />
-        <div className="h-3 md:h-6"></div>
+      <div className="h-3 md:h-6" />
     </div>
   );
 };

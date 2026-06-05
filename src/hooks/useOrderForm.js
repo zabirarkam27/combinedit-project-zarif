@@ -1,17 +1,19 @@
 import { useState } from "react";
 import { createOrder } from "../services/orders";
 
+const defaultOrderInfo = {
+  name: "",
+  phone: "",
+  address: "",
+  note: "",
+  shippingCharge: 70,
+  paymentMethod: "Cash on Delivery",
+  paymentStatus: "pending",
+};
+
 const useOrderForm = (initialProduct = null) => {
   const [selectedProduct, setSelectedProduct] = useState(initialProduct);
-  const [orderInfo, setOrderInfo] = useState({
-    name: "",
-    phone: "",
-    address: "",
-    note: "",
-    shippingCharge: 70,
-    paymentMethod: "Cash on Delivery",
-    paymentStatus: "pending",
-  });
+  const [orderInfo, setOrderInfo] = useState(defaultOrderInfo);
 
   const handleOrderChange = (e) => {
     const { name, value } = e.target;
@@ -23,21 +25,12 @@ const useOrderForm = (initialProduct = null) => {
 
   const handleOrderSubmit = async (payload) => {
     try {
-      console.log("📦 Sending order payload:", payload);
       await createOrder(payload);
-      alert("✅ Order placed successfully!");
-      setOrderInfo({
-        name: "",
-        phone: "",
-        address: "",
-        note: "",
-        shippingCharge: 70,
-        paymentMethod: "Cash on Delivery",
-        paymentStatus: "pending",
-      });
+      alert("Order placed successfully!");
+      setOrderInfo(defaultOrderInfo);
       setSelectedProduct(null);
     } catch (error) {
-      console.error("❌ Failed to submit order:", error);
+      console.error("Failed to submit order:", error);
       alert("Failed to place order. Try again.");
     }
   };

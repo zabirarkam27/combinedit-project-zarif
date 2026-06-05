@@ -16,22 +16,22 @@ const Dashboard = () => {
   };
 
   return (
-    <div className="drawer lg:drawer-open">
+    <div className="drawer lg:drawer-open lg:h-screen lg:overflow-hidden">
       {/* drawer toggle for mobile */}
       <input id="dashboard-drawer" type="checkbox" className="drawer-toggle" />
 
       {/* Main content */}
-      <div className="drawer-content flex flex-col ">
+      <div className="drawer-content flex min-h-screen flex-col lg:h-screen lg:overflow-hidden">
         <AdminNav />
-        <div className="min-h-screen w-full px-6 py-6">
+        <main className="min-h-screen w-full px-3 py-4 md:px-6 md:py-6 lg:flex-1 lg:min-h-0 lg:overflow-y-auto">
           <Outlet /> {/* Child routes render here */}
-        </div>
+        </main>
       </div>
 
       {/* Sidebar */}
-      <div className="drawer-side mt-15">
+      <div className="drawer-side z-40 lg:sticky lg:top-0 lg:h-screen lg:overflow-y-auto">
         <label htmlFor="dashboard-drawer" className="drawer-overlay"></label>
-        <ul className="menu p-4 w-64 min-h-full bg-[#ebf0f0] border-r-white text-base-content relative">
+        <ul className="menu p-4 w-64 min-h-full lg:min-h-screen theme-dashboard-bg border-r-white text-base-content relative">
           <li className="border-b-2 border-gray-300">
             <Link to="/dashboard">Dashboard Home</Link>
           </li>
@@ -46,6 +46,9 @@ const Dashboard = () => {
           </li>
           <li className="border-b-2 border-gray-300">
             <Link to="/dashboard/marketing-tools">Marketing Tools</Link>
+          </li>
+          <li className="border-b-2 border-gray-300">
+            <Link to="/dashboard/settings">Settings</Link>
           </li>
           <ul className="collapse collapse-arrow p-0 mb-2">
             <input type="checkbox" />
@@ -62,7 +65,7 @@ const Dashboard = () => {
           <li>
             <button
               onClick={handleLogout}
-              className="btn text-center text-white font-semibold px-4 py-3 rounded-b-xl bg-gradient-to-r from-[#00ad9c] via-[#3a8881] to-[#009e8e] bg-[length:200%_200%] transition-all duration-500 ease-in-out hover:bg-right"
+              className="btn text-center text-white font-semibold px-4 py-3 rounded-b-xl theme-gradient theme-gradient-hover"
             >
               Logout
             </button>

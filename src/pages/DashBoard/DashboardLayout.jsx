@@ -34,6 +34,7 @@ const DashboardLayout = () => {
     getProcessingOrdersCount,
     getCompletedOrdersCount,
     getCanceledOrdersCount,
+    orders,
   } = useOrdersContext();
 
   // Memoized actions for rendering quick cards
@@ -61,14 +62,14 @@ const DashboardLayout = () => {
         title: "Edit Your Profile",
         bgClass: "bg-[#b5e4e0]",
         gradientClass:
-          "bg-gradient-to-r from-[#00ad9c] via-[#3a8881] to-[#009e8e]",
+          "theme-gradient",
       },
     ],
     []
   );
 
   return (
-    <div className="relative bg-[#ebf0f0] min-h-screen flex flex-col items-center">
+    <div className="relative theme-dashboard-bg min-h-screen flex flex-col items-center">
       <h1 className="text-2xl md:text-4xl font-bold text-center text-black my-10">
         Admin Wallet
       </h1>
@@ -82,6 +83,7 @@ const DashboardLayout = () => {
           getProcessingOrdersCount={getProcessingOrdersCount}
           getCompletedOrdersCount={getCompletedOrdersCount}
           getCanceledOrdersCount={getCanceledOrdersCount}
+          orders={orders}
         />
       </div>
 

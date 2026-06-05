@@ -1,8 +1,12 @@
 import React, { useState, useCallback } from "react";
 import { createLandingPage } from "../../../services/landingPages";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../../context/AuthContext";
 
 const CreateNew = () => {
+  const navigate = useNavigate();
+  const { user, loading: authLoading } = useAuth();
   const [form, setForm] = useState({
     productId: "",
     nameBn: "",
@@ -23,12 +27,31 @@ const CreateNew = () => {
       e.preventDefault();
 
       if (loading) return; // prevent double submit
+      if (authLoading) return;
+
+      if (!user) {
+        toast.error("Please log in before creating a landing page.");
+        return;
+      }
+
+      const payload = {
+        productId: form.productId.trim(),
+        nameBn: form.nameBn.trim(),
+        nameEn: form.nameEn.trim(),
+      };
+
+      if (!payload.productId || !payload.nameBn || !payload.nameEn) {
+        toast.error("Please fill in all fields.");
+        return;
+      }
+
       setLoading(true);
 
       try {
-        await createLandingPage(form);
+        await createLandingPage(payload);
         toast.success("Landing Page created successfully!");
         setForm({ productId: "", nameBn: "", nameEn: "" });
+        navigate("/dashboard/existing-pages");
       } catch (err) {
         toast.error(
           err?.response?.data?.message || "Failed to create Landing Page"
@@ -37,12 +60,12 @@ const CreateNew = () => {
         setLoading(false);
       }
     },
-    [form, loading]
+    [authLoading, form, loading, navigate, user]
   );
 
   return (
-    <div className="w-full mx-auto p-2 md:p-4 bg-[#ebf0f0] shadow-md min-h-screen">
-      <h1 className="text-lg md:text-3xl font-bold text-black my-10">
+    <div className="w-full mx-auto p-2 md:p-4 theme-dashboard-bg shadow-md min-h-screen">
+      <h1 className="text-lg md:text-3xl font-bold theme-text my-10">
         Create Your Landing Page
       </h1>
 
@@ -92,13 +115,16 @@ const CreateNew = () => {
         <div className="px-3">
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || authLoading || !user}
             className={`btn w-full mt-6 text-center text-white font-semibold px-4 py-4 rounded-b-xl
-              bg-gradient-to-r from-[#00ad9c] via-[#3a8881] to-[#009e8e]
-              bg-[length:200%_200%] transition-all duration-500 ease-in-out hover:bg-right
-              ${loading ? "opacity-50 cursor-not-allowed" : ""}`}
+              theme-gradient theme-gradient-hover border-0
+              ${
+                loading || authLoading || !user
+                  ? "opacity-50 cursor-not-allowed"
+                  : ""
+              }`}
           >
-            {loading ? "Creating..." : "Create"}
+            {loading ? "Creating..." : authLoading ? "Checking login..." : "Create"}
           </button>
         </div>
       </form>

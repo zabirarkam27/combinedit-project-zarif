@@ -32,47 +32,10 @@ const NavBar = ({ refs }) => {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // double tap anywhere => toggle navbar
-  useEffect(() => {
-    let lastTapTime = 0;
-
-    const handleDoubleTap = () => {
-      const currentTime = Date.now();
-      const tapInterval = currentTime - lastTapTime;
-
-      if (tapInterval > 0 && tapInterval < 300) {
-        setShowMobileNav((prev) => !prev);
-        lastTapTime = 0;
-      } else {
-        lastTapTime = currentTime;
-      }
-    };
-
-    const handleDoubleClick = () => {
-      setShowMobileNav((prev) => !prev);
-    };
-
-    const isMobile = "ontouchstart" in window || navigator.maxTouchPoints > 0;
-
-    if (isMobile) {
-      document.addEventListener("touchstart", handleDoubleTap);
-    } else {
-      document.addEventListener("dblclick", handleDoubleClick);
-    }
-
-    return () => {
-      if (isMobile) {
-        document.removeEventListener("touchstart", handleDoubleTap);
-      } else {
-        document.removeEventListener("dblclick", handleDoubleClick);
-      }
-    };
-  }, []);
-
   return (
     <div>
       {/* Large screen Navbar */}
-      <div className="hidden md:flex fixed top-0 left-0 w-full shadow-lg bg-gradient-to-r from-[#00ad9c] via-[#3a8881] to-[#009e8e] bg-[length:200%_200%] transition-all duration-500 ease-in-out hover:bg-right z-50">
+      <div className="hidden md:flex fixed top-0 left-0 w-full shadow-lg theme-gradient theme-gradient-hover z-50">
         <div
           className={
             design.navbarContainer +
@@ -81,13 +44,17 @@ const NavBar = ({ refs }) => {
         >
           {/* logo */}
           <div className="navbar-start">
-            <a className="btn btn-ghost bg-transparent border-none shadow-none hover:bg-transparent hover:border-none hover:shadow-none focus:outline-none  active:bg-transparent p-0">
+            <Link
+              to="/"
+              className="btn btn-ghost bg-transparent border-none shadow-none hover:bg-transparent hover:border-none hover:shadow-none focus:outline-none active:bg-transparent p-0"
+              aria-label="Go to home"
+            >
               <img
                 src="/nav-icon/logo.png"
                 alt="Company Logo"
                 className="w-16 mx-auto"
               />
-            </a>
+            </Link>
           </div>
 
           {/* center */}
@@ -106,9 +73,8 @@ const NavBar = ({ refs }) => {
           </div>
 
           {/* navbar end */}
-          <div className="navbar-end gap-4 pr-4 flex items-center !justify-center !items-center">
-
-            <Link to="/cart" className="relative">
+          <div className="navbar-end gap-4 pr-4 flex items-center !justify-center">
+            <Link to="/cart" className="relative" aria-label="Open cart">
               <img src="/nav-icon/cart.png" alt="cart" className="w-8" />
               {cartItems.length > 0 && (
                 <span className="absolute -top-2 -right-2 bg-[#c40000] text-white text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full">
@@ -116,13 +82,13 @@ const NavBar = ({ refs }) => {
                 </span>
               )}
             </Link>
-            <a>
+            <button type="button" aria-label="Track order" className="p-0">
               <img
                 src="/nav-icon/tracking.png"
                 alt="tracking"
                 className="w-8"
               />
-            </a>
+            </button>
           </div>
         </div>
       </div>
@@ -157,7 +123,9 @@ const NavBar = ({ refs }) => {
             </Link>
           </TabItem>
           <TabItem>
-            <img src="/nav-icon/tracking.png" alt="tracking" className="w-8" />
+            <button type="button" aria-label="Track order" className="p-0">
+              <img src="/nav-icon/tracking.png" alt="tracking" className="w-8" />
+            </button>
           </TabItem>
         </SlideTabs>
       </motion.div>
@@ -178,7 +146,7 @@ const SlideTabs = ({ children }) => {
       onMouseLeave={() =>
         setPosition((pv) => ({
           ...pv,
-          opacity: 1,
+          opacity: 0,
         }))
       }
       className="relative mx-auto flex w-fit rounded-full bg-transparent p-2"
@@ -217,10 +185,6 @@ const TabItem = ({ children, setPosition, onClick }) => {
         handleActivate();
         if (onClick) onClick();
       }}
-      onTouchStart={() => {
-        handleActivate();
-        if (onClick) onClick();
-      }}
       className="relative z-10 block cursor-pointer px-4 py-2 text-white font-medium"
     >
       {children}
@@ -236,7 +200,7 @@ const Cursor = ({ position }) => {
         ...position,
       }}
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
-      className="absolute z-0 h-12 md:10 rounded-full bg-black/40"
+      className="absolute z-0 h-12 md:h-10 rounded-full bg-black/40"
     />
   );
 };

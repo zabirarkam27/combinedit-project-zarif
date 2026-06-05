@@ -91,8 +91,8 @@ const CartPage = () => {
   };
 
   return (
-    <div className="bg-[#a8e2dd] py-6 min-h-screen">
-      <div className="max-w-4xl mx-auto p-6 bg-[#8cdad2] pt-6 rounded-xl shadow-md mb-16 md:mb-0 md:mt-16">
+    <div className="theme-page-bg py-6 min-h-screen">
+      <div className="max-w-4xl mx-auto p-6 bg-white/25 pt-6 rounded-xl shadow-md mb-16 md:mb-0 md:mt-16">
         <h2 className="text-2xl font-bold mb-4 text-center text-black">Added Items</h2>
 
         <div className="space-y-4">
@@ -109,7 +109,7 @@ const CartPage = () => {
                   <img
                     src={item.images?.[0] || item.image || item.thumbnail}
                     alt={item.name}
-                    className="w-20 h-20 object-cover rounded border border-[#009e8e]"
+                    className="w-20 h-20 object-cover rounded border theme-border"
                   />
                   <div>
                     <h3 className="font-semibold">{item.name}</h3>
@@ -124,7 +124,7 @@ const CartPage = () => {
                       <span className="font-medium">{item.quantity}</span>
                       <button
                         onClick={() => updateQuantity(itemId, item.quantity + 1)}
-                        className="px-2 py-0.5 rounded font-semibold text-white bg-gradient-to-l from-[#009e8e] to-[#00bfa5] bg-[length:200%_100%] hover:bg-right transition-all duration-500 ease-in-out"
+                        className="px-2 py-0.5 rounded font-semibold text-white theme-gradient theme-gradient-hover"
                       >
                         +
                       </button>
@@ -148,7 +148,7 @@ const CartPage = () => {
           <div className="text-right mt-6">
             <h3 className="text-xl pr-2 md:pr-6 font-bold">Total: BDT {totalPrice}</h3>
             <button
-              className="btn text-center text-white font-semibold px-4 py-3 rounded-b-xl bg-gradient-to-r from-[#00ad9c] via-[#3a8881] to-[#009e8e] bg-[length:200%_200%] transition-all duration-500 ease-in-out hover:bg-right border-0 w-full mt-6 shadow-none"
+              className="btn text-center text-white font-semibold px-4 py-3 rounded-b-xl theme-gradient theme-gradient-hover border-0 w-full mt-6 shadow-none"
               onClick={() => setIsOpen(true)}
               disabled={loading}
             >

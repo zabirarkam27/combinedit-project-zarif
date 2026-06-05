@@ -1,43 +1,57 @@
 import { Link } from "react-router-dom";
 
+const productActions = [
+  {
+    title: "Add New Product",
+    description: "Create a product with images, prices, colors, and stock.",
+    image: "/icons/14.png",
+    to: "/dashboard/edit-your-products/add",
+  },
+  {
+    title: "View All Products",
+    description: "Search, edit, or delete products from the catalog.",
+    image: "/icons/23.png",
+    to: "/dashboard/edit-your-products/all",
+  },
+];
+
 const EditProducts = () => {
   return (
-    <div className="bg-[#ebf0f0] min-h-screen p-6 mx-auto">
-      <h1 className="text-2xl font-bold mb-8">Edit Products</h1>
-      <div className="mx-auto  my-6 rounded-xl flex items-center justify-center flex-col">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:px-12">
-          {/* Add Product */}
-          <Link
-            to="/dashboard/edit-your-products/add"
-            className="group block rounded-xl overflow-hidden hover:shadow-xl transition-shadow duration-200 bg-[#b5e4e0] shadow-lg w-full"
-          >
-            <img
-              src="/icons/14.png"
-              alt="Add Product"
-              className="w-full h-72 object-contain p-3 transform transition-transform duration-500 group-hover:scale-105"
-            />
-            <div className="text-center text-white font-semibold px-4 py-4 rounded-b-xl bg-gradient-to-r from-[#00ad9c] via-[#3a8881] to-[#009e8e] bg-[length:200%_200%] transition-all duration-500 ease-in-out hover:bg-right">
-              Add New Product
-            </div>
-          </Link>
+    <div className="theme-dashboard-bg min-h-screen p-3 md:p-6">
+      <div className="mb-6">
+        <h1 className="text-xl md:text-3xl font-bold theme-text">
+          Edit Products
+        </h1>
+        <p className="text-sm text-gray-600">
+          Choose an action to update your product catalog.
+        </p>
+      </div>
 
-          {/* All Products */}
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        {productActions.map((action) => (
           <Link
-            to="/dashboard/edit-your-products/all"
-            className="group block rounded-xl overflow-hidden hover:shadow-xl transition-shadow duration-300 bg-[#b5e4e0] shadow-lg w-full"
+            key={action.to}
+            to={action.to}
+            className="group overflow-hidden rounded-lg border theme-border bg-white shadow-sm transition hover:-translate-y-0.5 hover:shadow-lg"
           >
-            <div className=" flex justify-center items-center">
+            <div className="theme-page-bg flex h-48 items-center justify-center p-4 md:h-64">
               <img
-                src="/icons/23.png"
-                alt="All Products"
-                className="w-full h-72 object-contain p-3 transform transition-transform duration-500 group-hover:scale-105"
+                src={action.image}
+                alt=""
+                className="h-full w-full object-contain transition duration-300 group-hover:scale-105"
               />
             </div>
-            <div className="text-center text-white font-semibold px-4 py-4 rounded-b-xl bg-gradient-to-r from-[#00ad9c] via-[#3a8881] to-[#009e8e] bg-[length:200%_200%] transition-all duration-500 ease-in-out hover:bg-right">
-              View All Products
+            <div className="p-4">
+              <h2 className="text-lg font-bold theme-text">{action.title}</h2>
+              <p className="mt-1 text-sm text-gray-600">
+                {action.description}
+              </p>
+              <div className="mt-4 btn w-full border-0 text-white theme-gradient theme-gradient-hover">
+                Open
+              </div>
             </div>
           </Link>
-        </div>
+        ))}
       </div>
     </div>
   );

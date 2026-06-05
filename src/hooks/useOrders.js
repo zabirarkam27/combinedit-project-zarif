@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { toast } from "react-toastify";
 import * as XLSX from "xlsx";
-import { getOrders, updateOrderStatus, deleteOrder } from "../services/orders"; // Correct import
+import { getOrders, deleteOrder } from "../services/orders";
 import api from "../api";
+import { useAuth } from "../context/AuthContext";
 
 const normalizeImages = (images) => {
   if (!images) return [];
@@ -12,7 +13,8 @@ const normalizeImages = (images) => {
   return [];
 };
 
-export const useOrders = () => {
+export const useOrders = ({ autoFetch = true } = {}) => {
+  const { user, loading: authLoading } = useAuth();
   const [orders, setOrders] = useState([]);
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState("all");
@@ -20,8 +22,15 @@ export const useOrders = () => {
 
   // Fetch all orders
   useEffect(() => {
+    if (!autoFetch) return;
+
+    if (authLoading || !user) {
+      setOrders([]);
+      return;
+    }
+
     fetchOrders();
-  }, []);
+  }, [autoFetch, authLoading, user]);
 
   const fetchOrders = async () => {
     try {

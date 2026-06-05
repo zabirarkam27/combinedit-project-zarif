@@ -1,133 +1,79 @@
-// main.jsx
-import { StrictMode, useEffect } from "react";
+import { StrictMode, Suspense, lazy, useEffect } from "react";
 import { createRoot } from "react-dom/client";
 import {
   createBrowserRouter,
   RouterProvider,
   useLocation,
 } from "react-router-dom";
+import { ToastContainer } from "react-toastify";
 import "./index.css";
 
 import Home from "./pages/Home";
-import Login from "./pages/Login";
-import Dashboard from "./pages/DashBoard/Dashboard";
-import HandleOrders from "./pages/DashBoard/HandleOrders";
-import EditProducts from "./pages/DashBoard/EditProducts";
-import EditProfile from "./pages/DashBoard/EditProfile";
-import AddProducts from "./pages/DashBoard/AddProducts";
-import AllProductsAdminView from "./pages/DashBoard/AllProductsAdminView";
-import UpdateProduct from "./pages/DashBoard/UpdateProduct";
-import CartPage from "./pages/CartPage";
-import ProductDetails from "./components/ProductDetails";
-
 import { AuthProvider } from "./context/AuthContext";
 import { CartProvider } from "./context/CartContext";
+import OrdersProvider from "./context/OrdersProvider";
+import { ProfileSectionProvider } from "./context/ProfileSectionContext";
 import PrivateRoute from "./components/PrivateRoute";
 import MainLayout from "./Layout/MainLayout";
-import { ToastContainer } from "react-toastify";
-import DashboardLayout from "./pages/DashBoard/DashboardLayout";
-import InvoicePage from "./pages/DashBoard/InvoicePage";
-import ViewOrder from "./pages/DashBoard/ViewOrder";
-import OrdersProvider from "./context/OrdersProvider";
-
-// Analytics imports
 import { initGA, trackPage } from "./analytics/ga4";
 import { initMetaPixel, trackMetaEvent } from "./analytics/metaPixel";
-import MarketingTools from "./pages/DashBoard/MarketingTools";
 import api from "./api";
-import LandingPage from "./pages/DashBoard/landingPages/LandingPage";
-import CreateNew from "./pages/DashBoard/landingPages/CreateNew";
-import ExistingPages from "./pages/DashBoard/landingPages/ExistingPages";
-import { ProfileSectionProvider } from "./context/ProfileSectionContext";
-// import { ProfileSectionProvider } from "./context/ProfileSectionContext";
 
+const Login = lazy(() => import("./pages/Login"));
+const Dashboard = lazy(() => import("./pages/DashBoard/Dashboard"));
+const DashboardLayout = lazy(() => import("./pages/DashBoard/DashboardLayout"));
+const HandleOrders = lazy(() => import("./pages/DashBoard/HandleOrders"));
+const EditProducts = lazy(() => import("./pages/DashBoard/EditProducts"));
+const EditProfile = lazy(() => import("./pages/DashBoard/EditProfile"));
+const AddProducts = lazy(() => import("./pages/DashBoard/AddProducts"));
+const AllProductsAdminView = lazy(() =>
+  import("./pages/DashBoard/AllProductsAdminView")
+);
+const UpdateProduct = lazy(() => import("./pages/DashBoard/UpdateProduct"));
+const CartPage = lazy(() => import("./pages/CartPage"));
+const ProductDetails = lazy(() => import("./components/ProductDetails"));
+const InvoicePage = lazy(() => import("./pages/DashBoard/InvoicePage"));
+const ViewOrder = lazy(() => import("./pages/DashBoard/ViewOrder"));
+const MarketingTools = lazy(() => import("./pages/DashBoard/MarketingTools"));
+const Settings = lazy(() => import("./pages/DashBoard/Settings"));
+const LandingPage = lazy(() =>
+  import("./pages/DashBoard/landingPages/LandingPage")
+);
+const CreateNew = lazy(() => import("./pages/DashBoard/landingPages/CreateNew"));
+const ExistingPages = lazy(() =>
+  import("./pages/DashBoard/landingPages/ExistingPages")
+);
 
-// Section refs
 const profileRef = { current: null };
 const allProductsRef = { current: null };
 const contactRef = { current: null };
 
-// Router setup
-const router = createBrowserRouter([
-  {
-    path: "/",
-    element: (
-      <MainLayout refs={{ profileRef, allProductsRef, contactRef }}>
-        <Home refs={{ profileRef, allProductsRef, contactRef }} />
-      </MainLayout>
-    ),
-  },
-  { path: "/login", element: <Login /> },
-  {
-    path: "/cart",
-    element: (
-      <MainLayout>
-        <CartPage />
-      </MainLayout>
-    ),
-  },
-  {
-    path: "/landing-page/:id",
-    element: (
-      <MainLayout>
-        <LandingPage />
-      </MainLayout>
-    ),
-  },
-  {
-    path: "/products/:id",
-    element: (
-      <MainLayout>
-        <ProductDetails />
-      </MainLayout>
-    ),
-  },
-  {
-    path: "/dashboard",
-    element: (
-      <PrivateRoute>
-        <Dashboard />
-      </PrivateRoute>
-    ),
-    children: [
-      { index: true, element: <DashboardLayout /> },
-      { path: "handle-orders", element: <HandleOrders /> },
-      { path: "all-orders", element: <HandleOrders /> },
-      { path: "pending-orders", element: <HandleOrders /> },
-      { path: "processing-orders", element: <HandleOrders /> },
-      { path: "completed-orders", element: <HandleOrders /> },
-      { path: "canceled-orders", element: <HandleOrders /> },
-      { path: "marketing-tools", element: <MarketingTools /> },
+const PageLoader = () => (
+  <div className="min-h-[60vh] flex items-center justify-center text-[#0c2955]">
+    Loading...
+  </div>
+);
 
-      { path: "edit-your-products", element: <EditProducts /> },
-      { path: "edit-your-profile", element: <EditProfile /> },
-      { path: "edit-your-products/add", element: <AddProducts /> },
-      { path: "edit-your-products/all", element: <AllProductsAdminView /> },
-      { path: "update-product/:id", element: <UpdateProduct /> },
-      { path: "view-order/:id", element: <ViewOrder /> },
-      { path: "invoice/:id", element: <InvoicePage /> },
-      { path: "create-landing", element: <CreateNew /> },
-      { path: "existing-pages", element: <ExistingPages /> },
-    ],
-  },
-]);
+const withSuspense = (element) => (
+  <Suspense fallback={<PageLoader />}>{element}</Suspense>
+);
 
-// Wrapper for tracking page changes
 function AnalyticsWrapper() {
   const location = useLocation();
 
   useEffect(() => {
     const initAnalytics = async () => {
-      const res = await api.get("/marketing-tools");
-      const settings = res.data;
+      try {
+        const res = await api.get("/marketing-tools");
+        const settings = res.data || {};
 
-      if (settings.gaMeasurementId) {
-        initGA(settings.gaMeasurementId);
-      }
-      if (settings.metaPixelId) {
-        initMetaPixel(settings.metaPixelId);
+        if (settings.gaMeasurementId) initGA(settings.gaMeasurementId);
+        if (settings.metaPixelId) initMetaPixel(settings.metaPixelId);
+      } catch (error) {
+        console.warn("Marketing analytics settings could not be loaded.");
       }
     };
+
     initAnalytics();
   }, []);
 
@@ -139,17 +85,95 @@ function AnalyticsWrapper() {
   return null;
 }
 
+function AppFrame({ children }) {
+  return (
+    <>
+      <AnalyticsWrapper />
+      {children}
+    </>
+  );
+}
 
-// Root render
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: (
+      <MainLayout refs={{ profileRef, allProductsRef, contactRef }}>
+        <AppFrame>
+          <Home refs={{ profileRef, allProductsRef, contactRef }} />
+        </AppFrame>
+      </MainLayout>
+    ),
+  },
+  { path: "/login", element: withSuspense(<Login />) },
+  {
+    path: "/cart",
+    element: (
+      <MainLayout>
+        <AppFrame>{withSuspense(<CartPage />)}</AppFrame>
+      </MainLayout>
+    ),
+  },
+  {
+    path: "/landing-page/:id",
+    element: (
+      <MainLayout>
+        <AppFrame>{withSuspense(<LandingPage />)}</AppFrame>
+      </MainLayout>
+    ),
+  },
+  {
+    path: "/products/:id",
+    element: (
+      <MainLayout>
+        <AppFrame>{withSuspense(<ProductDetails />)}</AppFrame>
+      </MainLayout>
+    ),
+  },
+  {
+    path: "/dashboard",
+    element: (
+      <PrivateRoute>
+        {withSuspense(
+          <AppFrame>
+            <Dashboard />
+          </AppFrame>
+        )}
+      </PrivateRoute>
+    ),
+    children: [
+      { index: true, element: withSuspense(<DashboardLayout />) },
+      { path: "handle-orders", element: withSuspense(<HandleOrders />) },
+      { path: "all-orders", element: withSuspense(<HandleOrders />) },
+      { path: "pending-orders", element: withSuspense(<HandleOrders />) },
+      { path: "processing-orders", element: withSuspense(<HandleOrders />) },
+      { path: "completed-orders", element: withSuspense(<HandleOrders />) },
+      { path: "canceled-orders", element: withSuspense(<HandleOrders />) },
+      { path: "marketing-tools", element: withSuspense(<MarketingTools />) },
+      { path: "settings", element: withSuspense(<Settings />) },
+      { path: "edit-your-products", element: withSuspense(<EditProducts />) },
+      { path: "edit-your-profile", element: withSuspense(<EditProfile />) },
+      { path: "edit-your-products/add", element: withSuspense(<AddProducts />) },
+      {
+        path: "edit-your-products/all",
+        element: withSuspense(<AllProductsAdminView />),
+      },
+      { path: "update-product/:id", element: withSuspense(<UpdateProduct />) },
+      { path: "view-order/:id", element: withSuspense(<ViewOrder />) },
+      { path: "invoice/:id", element: withSuspense(<InvoicePage />) },
+      { path: "create-landing", element: withSuspense(<CreateNew />) },
+      { path: "existing-pages", element: withSuspense(<ExistingPages />) },
+    ],
+  },
+]);
+
 createRoot(document.getElementById("root")).render(
   <StrictMode>
     <AuthProvider>
       <OrdersProvider>
         <CartProvider>
           <ProfileSectionProvider>
-            <RouterProvider router={router}>
-              <AnalyticsWrapper />
-            </RouterProvider>
+            <RouterProvider router={router} />
             <ToastContainer position="top-right" autoClose={2000} />
           </ProfileSectionProvider>
         </CartProvider>

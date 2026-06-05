@@ -11,6 +11,7 @@ import { useCart } from "../context/CartContext";
 import Slider from "react-slick";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+import api from "../api";
 
 
 
@@ -28,9 +29,8 @@ const ProductDetails = () => {
   useEffect(() => {
     const fetchPopular = async () => {
       try {
-        const res = await fetch("http://localhost:5000/popular-products");
-        const data = await res.json();
-        setPopularProducts(data);
+        const res = await api.get("/products");
+        setPopularProducts(res.data.slice(0, 8));
       } catch (err) {
         console.error("Failed to fetch popular products:", err);
       }
@@ -102,18 +102,18 @@ const ProductDetails = () => {
 
   if (!product) {
     return (
-      <div className="text-center text-xl text-[#318fe8] font-medium mt-10">
+      <div className="text-center text-xl text-[var(--theme-accent)] font-medium mt-10">
         Loading Product Details...
       </div>
     );
   }
 
   return (
-    <div className="bg-[#a8e2dd] pb-6 md:py-6 md:mt-18">
+    <div className="theme-page-bg pb-6 md:py-6 md:mt-18">
       <ToastContainer position="top-right" autoClose={2500} />
 
       {/* Product Card */}
-      <div className="bg-[#a8e2dd] max-w-4xl md:max-w-6xl w-full mx-auto flex rounded-xl items-center justify-center">
+      <div className="theme-page-bg max-w-4xl md:max-w-6xl w-full mx-auto flex rounded-xl items-center justify-center">
         <div className="bg-white md:rounded-2xl shadow-2xl max-w-4xl w-full">
           <div className="p-4 md:p-8 flex flex-col md:flex-row gap-6">
             {/* Image Section */}
@@ -141,9 +141,9 @@ const ProductDetails = () => {
 
             {/* Product Info Section */}
             <div className="md:max-w-2xl w-full">
-              <h2 className="text-2xl font-semibold text-[#0c2955] mb-2">{product.name}</h2>
+              <h2 className="text-2xl font-semibold theme-text mb-2">{product.name}</h2>
 
-              <p className="text-[#0c2955] text-base mb-1">
+              <p className="theme-text text-base mb-1">
                 <span className="font-semibold">Price:</span>{" "}
                 {product.discountPrice ? (
                   <>
@@ -170,7 +170,7 @@ const ProductDetails = () => {
 
                 <button
                   onClick={() => openDrawer(product)}
-                  className="btn text-center text-white font-semibold px-4 py-3 rounded-md bg-gradient-to-r from-[#00ad9c] via-[#3a8881] to-[#009e8e] bg-[length:200%_200%] transition-all duration-500 ease-in-out hover:bg-right border-0 shadow-none flex-1 max-w-md"
+                  className="btn text-center text-white font-semibold px-4 py-3 rounded-md theme-gradient theme-gradient-hover border-0 shadow-none flex-1 max-w-md"
                 >
                   Order Now
                 </button>
@@ -182,7 +182,7 @@ const ProductDetails = () => {
                   href={profile.phoneLink}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="btn mb-4 text-center text-white font-semibold px-4 py-3 rounded-md bg-gradient-to-r from-[#00ad9c] via-[#3a8881] to-[#009e8e] bg-[length:200%_200%] transition-all duration-500 ease-in-out hover:bg-right border-0 shadow-none w-full flex items-center justify-center gap-2"
+                  className="btn mb-4 text-center text-white font-semibold px-4 py-3 rounded-md theme-gradient theme-gradient-hover border-0 shadow-none w-full flex items-center justify-center gap-2"
                 >
                   <img src={profile.phoneIcon} alt="Phone icon" className="p-2 h-10 w-10" />
                   01838600619
@@ -192,19 +192,19 @@ const ProductDetails = () => {
               {/* Product Details */}
               <div>
                 <div className="flex gap-2 justify-between w-full">
-                  <p className="text-[#0c2955] text-base mb-1">
+                  <p className="theme-text text-base mb-1">
                     <span className="font-semibold">Category:</span> {product.category}
                   </p>
-                  <p className="text-[#0c2955] text-base">
+                  <p className="theme-text text-base">
                     <span className="font-semibold">In Stock:</span> {product.inStock ? "Yes" : "No"}
                   </p>
                 </div>
                 <div className="flex gap-2 justify-between w-full">
-                  <p className="text-[#0c2955] text-base mb-1">
+                  <p className="theme-text text-base mb-1">
                     <span className="font-semibold">Brand:</span> {product.brand}
                   </p>
                   {(product.weight || product.volume) && (
-                    <p className="text-[#0c2955] text-base mb-1">
+                    <p className="theme-text text-base mb-1">
                       <span className="font-semibold">Weight:</span> {product.weight || product.volume}
                     </p>
                   )}
@@ -213,7 +213,7 @@ const ProductDetails = () => {
                 {/* Color Box Section */}
                 {product.colors && Array.isArray(product.colors) && product.colors.length > 0 && (
                   <div className="flex gap-2 w-full mt-1 items-center">
-                    <p className="text-[#0c2955] text-base mb-1 font-semibold">Colors:</p>
+                    <p className="theme-text text-base mb-1 font-semibold">Colors:</p>
                     <div className="flex gap-2 flex-wrap">
                       {product.colors.map((clr, idx) => (
                         <div
@@ -236,11 +236,11 @@ const ProductDetails = () => {
               {product.description}
             </p>
           </div>
-          <div className="w-11/12 h-1 bg-[#39857e] mx-auto my-3"></div>
+          <div className="w-11/12 h-1 theme-secondary-bg mx-auto my-3"></div>
 
           {/* Popular products */}
           <div className="max-w-6xl mx-auto mt-10 mb-16 px-4">
-            <h2 className="text-2xl font-bold text-[#0c2955] mb-6">
+            <h2 className="text-2xl font-bold theme-text mb-6">
               Popular Products
             </h2>
 
@@ -255,15 +255,15 @@ const ProductDetails = () => {
                         className="w-full h-48 object-cover"
                       />
                       <div className="p-4">
-                        <h3 className="text-lg font-semibold text-[#0c2955]">
+                        <h3 className="text-lg font-semibold theme-text">
                           {p.name}
                         </h3>
                         <p className="text-red-600 font-bold">
                           BDT {p.discountPrice || p.price}
                         </p>
                         <button
-                          onClick={() => navigate(`/product/${p._id}`)}
-                          className="mt-3 w-full px-3 py-2 text-white font-semibold rounded-lg bg-gradient-to-r from-[#00ad9c] to-[#009e8e] hover:opacity-90"
+                          onClick={() => navigate(`/products/${p._id}`)}
+                          className="mt-3 w-full px-3 py-2 text-white font-semibold rounded-lg theme-gradient hover:opacity-90"
                         >
                           View Details
                         </button>

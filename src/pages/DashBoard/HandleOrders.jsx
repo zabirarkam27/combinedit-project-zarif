@@ -8,6 +8,7 @@ import OrdersContext from "../../context/OrdersContext";
 import { useOrders } from "../../hooks/useOrders";
 import usePagination from "../../hooks/usePagination";
 import InvoiceDocument from "./InvoiceDocument";
+import { downloadCsv } from "../../utils/csv";
 
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -167,6 +168,31 @@ const HandleOrders = () => {
     XLSX.writeFile(wb, "selected_orders.xlsx");
   };
 
+  const exportFilteredCsv = () => {
+    const exported = downloadCsv(
+      "filtered-orders.csv",
+      filteredOrders.map((order) => ({
+        OrderNumber: order.orderNumber || order.orderId || "",
+        CustomerName: order.name || "",
+        CustomerPhone: order.phone || "",
+        Address: order.address || "",
+        Products: (order.items || [])
+          .map((item) => `${item.productName || item.name || "Product"} (${item.quantity || 1})`)
+          .join(" | "),
+        ShippingCharge: order.shippingCharge ?? "",
+        TotalAmount: order.grandTotal ?? "",
+        PaymentMethod: order.paymentMethod || "",
+        PaymentStatus: order.paymentStatus || "",
+        OrderStatus: getString(order.status),
+        DatePlaced: order.createdAt
+          ? new Date(order.createdAt).toLocaleDateString()
+          : "",
+      }))
+    );
+
+    if (!exported) toast.error("No filtered orders available to export.");
+  };
+
   const handleBulkAction = async (status) => {
     if (!selectedOrders.length) {
       toast.error("⚠️ No orders selected!");
@@ -238,6 +264,10 @@ const HandleOrders = () => {
               Download Excel
             </button>
           )}
+
+          <button className="btn btn-sm btn-primary" onClick={exportFilteredCsv}>
+            Export Filtered CSV
+          </button>
 
           {/* Print button fallback */}
           {selectedOrders.length === 0 && paginatedData.length !== 1 && (

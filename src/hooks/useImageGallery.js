@@ -17,10 +17,13 @@ const useImageGallery = () => {
     if (imageUrl) {
       setImage(imageUrl);
       toast.success("Single image uploaded");
+      setUploading(false);
+      return imageUrl;
     } else {
       toast.error("Single image upload failed");
     }
     setUploading(false);
+    return null;
   };
 
   const addSingleImageFromUrl = (url) => {
@@ -46,10 +49,13 @@ const useImageGallery = () => {
     if (imageUrl) {
       setImages((prev) => [...prev, imageUrl]);
       toast.success("Image uploaded");
+      setUploading(false);
+      return imageUrl;
     } else {
       toast.error("Image upload failed");
     }
     setUploading(false);
+    return null;
   };
   const addImageFromUrl = (url) => {
     if (!url) return;

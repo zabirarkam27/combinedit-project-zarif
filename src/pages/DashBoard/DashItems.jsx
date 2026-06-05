@@ -1,7 +1,8 @@
+import { memo, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { memo, useMemo } from "react";
 
-// Reusable StatCard component
+import { getProducts } from "../../services/products";
+
 const StatCard = memo(
   ({
     to,
@@ -13,22 +14,24 @@ const StatCard = memo(
     gradientFromB,
     gradientToB,
   }) => (
-    <Link to={to || "#"} className="tab-link">
-      <div className="relative rounded-xl overflow-hidden w-full h-50 shadow-lg hover:shadow-2xl hover:scale-105 hover:cursor-pointer transition-transform duration-200 ease-in-out">
-        {/* Horizontal gradient */}
+    <Link
+      to={to}
+      className="block rounded-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[var(--theme-secondary)]"
+      aria-label={`Open ${title1} ${title2}`}
+    >
+      <div className="relative h-50 w-full overflow-hidden rounded-xl shadow-lg transition-transform duration-200 ease-in-out hover:scale-105 hover:shadow-2xl">
         <div
           className="absolute inset-0"
           style={{
             background: `linear-gradient(to right, ${gradientFrom}, ${gradientTo})`,
           }}
-        ></div>
-        {/* Vertical gradient */}
+        />
         <div
           className="absolute inset-0 wave-clip w-full"
           style={{
             background: `linear-gradient(to bottom, ${gradientFromB}, ${gradientToB})`,
           }}
-        ></div>
+        />
         <div className="relative z-10 p-6 text-white">
           <p className="text-sm">{title1}</p>
           <p className="text-sm">{title2}</p>
@@ -39,6 +42,9 @@ const StatCard = memo(
   )
 );
 
+const uniqueCount = (items, key) =>
+  new Set(items.map((item) => item?.[key]).filter(Boolean)).size;
+
 const DashItems = ({
   getOrderCountByStatus,
   getTodaysOrdersCount,
@@ -46,8 +52,30 @@ const DashItems = ({
   getProcessingOrdersCount,
   getCompletedOrdersCount,
   getCanceledOrdersCount,
+  orders = [],
 }) => {
-  // Memoize all counts
+  const [products, setProducts] = useState([]);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchProducts = async () => {
+      try {
+        const res = await getProducts();
+        if (isMounted) setProducts(Array.isArray(res.data) ? res.data : []);
+      } catch (error) {
+        console.error("Error fetching dashboard products:", error);
+        if (isMounted) setProducts([]);
+      }
+    };
+
+    fetchProducts();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
+
   const statsData = useMemo(() => {
     const safeGetCount = (fn, fallback = 0) => {
       try {
@@ -57,6 +85,12 @@ const DashItems = ({
         return fallback;
       }
     };
+
+    const customerCount = new Set(
+      orders
+        .map((order) => order?.phone || order?.email || order?.name)
+        .filter(Boolean)
+    ).size;
 
     return [
       {
@@ -122,7 +156,8 @@ const DashItems = ({
       {
         title1: "Total",
         title2: "Products",
-        count: 11,
+        count: products.length,
+        to: "/dashboard/edit-your-products/all",
         gradientFrom: "#526293",
         gradientTo: "#5c4d8b",
         gradientFromB: "#7581ab",
@@ -131,7 +166,8 @@ const DashItems = ({
       {
         title1: "Total",
         title2: "Categories",
-        count: 11,
+        count: uniqueCount(products, "category"),
+        to: "/dashboard/edit-your-products/all?view=categories",
         gradientFrom: "#02a9af",
         gradientTo: "#00c4ae",
         gradientFromB: "#30c1bd",
@@ -139,8 +175,9 @@ const DashItems = ({
       },
       {
         title1: "Total",
-        title2: "Bands",
-        count: 11,
+        title2: "Brands",
+        count: uniqueCount(products, "brand"),
+        to: "/dashboard/edit-your-products/all?view=brands",
         gradientFrom: "#df635f",
         gradientTo: "#f7a17f",
         gradientFromB: "#e88c85",
@@ -149,26 +186,28 @@ const DashItems = ({
       {
         title1: "Total",
         title2: "Customers",
-        count: 11,
+        count: customerCount,
+        to: "/dashboard/all-orders",
         gradientFrom: "#e06b66",
         gradientTo: "#f8b28e",
         gradientFromB: "#ea9d96",
         gradientToB: "#fdd3b0",
       },
       {
-        title1: "Total",
-        title2: "Out of Stock Products",
-        count: 11,
+        title1: "Out of Stock",
+        title2: "Products",
+        count: products.filter((product) => !product?.inStock).length,
+        to: "/dashboard/edit-your-products/all?stock=out",
         gradientFrom: "#ef4062",
         gradientTo: "#f78271",
         gradientFromB: "#f67285",
         gradientToB: "#fdc093",
       },
-      // ✅ Missing card from your original code restored
       {
-        title1: "Total",
-        title2: "Categories",
-        count: 11,
+        title1: "Landing",
+        title2: "Pages",
+        count: "Open",
+        to: "/dashboard/existing-pages",
         gradientFrom: "#d6ae7b",
         gradientTo: "#e3c295",
         gradientFromB: "#e2c195",
@@ -182,12 +221,14 @@ const DashItems = ({
     getProcessingOrdersCount,
     getCompletedOrdersCount,
     getCanceledOrdersCount,
+    orders,
+    products,
   ]);
 
   return (
     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 mt-8">
-      {statsData.map((stat, index) => (
-        <StatCard key={index} {...stat} />
+      {statsData.map((stat) => (
+        <StatCard key={`${stat.title1}-${stat.title2}`} {...stat} />
       ))}
     </div>
   );

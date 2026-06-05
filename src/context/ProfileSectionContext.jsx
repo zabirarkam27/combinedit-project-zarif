@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import useProfileData from "../hooks/useProfileData";
+import { applyLandingTheme, applyThemeColors } from "../utils/theme";
 
 const ProfileSectionContext = createContext({
   showProfileSection: true,
@@ -14,6 +15,11 @@ export const ProfileSectionProvider = ({ children }) => {
   useEffect(() => {
     if (profile && typeof profile.showProfileSection === "boolean") {
       setShowProfileSection(profile.showProfileSection);
+    }
+
+    if (profile) {
+      applyThemeColors(profile.themeColors);
+      applyLandingTheme(profile.landingTheme);
     }
   }, [profile]);
 

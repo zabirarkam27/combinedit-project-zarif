@@ -8,17 +8,17 @@ const design = {
 
   // Colors
   colors: {
-    primaryGradient: "bg-[#398881]",
+    primaryGradient: "theme-gradient",
     sectionBg: "bg-white",
     cardBg: "bg-white",
-    borderColor: "border-gray-300",
+    borderColor: "theme-border",
   },
 
   // Input / Buttons
   inputs:
-    "input w-full bg-white border border-[#398881] px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#398881] focus:ring-opacity-50",
+    "input w-full bg-white border theme-border px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[var(--theme-secondary)] focus:ring-opacity-50",
   buttons:
-    "block text-center text-sm md:text-md bg-[#398881]  text-white font-semibold px-4 py-2 rounded-md hover:bg-black transition cursor-pointer",
+    "block text-center text-sm md:text-md theme-gradient theme-gradient-hover border-0 text-white font-semibold px-4 py-2 rounded-md hover:opacity-95 transition cursor-pointer",
 
   // Responsive containers
   container:

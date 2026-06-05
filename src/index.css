@@ -2,6 +2,129 @@
 @plugin "daisyui";
 @import "react-responsive-carousel/lib/styles/carousel.min.css";
 
+:root {
+  --theme-primary: #00ad9c;
+  --theme-secondary: #3a8881;
+  --theme-accent: #009e8e;
+  --theme-page-bg: #a8e2dd;
+  --theme-dashboard-bg: #ebf0f0;
+  --theme-text: #0c2955;
+  --theme-gradient: linear-gradient(
+    90deg,
+    var(--theme-primary),
+    var(--theme-secondary),
+    var(--theme-accent)
+  );
+  --landing-page-bg: #fcefdb;
+  --landing-content-bg: #fcf7ef;
+  --landing-section-bg: #ffffff;
+  --landing-card-bg: #ffffff;
+  --landing-border: #d1d5db;
+  --landing-text: #0c2955;
+  --landing-muted-text: #4b5563;
+  --landing-notice-bg: #eb920d;
+  --landing-button-primary: #398881;
+  --landing-button-secondary: #00ad9c;
+  --landing-button-accent: #009e8e;
+  --landing-max-width: 980px;
+  --landing-radius: 8px;
+  --landing-gradient: linear-gradient(
+    90deg,
+    var(--landing-button-primary),
+    var(--landing-button-secondary),
+    var(--landing-button-accent)
+  );
+}
+
+.theme-gradient {
+  background-image: var(--theme-gradient);
+  background-size: 200% 200%;
+}
+
+.theme-gradient-hover {
+  transition: background-position 500ms ease-in-out, opacity 200ms ease;
+}
+
+.theme-gradient-hover:hover {
+  background-position: right center;
+}
+
+.theme-page-bg {
+  background-color: var(--theme-page-bg);
+}
+
+.theme-dashboard-bg {
+  background-color: var(--theme-dashboard-bg);
+}
+
+.theme-text {
+  color: var(--theme-text);
+}
+
+.theme-border {
+  border-color: var(--theme-accent);
+}
+
+.theme-primary-bg {
+  background-color: var(--theme-primary);
+}
+
+.theme-secondary-bg {
+  background-color: var(--theme-secondary);
+}
+
+.landing-page-bg {
+  background-color: var(--landing-page-bg);
+}
+
+.landing-content-bg {
+  background-color: var(--landing-content-bg);
+}
+
+.landing-section-bg {
+  background-color: var(--landing-section-bg);
+}
+
+.landing-card-bg {
+  background-color: color-mix(in srgb, var(--landing-card-bg) 82%, transparent);
+}
+
+.landing-text {
+  color: var(--landing-text);
+}
+
+.landing-muted-text {
+  color: var(--landing-muted-text);
+}
+
+.landing-border {
+  border-color: var(--landing-border);
+}
+
+.landing-notice-bg {
+  background-color: var(--landing-notice-bg);
+}
+
+.landing-gradient {
+  background-image: var(--landing-gradient);
+  background-size: 200% 200%;
+}
+
+.landing-gradient-hover {
+  transition: background-position 500ms ease-in-out, opacity 200ms ease;
+}
+
+.landing-gradient-hover:hover {
+  background-position: right center;
+}
+
+.landing-radius {
+  border-radius: var(--landing-radius);
+}
+
+.landing-max-width {
+  max-width: var(--landing-max-width);
+}
 
 body {
   @apply font-sans; 

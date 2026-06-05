@@ -20,7 +20,7 @@ const AdminNav = () => {
 
   return (
     <div
-      className="navbar sticky top-0 z-50 px-3 md:px-8 shadow-lg bg-gradient-to-r from-[#00ad9c] via-[#3a8881] to-[#009e8e] bg-[length:200%_200%] transition-all duration-500 ease-in-out hover:bg-right"
+      className="navbar sticky top-0 z-[60] min-h-16 shrink-0 px-3 md:px-8 shadow-lg theme-gradient theme-gradient-hover"
     >
       {/* Left section */}
       <div className="flex-1">
@@ -32,25 +32,24 @@ const AdminNav = () => {
             <img src="/nav-icon/hamburger.png" alt="Menu" className="w-6" />
           </label>
 
-          <a
+          <Link
             className="btn btn-ghost bg-transparent border-none shadow-none hover:bg-transparent p-0"
-            href="/dashboard"
+            to="/dashboard"
+            aria-label="Back to dashboard"
           >
             <img
               src="/nav-icon/logo.png"
               alt="Company Logo"
               className="w-10 mx-auto"
             />
-          </a>
+          </Link>
 
-          <a
-            href="https://digital-card-5a0e5.web.app/"
+          <Link
+            to="/"
             className="font-bold text-gray-800"
-            target="_blank"
-            rel="noopener noreferrer"
           >
             View Site
-          </a>
+          </Link>
         </div>
       </div>
 
@@ -83,7 +82,7 @@ const AdminNav = () => {
               <Link to="/dashboard/edit-your-profile">Edit Profile</Link>
             </li>
             <li>
-              <a>Settings</a>
+              <Link to="/dashboard/settings">Settings</Link>
             </li>
             <li>
               <a onClick={handleLogout}>Logout</a>

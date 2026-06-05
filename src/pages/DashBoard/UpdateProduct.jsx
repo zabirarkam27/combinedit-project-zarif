@@ -44,6 +44,8 @@ const UpdateProduct = () => {
     discountPrice: "",
     description: "",
     inStock: true,
+    active: true,
+    featured: false,
     stockQuantity: 0,
     colors: [],
     sizes: [],
@@ -64,22 +66,15 @@ const UpdateProduct = () => {
     setInitialSingleImage,
     images = [],
     addImage,
+    addImageFromUrl: addGalleryImageFromUrl,
     removeImage,
     setInitialImages,
+    uploading,
   } = useImageGallery();
 
   const addImageFromUrl = (url) => {
     if (!url) return;
-    try {
-      addImage(url);
-    } catch (err) {
-      if (typeof addSingleImageFromUrl === "function") {
-        addSingleImageFromUrl(url);
-      } else {
-        console.error("addImage does not accept URL and addSingleImageFromUrl not available.", err);
-        toast.error("Unable to add gallery image from URL (hook limitation).");
-      }
-    }
+    addGalleryImageFromUrl(url);
   };
 
   // ---------- Fetch Product ----------
@@ -97,6 +92,8 @@ const UpdateProduct = () => {
           discountPrice: data.discountPrice || "",
           description: data.description || "",
           inStock: data.inStock ?? true,
+          active: data.active ?? true,
+          featured: data.featured ?? false,
           stockQuantity: data.stockQuantity ?? 0,
           colors: data.colors || [],
           sizes: data.sizes || [],
@@ -162,13 +159,39 @@ const UpdateProduct = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (submitting || uploading) return;
+
+    const price = Number(product.price);
+    const discountPrice = product.discountPrice
+      ? Number(product.discountPrice)
+      : null;
+
+    if (!Number.isFinite(price) || price <= 0) {
+      toast.error("Please enter a valid product price.");
+      return;
+    }
+
+    if (discountPrice !== null && (!Number.isFinite(discountPrice) || discountPrice < 0)) {
+      toast.error("Please enter a valid discount price.");
+      return;
+    }
+
+    if (discountPrice !== null && discountPrice >= price) {
+      toast.error("Discount price should be lower than regular price.");
+      return;
+    }
+
     setSubmitting(true);
     try {
       const updatedProduct = {
         ...product,
         volume: getCombinedVolume(),
-        price: product.price ? parseFloat(product.price) : 0,
-        discountPrice: product.discountPrice ? parseFloat(product.discountPrice) : 0,
+        name: product.name.trim(),
+        category: product.category.trim(),
+        brand: product.brand.trim(),
+        description: product.description.trim(),
+        price,
+        discountPrice,
         thumbnail,
         images,
       };
@@ -188,14 +211,28 @@ const UpdateProduct = () => {
     }
   };
 
-  if (loading) return <p className="text-center mt-8">Loading product...</p>;
+  if (loading) {
+    return (
+      <div className="theme-dashboard-bg min-h-screen p-6">
+        <div className="mx-auto max-w-5xl space-y-4">
+          <div className="h-8 w-52 animate-pulse rounded bg-gray-300" />
+          <div className="h-96 animate-pulse rounded-lg bg-white/70" />
+        </div>
+      </div>
+    );
+  }
 
   // ---------- JSX ----------
   return (
-    <div className="w-full mx-auto p-4 md:p-6 lg:p-10 bg-[#f7fafa] shadow-lg rounded-xl min-h-screen">
-      <h1 className="text-2xl md:text-3xl font-extrabold text-gray-800 mb-8 text-center">Update Product</h1>
+    <div className="w-full mx-auto p-3 md:p-6 theme-dashboard-bg min-h-screen">
+      <div className="mb-6">
+        <h1 className="text-xl md:text-3xl font-bold theme-text">Update Product</h1>
+        <p className="text-sm text-gray-600">
+          Edit product details, media, stock, colors, and available sizes.
+        </p>
+      </div>
 
-      <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 rounded-lg border theme-border bg-white/80 p-4 shadow-sm">
         {/* Basic Fields */}
         {["name", "category", "brand", "price", "discountPrice"].map((field) => (
           <div key={field} className="form-control flex flex-col gap-2">
@@ -313,9 +350,26 @@ const UpdateProduct = () => {
 
           {/* In Stock + Stock Quantity */}
           <div className="form-control md:col-span-2 lg:col-span-3 mt-2 gap-2">
-            <div className="flex items-center gap-2">
-              <input type="checkbox" name="inStock" checked={product.inStock} onChange={handleChange} className="checkbox" />
-              <label className="label-text font-medium">In Stock</label>
+            <div className="grid gap-3 md:grid-cols-3">
+              {[
+                { name: "inStock", label: "In Stock" },
+                { name: "active", label: "Active / Visible" },
+                { name: "featured", label: "Featured Product" },
+              ].map((field) => (
+                <label
+                  key={field.name}
+                  className="flex items-center gap-2 rounded-lg border theme-border bg-white p-3"
+                >
+                  <input
+                    type="checkbox"
+                    name={field.name}
+                    checked={Boolean(product[field.name])}
+                    onChange={handleChange}
+                    className="checkbox checked:bg-[var(--theme-secondary)] checked:border-[var(--theme-secondary)]"
+                  />
+                  <span className="label-text font-medium">{field.label}</span>
+                </label>
+              ))}
             </div>
 
             <div className="flex items-center gap-2 mt-2">
@@ -343,9 +397,22 @@ const UpdateProduct = () => {
                 <button type="button" onClick={() => setThumbnail(null)} className="absolute top-[-6px] right-[-6px] bg-red-500 text-white rounded-full p-1 text-xs">✕</button>
               </div>
             ) : (
-              <label className="w-24 h-24 flex items-center justify-center border border-dashed border-gray-400 rounded cursor-pointer hover:bg-gray-50">
-                <span className="text-3xl text-gray-400">+</span>
-                <input type="file" accept="image/*" onChange={(e) => { const f = e.target.files?.[0]; if (f) { addSingleImage(f); setThumbnail(URL.createObjectURL(f)); } }} className="hidden" />
+            <label className="w-24 h-24 flex items-center justify-center border border-dashed theme-border rounded cursor-pointer hover:bg-gray-50">
+                <span className="text-3xl text-gray-400">{uploading ? "..." : "+"}</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  disabled={uploading}
+                  onChange={async (e) => {
+                    const file = e.target.files?.[0];
+                    if (file) {
+                      const uploadedUrl = await addSingleImage(file);
+                      if (uploadedUrl) setThumbnail(uploadedUrl);
+                    }
+                    e.target.value = "";
+                  }}
+                  className="hidden"
+                />
               </label>
             )}
 
@@ -394,9 +461,26 @@ const UpdateProduct = () => {
 
               <label className="w-28 h-28 flex items-center justify-center border border-dashed border-gray-400 rounded cursor-pointer hover:bg-gray-50">
                 <span className="text-3xl text-gray-400">+</span>
-                <input type="file" accept="image/*" multiple onChange={(e) => { const files = Array.from(e.target.files || []); files.forEach((file) => addImage(file)); }} className="hidden" />
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  disabled={uploading}
+                  onChange={async (e) => {
+                    const files = Array.from(e.target.files || []);
+                    for (const file of files) {
+                      await addImage(file);
+                    }
+                    e.target.value = "";
+                  }}
+                  className="hidden"
+                />
               </label>
             </div>
+
+            {uploading && (
+              <p className="text-sm text-gray-500">Uploading image...</p>
+            )}
 
             <div className="flex items-center gap-2 mt-2">
               <input type="text" value={galleryUrlInput} onChange={(e) => setGalleryUrlInput(e.target.value)} placeholder="Enter gallery image URL" className="input input-bordered w-full bg-white shadow-sm" />
@@ -417,8 +501,8 @@ const UpdateProduct = () => {
 
         {/* Submit */}
         <div className="col-span-full mt-6">
-          <button type="submit" className="w-full btn text-white font-semibold px-4 py-3 rounded-lg bg-gradient-to-r from-[#00ad9c] via-[#3a8881] to-[#009e8e] transition-all duration-500 hover:opacity-90 shadow-md" disabled={submitting}>
-            {submitting ? "Updating..." : "Update Product"}
+          <button type="submit" className="w-full btn text-white font-semibold px-4 py-3 rounded-lg border-0 theme-gradient theme-gradient-hover shadow-md disabled:opacity-60" disabled={submitting || uploading}>
+            {submitting ? "Updating..." : uploading ? "Uploading image..." : "Update Product"}
           </button>
         </div>
       </form>

@@ -53,7 +53,9 @@ const Login = () => {
       Swal.fire({
         icon: "error",
         title: "Login Error",
-        text: "Something went wrong. Try again!",
+        text: error?.code
+          ? `${error.code}: ${error.message}`
+          : "Something went wrong. Try again!",
       });
     }
   };
@@ -79,7 +81,9 @@ const Login = () => {
       Swal.fire({
         icon: "error",
         title: "Login Failed",
-        text: "Invalid email or password.",
+        text: error?.code
+          ? `${error.code}: ${error.message}`
+          : "Invalid email or password.",
       });
     }
   };
@@ -124,7 +128,7 @@ const Login = () => {
   };
 
   return (
-    <div className="bg-[#a8e2dd] py-6 min-h-screen">
+    <div className="theme-page-bg py-6 min-h-screen">
       <div className="min-h-[calc(100vh-48px)] max-w-2xl mx-auto flex rounded-xl items-center justify-center">
         <div className="bg-white/20 p-8 md:p-10 rounded-xl shadow-2xl max-w-sm w-11/12 text-center">
           <h2 className="text-3xl font-bold mb-6">Admin Login</h2>
@@ -132,7 +136,7 @@ const Login = () => {
           {/* Google Login Button */}
           <button
             onClick={handleGoogleLogin}
-            className="btn text-center text-white font-semibold px-4 py-3 rounded-t-xl bg-gradient-to-r from-[#00ad9c] via-[#3a8881] to-[#009e8e] bg-[length:200%_200%] transition-all duration-500 ease-in-out hover:bg-right w-full flex items-center justify-center gap-2"
+            className="btn text-center text-white font-semibold px-4 py-3 rounded-t-xl theme-gradient theme-gradient-hover w-full flex items-center justify-center gap-2"
           >
             <img src="/google-icon.png" alt="Google" className="w-5 h-5" />
             Login with Google
@@ -151,7 +155,7 @@ const Login = () => {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full bg-white px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#398881] focus:ring-opacity-50 border border-[#398881] rounded-md placeholder:text-sm"
+              className="w-full bg-white px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[var(--theme-secondary)] focus:ring-opacity-50 border theme-border rounded-md placeholder:text-sm"
             />
 
             <div className="relative">
@@ -161,7 +165,7 @@ const Login = () => {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full bg-white px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[#398881] focus:ring-opacity-50 border border-[#398881] rounded-md placeholder:text-sm"
+                className="w-full bg-white px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[var(--theme-secondary)] focus:ring-opacity-50 border theme-border rounded-md placeholder:text-sm"
               />
               <img
                 src={showPassword ? "/eye-closed.png" : "/eye-open.png"}
@@ -182,7 +186,7 @@ const Login = () => {
 
             <button
               type="submit"
-              className="btn text-center text-white font-semibold px-4 py-3 rounded-b-xl bg-gradient-to-r from-[#00ad9c] via-[#3a8881] to-[#009e8e] bg-[length:200%_200%] transition-all duration-500 ease-in-out hover:bg-right w-full"
+              className="btn text-center text-white font-semibold px-4 py-3 rounded-b-xl theme-gradient theme-gradient-hover w-full"
             >
               Login with Email
             </button>
