@@ -1,12 +1,97 @@
-# React + Vite
+# Combined IT Digital Card Frontend
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+React + Vite frontend for the Combined IT digital business card and product dashboard.
 
-Currently, two official plugins are available:
+## Requirements
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- Node.js 20 or newer
+- npm
+- Firebase project credentials
+- Running backend API, either locally or deployed
 
-## Expanding the ESLint configuration
+## Local Setup
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+1. Clone the repository.
+
+```bash
+git clone https://github.com/zabirarkam27/combinedit-project-zarif.git
+cd combinedit-project-zarif
+```
+
+2. Install dependencies.
+
+```bash
+npm install
+```
+
+3. Create the local environment file.
+
+```bash
+cp .env.example .env
+```
+
+On Windows PowerShell:
+
+```powershell
+Copy-Item .env.example .env
+```
+
+4. Fill in `.env`.
+
+```env
+VITE_FIREBASE_API_KEY=
+VITE_FIREBASE_AUTH_DOMAIN=
+VITE_FIREBASE_PROJECT_ID=
+VITE_FIREBASE_STORAGE_BUCKET=
+VITE_FIREBASE_MESSAGING_SENDER_ID=
+VITE_FIREBASE_APP_ID=
+
+VITE_CLIENT_URL=http://localhost:5173
+VITE_API_BASE_URL=http://localhost:5000
+
+VITE_ADMIN_GMAIL=
+VITE_ADMIN_EMAIL=
+```
+
+5. Start the dev server.
+
+```bash
+npm run dev
+```
+
+The frontend should run at:
+
+```text
+http://localhost:5173
+```
+
+## Backend
+
+For local development, run the backend from:
+
+```text
+https://github.com/zabirarkam27/combinedit-project-zarif-server
+```
+
+Set `VITE_API_BASE_URL=http://localhost:5000` when using the local backend.
+
+For production, set `VITE_API_BASE_URL` to the deployed backend URL.
+
+## Scripts
+
+```bash
+npm run dev
+npm run build
+npm run preview
+npm run lint
+```
+
+## Deployment
+
+This project is configured for Vercel as a single-page app. The `vercel.json` rewrite sends all routes to `index.html`, so dashboard routes work after refresh.
+
+## Security Notes
+
+- Do not commit `.env`.
+- Use `.env.example` only for placeholder keys.
+- Rotate credentials if a real secret was ever committed to Git history.
