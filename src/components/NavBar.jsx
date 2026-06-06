@@ -1,16 +1,24 @@
-import { useRef, useState, useEffect } from "react";
+import { useRef, useState } from "react";
 import { motion } from "framer-motion";
 // import useProfileData from "../hooks/useProfileData";
 import design from "../styles/design";
 import React from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { useCart } from "../context/CartContext";
+import {
+  Grid2X2,
+  Home,
+  List,
+  MessageCircle,
+  ShoppingBag,
+} from "lucide-react";
 
 const NavBar = ({ refs }) => {
   const { profileRef, allProductsRef, contactRef } = refs || {};
   // const { profile} = useProfileData();
-  const [showMobileNav, setShowMobileNav] = useState(false);
+  const [activeMobileItem, setActiveMobileItem] = useState("home");
   const { cartItems } = useCart();
+  const location = useLocation();
 
   const scrollToSection = (ref) => {
     if (ref?.current) {
@@ -18,19 +26,13 @@ const NavBar = ({ refs }) => {
     }
   };
 
-  // scroll listener
-  useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 50) {
-        setShowMobileNav(true);
-      } else {
-        setShowMobileNav(false);
-      }
-    };
+  const handleMobileAction = (item, action) => {
+    setActiveMobileItem(item);
+    if (action) action();
+  };
 
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+  const currentMobileItem =
+    location.pathname === "/cart" ? "cart" : activeMobileItem;
 
   return (
     <div>
@@ -95,43 +97,100 @@ const NavBar = ({ refs }) => {
 
       {/* Mobile Bottom Navbar */}
       <motion.div
-        initial={{ y: 80, opacity: 0 }}
-        animate={showMobileNav ? { y: 0, opacity: 1 } : { y: 80, opacity: 0 }}
-        transition={{ duration: 0.4, ease: "easeInOut" }}
-        className="block md:hidden fixed bottom-0 left-0 w-full bg-gray-900/40 backdrop-blur-md border-t border-white/20 py-2 shadow-lg z-50"
+        initial={{ x: "-50%", y: 96, opacity: 0, scale: 0.96 }}
+        animate={{ x: "-50%", y: 0, opacity: 1, scale: 1 }}
+        transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+        className="mobile-nav-wrap md:hidden"
       >
-        <SlideTabs>
-          <TabItem onClick={() => scrollToSection(allProductsRef)}>
-            <img src="/nav-icon/hamburger.png" alt="Details" className="w-8" />
-          </TabItem>
-          <TabItem onClick={() => scrollToSection(contactRef)}>
-            <img src="/nav-icon/message.png" alt="message" className="w-8" />
-          </TabItem>
-          <TabItem onClick={() => scrollToSection(profileRef)}>
-            <Link to="/">
-              <img src="/nav-icon/home.png" alt="home" className="w-8" />
-            </Link>
-          </TabItem>
-          <TabItem>
-            <Link to="/cart" className="relative">
-              <img src="/nav-icon/cart.png" alt="cart" className="w-8" />
+        <nav className="mobile-nav-shell" aria-label="Mobile primary navigation">
+          <MobileNavButton
+            label="Profile"
+            icon={Grid2X2}
+            active={currentMobileItem === "profile"}
+            onClick={() =>
+              handleMobileAction("profile", () => scrollToSection(profileRef))
+            }
+          />
+          <MobileNavButton
+            label="Products"
+            icon={List}
+            active={currentMobileItem === "products"}
+            onClick={() =>
+              handleMobileAction("products", () => scrollToSection(allProductsRef))
+            }
+          />
+
+          <Link
+            to="/"
+            aria-label="Home"
+            onClick={() =>
+              handleMobileAction("home", () => scrollToSection(profileRef))
+            }
+            className="mobile-nav-center"
+          >
+            <motion.span
+              animate={{
+                rotate: currentMobileItem === "home" ? 0 : -18,
+                scale: currentMobileItem === "home" ? 1.05 : 1,
+              }}
+              whileTap={{ scale: 0.9, rotate: 12 }}
+              transition={{ type: "spring", stiffness: 420, damping: 24 }}
+              className="mobile-nav-center-inner"
+            >
+              <Home size={24} strokeWidth={2.4} />
+            </motion.span>
+          </Link>
+
+          <Link
+            to="/cart"
+            aria-label="Cart"
+            onClick={() => handleMobileAction("cart")}
+            className={`mobile-nav-item ${currentMobileItem === "cart" ? "is-active" : ""}`}
+          >
+            <motion.span
+              whileTap={{ y: -3, scale: 0.92 }}
+              transition={{ type: "spring", stiffness: 420, damping: 24 }}
+              className="mobile-nav-icon-wrap"
+            >
+              <ShoppingBag size={25} strokeWidth={2.1} />
               {cartItems.length > 0 && (
-                <span className="absolute -top-2 -right-2 bg-[#ee9714] text-white text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full">
-                  {cartItems.length}
-                </span>
+                <span className="mobile-nav-badge">{cartItems.length}</span>
               )}
-            </Link>
-          </TabItem>
-          <TabItem>
-            <button type="button" aria-label="Track order" className="p-0">
-              <img src="/nav-icon/tracking.png" alt="tracking" className="w-8" />
-            </button>
-          </TabItem>
-        </SlideTabs>
+            </motion.span>
+            <span className="sr-only">Cart</span>
+          </Link>
+          <MobileNavButton
+            label="Contact"
+            icon={MessageCircle}
+            active={currentMobileItem === "contact"}
+            onClick={() =>
+              handleMobileAction("contact", () => scrollToSection(contactRef))
+            }
+          />
+        </nav>
       </motion.div>
     </div>
   );
 };
+
+const MobileNavButton = ({ label, icon: Icon, active, onClick }) => (
+  <button
+    type="button"
+    aria-label={label}
+    aria-current={active ? "page" : undefined}
+    onClick={onClick}
+    className={`mobile-nav-item ${active ? "is-active" : ""}`}
+  >
+    <motion.span
+      whileTap={{ y: -3, scale: 0.92 }}
+      transition={{ type: "spring", stiffness: 420, damping: 24 }}
+      className="mobile-nav-icon-wrap"
+    >
+      <Icon size={25} strokeWidth={2.1} />
+    </motion.span>
+    <span className="sr-only">{label}</span>
+  </button>
+);
 
 // SlideTabs wrapper
 const SlideTabs = ({ children }) => {
