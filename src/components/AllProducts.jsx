@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { Plus } from "lucide-react";
 import { toast } from "react-toastify";
@@ -117,7 +117,8 @@ const ProductSkeleton = () => (
 const AllProducts = ({ pageSize = 6, initialProducts = null }) => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
+  const [visibleCount, setVisibleCount] = useState(pageSize);
+  const loadMoreRef = useRef(null);
   const orderFormHook = useOrderForm();
   const {
     selectedProduct,
@@ -179,17 +180,37 @@ const AllProducts = ({ pageSize = 6, initialProducts = null }) => {
     return () => {
       ignore = true;
     };
-  }, []);
+  }, [initialProducts]);
 
   useEffect(() => {
-    setCurrentPage(1);
+    setVisibleCount(pageSize);
   }, [products.length, pageSize]);
 
-  const totalPages = Math.max(1, Math.ceil(products.length / pageSize));
-  const paginatedProducts = useMemo(() => {
-    const start = (currentPage - 1) * pageSize;
-    return products.slice(start, start + pageSize);
-  }, [currentPage, pageSize, products]);
+  useEffect(() => {
+    if (loading || visibleCount >= products.length) return undefined;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          setVisibleCount((count) => Math.min(products.length, count + pageSize));
+        }
+      },
+      { rootMargin: "320px 0px" }
+    );
+
+    const node = loadMoreRef.current;
+    if (node) observer.observe(node);
+
+    return () => {
+      if (node) observer.unobserve(node);
+      observer.disconnect();
+    };
+  }, [loading, pageSize, products.length, visibleCount]);
+
+  const visibleProducts = useMemo(
+    () => products.slice(0, visibleCount),
+    [products, visibleCount]
+  );
 
   return (
     <div className="md:mb-0">
@@ -200,7 +221,7 @@ const AllProducts = ({ pageSize = 6, initialProducts = null }) => {
           ))}
 
         {!loading &&
-          paginatedProducts.map((product) => (
+          visibleProducts.map((product) => (
             <ProductCard
               key={product._id || product.id}
               product={product}
@@ -216,43 +237,20 @@ const AllProducts = ({ pageSize = 6, initialProducts = null }) => {
         )}
       </div>
 
-      {!loading && products.length > pageSize && (
-        <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
-          <button
-            type="button"
-            onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
-            disabled={currentPage === 1}
-            className="rounded-lg border border-[var(--theme-border-color)] bg-white px-4 py-2 text-sm font-bold text-[var(--theme-text)] disabled:cursor-not-allowed disabled:opacity-45"
-          >
-            Prev
-          </button>
-          {Array.from({ length: totalPages }).map((_, index) => {
-            const page = index + 1;
-            return (
-              <button
-                key={page}
-                type="button"
-                onClick={() => setCurrentPage(page)}
-                className={`h-10 min-w-10 rounded-lg px-3 text-sm font-bold transition ${
-                  currentPage === page
-                    ? "bg-[var(--theme-primary)] text-white"
-                    : "border border-[var(--theme-border-color)] bg-white text-[var(--theme-text)] hover:border-[var(--theme-primary)]"
-                }`}
-              >
-                {page}
-              </button>
-            );
-          })}
-          <button
-            type="button"
-            onClick={() =>
-              setCurrentPage((page) => Math.min(totalPages, page + 1))
-            }
-            disabled={currentPage === totalPages}
-            className="rounded-lg border border-[var(--theme-border-color)] bg-white px-4 py-2 text-sm font-bold text-[var(--theme-text)] disabled:cursor-not-allowed disabled:opacity-45"
-          >
-            Next
-          </button>
+      {!loading && visibleCount < products.length && (
+        <div ref={loadMoreRef} className="mt-6 flex justify-center py-5">
+          <div className="flex items-center gap-3 rounded-full bg-white px-5 py-3 text-sm font-bold text-[var(--theme-primary)] shadow-[0_12px_30px_rgba(15,23,42,0.08)]">
+            <span className="h-2.5 w-2.5 animate-pulse rounded-full bg-[var(--theme-primary)]" />
+            Scroll down to load more
+          </div>
+        </div>
+      )}
+
+      {!loading && products.length > 0 && visibleCount >= products.length && (
+        <div className="mt-6 flex justify-center py-4">
+          <p className="rounded-full bg-white px-5 py-2 text-sm font-semibold text-[var(--theme-muted-text)]">
+            You have reached the end
+          </p>
         </div>
       )}
 
