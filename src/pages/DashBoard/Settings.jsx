@@ -4,6 +4,7 @@ import "react-toastify/dist/ReactToastify.css";
 
 import useProfileData from "../../hooks/useProfileData";
 import { updateProfile } from "../../services/profile";
+import { getProducts } from "../../services/products";
 import {
   applyLandingTheme,
   applyThemeColors,
@@ -47,14 +48,34 @@ const Settings = () => {
   const { profile, loading } = useProfileData();
   const [themeColors, setThemeColors] = useState(defaultThemeColors);
   const [landingTheme, setLandingTheme] = useState(defaultLandingTheme);
+  const [products, setProducts] = useState([]);
+  const [bannerSettings, setBannerSettings] = useState({
+    limit: 3,
+    productIds: [],
+  });
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (profile) {
       setThemeColors(normalizeThemeColors(profile.themeColors));
       setLandingTheme(normalizeLandingTheme(profile.landingTheme));
+      setBannerSettings({
+        limit: Number(profile.bannerSettings?.limit) || 3,
+        productIds: Array.isArray(profile.bannerSettings?.productIds)
+          ? profile.bannerSettings.productIds
+          : [],
+      });
     }
   }, [profile]);
+
+  useEffect(() => {
+    getProducts()
+      .then((res) => setProducts(Array.isArray(res.data) ? res.data : []))
+      .catch((error) => {
+        console.error("Failed to load banner products:", error);
+        setProducts([]);
+      });
+  }, []);
 
   useEffect(() => {
     applyThemeColors(themeColors);
@@ -93,6 +114,16 @@ const Settings = () => {
     setLandingTheme(defaultLandingTheme);
   };
 
+  const toggleBannerProduct = (id) => {
+    setBannerSettings((prev) => {
+      const productIds = prev.productIds.includes(id)
+        ? prev.productIds.filter((productId) => productId !== id)
+        : [...prev.productIds, id];
+
+      return { ...prev, productIds };
+    });
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     setSaving(true);
@@ -102,6 +133,10 @@ const Settings = () => {
         ...(profile || {}),
         themeColors: normalizeThemeColors(themeColors),
         landingTheme: normalizeLandingTheme(landingTheme),
+        bannerSettings: {
+          limit: Math.max(1, Math.min(10, Number(bannerSettings.limit) || 3)),
+          productIds: bannerSettings.productIds,
+        },
       };
       const res = await updateProfile(payload);
 
@@ -204,6 +239,72 @@ const Settings = () => {
         </div>
 
         <div className="mt-6 border-t border-gray-200 pt-6">
+          <div className="mb-6 rounded-lg border border-gray-200 bg-white/80 p-4">
+            <div className="mb-4 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+              <div>
+                <h3 className="text-lg font-bold theme-text">Homepage Banner Images</h3>
+                <p className="text-sm text-gray-600">
+                  Select which product images appear in the homepage banner and how many slides to show.
+                </p>
+              </div>
+              <label className="form-control w-full md:w-44">
+                <span className="label-text mb-1">Image count</span>
+                <input
+                  type="number"
+                  min="1"
+                  max="10"
+                  value={bannerSettings.limit}
+                  onChange={(event) =>
+                    setBannerSettings((prev) => ({
+                      ...prev,
+                      limit: event.target.value,
+                    }))
+                  }
+                  className="input input-bordered bg-white"
+                />
+              </label>
+            </div>
+
+            <div className="grid max-h-[420px] grid-cols-1 gap-3 overflow-y-auto pr-1 sm:grid-cols-2 lg:grid-cols-3">
+              {products
+                .filter((product) => product.active !== false)
+                .map((product) => {
+                  const id = product._id || product.id;
+                  const image = Array.isArray(product.images)
+                    ? product.images.find(Boolean)
+                    : product.thumbnail || product.image || product.images;
+                  const selected = bannerSettings.productIds.includes(id);
+
+                  return (
+                    <button
+                      key={id}
+                      type="button"
+                      onClick={() => toggleBannerProduct(id)}
+                      className={`overflow-hidden rounded-xl border text-left transition ${
+                        selected
+                          ? "border-[var(--theme-primary)] ring-2 ring-[var(--theme-primary)]"
+                          : "border-gray-200 hover:border-[var(--theme-primary)]"
+                      }`}
+                    >
+                      <div className="aspect-video bg-gray-100">
+                        <img
+                          src={image || "/nav-icon/logo.png"}
+                          alt={product.name}
+                          className="h-full w-full object-cover"
+                        />
+                      </div>
+                      <div className="p-3">
+                        <p className="line-clamp-1 font-bold theme-text">{product.name}</p>
+                        <p className="text-xs text-gray-500">
+                          {selected ? "Selected for banner" : "Click to select"}
+                        </p>
+                      </div>
+                    </button>
+                  );
+                })}
+            </div>
+          </div>
+
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
             <div>
               <h3 className="text-lg font-bold theme-text">

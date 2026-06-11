@@ -4,6 +4,7 @@ import "react-responsive-carousel/lib/styles/carousel.min.css";
 import { Link } from "react-router-dom";
 import { ChevronLeft, ChevronRight, Leaf } from "lucide-react";
 import { getProducts } from "../services/products";
+import useProfileData from "../hooks/useProfileData";
 
 const getProductImage = (product) => {
   if (!product) return "";
@@ -18,6 +19,17 @@ const getProductImage = (product) => {
 
 const Banner = () => {
   const [products, setProducts] = useState([]);
+  const { profile } = useProfileData();
+  const selectedBannerIds = profile?.bannerSettings?.productIds;
+  const bannerLimit = Number(profile?.bannerSettings?.limit) || 3;
+  const selectedProducts =
+    Array.isArray(selectedBannerIds) && selectedBannerIds.length > 0
+      ? products.filter((product) => selectedBannerIds.includes(product._id || product.id))
+      : [];
+  const bannerProducts = (selectedProducts.length > 0 ? selectedProducts : products).slice(
+    0,
+    bannerLimit
+  );
 
   useEffect(() => {
     getProducts()
@@ -49,7 +61,7 @@ const Banner = () => {
 
   return (
     <section className="mx-auto mt-4 pb-6 md:mt-0">
-      {products.length > 0 ? (
+      {bannerProducts.length > 0 ? (
         <Carousel
           autoPlay
           infiniteLoop
@@ -98,7 +110,7 @@ const Banner = () => {
             />
           )}
         >
-          {products.map((product, index) => {
+          {bannerProducts.map((product, index) => {
             const productTitle = product.name || "Soybean Oil";
             const highlightedTitle = product.category || productTitle;
 

@@ -31,6 +31,8 @@ const AllProductsAdminView = lazy(() =>
 );
 const UpdateProduct = lazy(() => import("./pages/DashBoard/UpdateProduct"));
 const CartPage = lazy(() => import("./pages/CartPage"));
+const AllProductsPage = lazy(() => import("./pages/AllProductsPage"));
+const CategoriesPage = lazy(() => import("./pages/CategoriesPage"));
 const ProductDetails = lazy(() => import("./components/ProductDetails"));
 const InvoicePage = lazy(() => import("./pages/DashBoard/InvoicePage"));
 const ViewOrder = lazy(() => import("./pages/DashBoard/ViewOrder"));
@@ -119,6 +121,22 @@ const router = createBrowserRouter([
     element: (
       <MainLayout>
         <AppFrame>{withSuspense(<LandingPage />)}</AppFrame>
+      </MainLayout>
+    ),
+  },
+  {
+    path: "/products",
+    element: (
+      <MainLayout>
+        <AppFrame>{withSuspense(<AllProductsPage />)}</AppFrame>
+      </MainLayout>
+    ),
+  },
+  {
+    path: "/categories",
+    element: (
+      <MainLayout>
+        <AppFrame>{withSuspense(<CategoriesPage />)}</AppFrame>
       </MainLayout>
     ),
   },

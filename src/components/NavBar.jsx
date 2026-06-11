@@ -5,9 +5,9 @@ import design from "../styles/design";
 import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useCart } from "../context/CartContext";
+import GlobalSearch from "./GlobalSearch";
 import {
   ChevronDown,
-  Grid2X2,
   Home,
   List,
   MessageCircle,
@@ -20,6 +20,7 @@ const NavBar = ({ refs }) => {
   const { profileRef, allProductsRef, contactRef } = refs || {};
   // const { profile} = useProfileData();
   const [activeMobileItem, setActiveMobileItem] = useState("home");
+  const [searchOpen, setSearchOpen] = useState(false);
   const { cartItems } = useCart();
   const location = useLocation();
 
@@ -72,20 +73,18 @@ const NavBar = ({ refs }) => {
               >
                 Home
               </button>
-              <button
-                type="button"
-                onClick={() => scrollToSection(allProductsRef)}
+              <Link
+                to="/products"
                 className="py-2 transition-colors hover:text-[var(--theme-primary)]"
               >
                 All Products
-              </button>
-              <button
-                type="button"
-                onClick={() => scrollToSection(allProductsRef)}
+              </Link>
+              <Link
+                to="/categories"
                 className="flex items-center gap-1.5 py-2 transition-colors hover:text-[var(--theme-primary)]"
               >
                 Categories <ChevronDown size={16} strokeWidth={2.4} />
-              </button>
+              </Link>
               <button
                 type="button"
                 onClick={() => scrollToSection(contactRef)}
@@ -98,7 +97,12 @@ const NavBar = ({ refs }) => {
 
           {/* navbar end */}
           <div className="navbar-end gap-6 pr-2 flex items-center !justify-center text-slate-950">
-            <button type="button" aria-label="Search" className="transition-colors hover:text-[var(--theme-primary)]">
+            <button
+              type="button"
+              aria-label="Search"
+              onClick={() => setSearchOpen(true)}
+              className="transition-colors hover:text-[var(--theme-primary)]"
+            >
               <Search size={28} strokeWidth={2.1} />
             </button>
             <button type="button" aria-label="Account" className="transition-colors hover:text-[var(--theme-primary)]">
@@ -126,11 +130,11 @@ const NavBar = ({ refs }) => {
       >
         <nav className="mobile-nav-shell" aria-label="Mobile primary navigation">
           <MobileNavButton
-            label="Profile"
-            icon={Grid2X2}
-            active={currentMobileItem === "profile"}
+            label="Search"
+            icon={Search}
+            active={searchOpen}
             onClick={() =>
-              handleMobileAction("profile", () => scrollToSection(profileRef))
+              handleMobileAction("search", () => setSearchOpen(true))
             }
           />
           <MobileNavButton
@@ -191,6 +195,8 @@ const NavBar = ({ refs }) => {
           />
         </nav>
       </motion.div>
+
+      <GlobalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
     </div>
   );
 };

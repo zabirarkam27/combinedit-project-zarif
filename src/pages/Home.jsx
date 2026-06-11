@@ -1,9 +1,11 @@
 import AllProducts from "../components/AllProducts";
 import Banner from "../components/Banner";
+import CategorySection from "../components/CategorySection";
 import ProfileInfo from "../components/ProfileInfo";
 import design from "../styles/design";
 import { useProfileSection } from "../context/ProfileSectionContext";
 import { Headphones, Leaf, ShieldCheck, Truck } from "lucide-react";
+import { Link } from "react-router-dom";
 
 const Home = ({ refs }) => {
   const { profileRef, allProductsRef, contactRef } = refs;
@@ -36,14 +38,15 @@ const Home = ({ refs }) => {
                     Best quality products for your daily needs
                   </p>
                 </div>
-                <button
-                  type="button"
+                <Link
+                  to="/products"
                   className="w-fit rounded-lg border border-[var(--theme-primary)] px-5 py-2.5 text-sm font-bold text-[var(--theme-primary)] transition-colors hover:bg-[var(--theme-primary)] hover:text-white"
                 >
                   View All Products
-                </button>
+                </Link>
               </div>
-              <AllProducts />
+              <AllProducts pageSize={6} />
+              <CategorySection limit={6} />
               <div className="mb-8 mt-6 grid gap-0 overflow-hidden rounded-2xl bg-white/80 p-4 text-left shadow-[0_14px_40px_rgba(15,23,42,0.06)] backdrop-blur md:grid-cols-4">
                 {[
                   { icon: ShieldCheck, title: "100% Quality Products", subtitle: "Premium & Fresh Products" },

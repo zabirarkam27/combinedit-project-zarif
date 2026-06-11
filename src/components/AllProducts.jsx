@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Plus } from "lucide-react";
 import { toast } from "react-toastify";
@@ -114,9 +114,10 @@ const ProductSkeleton = () => (
   </div>
 );
 
-const AllProducts = () => {
+const AllProducts = ({ pageSize = 6, initialProducts = null }) => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
   const orderFormHook = useOrderForm();
   const {
     selectedProduct,
@@ -149,6 +150,12 @@ const AllProducts = () => {
   );
 
   useEffect(() => {
+    if (Array.isArray(initialProducts)) {
+      setProducts(initialProducts.filter((product) => product.active !== false));
+      setLoading(false);
+      return undefined;
+    }
+
     let ignore = false;
 
     const fetchProducts = async () => {
@@ -174,6 +181,16 @@ const AllProducts = () => {
     };
   }, []);
 
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [products.length, pageSize]);
+
+  const totalPages = Math.max(1, Math.ceil(products.length / pageSize));
+  const paginatedProducts = useMemo(() => {
+    const start = (currentPage - 1) * pageSize;
+    return products.slice(start, start + pageSize);
+  }, [currentPage, pageSize, products]);
+
   return (
     <div className="md:mb-0">
       <div className="grid grid-cols-1 gap-4 py-3 md:grid-cols-2 lg:grid-cols-3">
@@ -183,7 +200,7 @@ const AllProducts = () => {
           ))}
 
         {!loading &&
-          products.map((product) => (
+          paginatedProducts.map((product) => (
             <ProductCard
               key={product._id || product.id}
               product={product}
@@ -198,6 +215,46 @@ const AllProducts = () => {
           </p>
         )}
       </div>
+
+      {!loading && products.length > pageSize && (
+        <div className="mt-5 flex flex-wrap items-center justify-center gap-2">
+          <button
+            type="button"
+            onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+            disabled={currentPage === 1}
+            className="rounded-lg border border-[var(--theme-border-color)] bg-white px-4 py-2 text-sm font-bold text-[var(--theme-text)] disabled:cursor-not-allowed disabled:opacity-45"
+          >
+            Prev
+          </button>
+          {Array.from({ length: totalPages }).map((_, index) => {
+            const page = index + 1;
+            return (
+              <button
+                key={page}
+                type="button"
+                onClick={() => setCurrentPage(page)}
+                className={`h-10 min-w-10 rounded-lg px-3 text-sm font-bold transition ${
+                  currentPage === page
+                    ? "bg-[var(--theme-primary)] text-white"
+                    : "border border-[var(--theme-border-color)] bg-white text-[var(--theme-text)] hover:border-[var(--theme-primary)]"
+                }`}
+              >
+                {page}
+              </button>
+            );
+          })}
+          <button
+            type="button"
+            onClick={() =>
+              setCurrentPage((page) => Math.min(totalPages, page + 1))
+            }
+            disabled={currentPage === totalPages}
+            className="rounded-lg border border-[var(--theme-border-color)] bg-white px-4 py-2 text-sm font-bold text-[var(--theme-text)] disabled:cursor-not-allowed disabled:opacity-45"
+          >
+            Next
+          </button>
+        </div>
+      )}
 
       <OrderDrawer
         selectedProduct={selectedProduct}
