@@ -31,7 +31,7 @@ const ProductCard = React.memo(({ product, onAddToCart, onOrderNow }) => {
     : 0;
 
   return (
-    <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200/80 bg-white shadow-[0_14px_34px_rgba(15,23,42,0.08)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_24px_48px_rgba(15,23,42,0.16)]">
+    <article className="group flex h-full flex-col overflow-hidden rounded-2xl border border-[var(--theme-border-color)] bg-white shadow-[0_14px_34px_rgba(15,23,42,0.08)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_24px_48px_rgba(15,23,42,0.16)]">
       <div className="relative aspect-square overflow-hidden bg-slate-100">
         <Link
           to={`/products/${product._id}`}
@@ -51,13 +51,13 @@ const ProductCard = React.memo(({ product, onAddToCart, onOrderNow }) => {
           type="button"
           onClick={() => onAddToCart(product)}
           aria-label={`Add ${product.name} to cart`}
-          className="absolute right-3 top-3 grid h-10 w-10 place-items-center rounded-full text-white shadow-[0_12px_24px_rgba(15,23,42,0.22)] transition-transform hover:scale-110 active:scale-95 theme-gradient theme-gradient-hover"
+          className="absolute right-3 top-3 grid h-10 w-10 place-items-center rounded-full bg-white text-[var(--theme-primary)] shadow-[0_12px_24px_rgba(15,23,42,0.16)] transition-transform hover:scale-110 active:scale-95"
         >
           <Plus className="h-5 w-5" strokeWidth={2.5} aria-hidden="true" />
         </button>
 
         {discount > 0 && (
-          <span className="absolute left-3 top-3 rounded-full bg-slate-950/90 px-2.5 py-1 text-xs font-semibold text-white shadow-sm">
+          <span className="absolute left-3 top-3 rounded-lg bg-[var(--theme-primary)] px-3 py-1.5 text-xs font-semibold text-white shadow-sm">
             -{discount}%
           </span>
         )}
@@ -78,7 +78,7 @@ const ProductCard = React.memo(({ product, onAddToCart, onOrderNow }) => {
         )}
 
         <div className="flex flex-wrap items-baseline gap-2">
-          <span className="text-lg font-bold text-slate-950">
+          <span className="text-xl font-extrabold text-[var(--theme-primary)]">
             ৳{formatPrice(displayPrice)}
           </span>
           {hasDiscount && (
@@ -91,7 +91,7 @@ const ProductCard = React.memo(({ product, onAddToCart, onOrderNow }) => {
         <button
           type="button"
           onClick={() => onOrderNow(product)}
-          className="mt-auto w-full rounded-xl bg-slate-950 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-[var(--theme-primary)] active:scale-[0.98]"
+          className="mt-auto w-full rounded-lg bg-[var(--theme-primary)] py-2.5 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(11,125,35,0.18)] transition-colors hover:bg-[var(--theme-accent-hover)] active:scale-[0.98]"
         >
           Order Now
         </button>

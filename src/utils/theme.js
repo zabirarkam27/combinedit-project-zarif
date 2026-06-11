@@ -1,24 +1,24 @@
 export const defaultThemeColors = {
-  primary: "#002252",
-  secondary: "#009de6",
-  accent: "#ff640a",
-  pageBg: "#f3f6fa",
-  dashboardBg: "#f3f6fa",
-  text: "#0f223d",
+  primary: "#0b7d23",
+  secondary: "#2fb344",
+  accent: "#5fd35f",
+  pageBg: "#f7fbf5",
+  dashboardBg: "#f3f8f1",
+  text: "#071427",
 };
 
 export const defaultLandingTheme = {
-  pageBg: "#f3f6fa",
+  pageBg: "#f7fbf5",
   contentBg: "#ffffff",
   sectionBg: "#ffffff",
   cardBg: "#ffffff",
-  border: "#e1e7ef",
-  text: "#0f223d",
-  mutedText: "#65758b",
-  noticeBg: "#ff640a",
-  buttonPrimary: "#002252",
-  buttonSecondary: "#009de6",
-  buttonAccent: "#ff640a",
+  border: "#dce8d8",
+  text: "#071427",
+  mutedText: "#5f6f62",
+  noticeBg: "#0b7d23",
+  buttonPrimary: "#0b7d23",
+  buttonSecondary: "#128a2c",
+  buttonAccent: "#2fb344",
   maxWidth: "980px",
   radius: "8px",
 };
@@ -72,8 +72,8 @@ export const normalizeLandingTheme = (landingTheme = {}) => {
 export const applyThemeColors = (themeColors = {}) => {
   const colors = normalizeThemeColors(themeColors);
   const root = document.documentElement;
-  const primaryGlow = colors.primary === defaultThemeColors.primary ? "#07387e" : colors.primary;
-  const accentHover = colors.accent === defaultThemeColors.accent ? "#eb5600" : colors.accent;
+  const primaryGlow = colors.primary === defaultThemeColors.primary ? "#128a2c" : colors.primary;
+  const accentHover = colors.accent === defaultThemeColors.accent ? "#006b1b" : colors.accent;
 
   root.style.setProperty("--theme-primary", colors.primary);
   root.style.setProperty("--theme-primary-glow", primaryGlow);
@@ -86,8 +86,8 @@ export const applyThemeColors = (themeColors = {}) => {
   root.style.setProperty("--theme-popover-bg", "#ffffff");
   root.style.setProperty("--theme-text", colors.text);
   root.style.setProperty("--theme-muted-bg", colors.pageBg);
-  root.style.setProperty("--theme-muted-text", "#65758b");
-  root.style.setProperty("--theme-border-color", "#e1e7ef");
+  root.style.setProperty("--theme-muted-text", "#5f6f62");
+  root.style.setProperty("--theme-border-color", "#dce8d8");
   root.style.setProperty("--theme-destructive", "#ef4343");
   root.style.setProperty(
     "--theme-gradient",
@@ -95,7 +95,7 @@ export const applyThemeColors = (themeColors = {}) => {
   );
   root.style.setProperty(
     "--theme-cta-gradient",
-    `linear-gradient(90deg, ${colors.accent}, ${accentHover})`
+    `linear-gradient(90deg, ${colors.primary}, ${accentHover})`
   );
   root.style.setProperty(
     "--theme-brand-gradient",
@@ -103,7 +103,7 @@ export const applyThemeColors = (themeColors = {}) => {
   );
   root.style.setProperty(
     "--theme-hero-gradient",
-    `linear-gradient(135deg, ${colors.primary}, ${primaryGlow})`
+    `linear-gradient(135deg, #061d0c, ${colors.primary})`
   );
 };
 

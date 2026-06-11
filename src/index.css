@@ -3,19 +3,19 @@
 @import "react-responsive-carousel/lib/styles/carousel.min.css";
 
 :root {
-  --theme-primary: #002252;
-  --theme-primary-glow: #07387e;
-  --theme-secondary: #009de6;
-  --theme-accent: #ff640a;
-  --theme-accent-hover: #eb5600;
-  --theme-page-bg: #f3f6fa;
-  --theme-dashboard-bg: #f3f6fa;
+  --theme-primary: #0b7d23;
+  --theme-primary-glow: #128a2c;
+  --theme-secondary: #2fb344;
+  --theme-accent: #5fd35f;
+  --theme-accent-hover: #006b1b;
+  --theme-page-bg: #f7fbf5;
+  --theme-dashboard-bg: #f3f8f1;
   --theme-card-bg: #ffffff;
   --theme-popover-bg: #ffffff;
-  --theme-text: #0f223d;
-  --theme-muted-bg: #f3f6fa;
-  --theme-muted-text: #65758b;
-  --theme-border-color: #e1e7ef;
+  --theme-text: #071427;
+  --theme-muted-bg: #f3f8f1;
+  --theme-muted-text: #5f6f62;
+  --theme-border-color: #dce8d8;
   --theme-destructive: #ef4343;
   --theme-gradient: linear-gradient(
     90deg,
@@ -23,20 +23,20 @@
     var(--theme-primary-glow),
     var(--theme-secondary)
   );
-  --theme-cta-gradient: linear-gradient(90deg, #ff640a, #ff3c00);
-  --theme-brand-gradient: linear-gradient(90deg, #002252, #009de6);
-  --theme-hero-gradient: linear-gradient(135deg, #002252, #006a9e);
-  --landing-page-bg: #f3f6fa;
+  --theme-cta-gradient: linear-gradient(90deg, #0b7d23, #006b1b);
+  --theme-brand-gradient: linear-gradient(90deg, #0b7d23, #2fb344);
+  --theme-hero-gradient: linear-gradient(135deg, #061d0c, #0b7d23);
+  --landing-page-bg: #f7fbf5;
   --landing-content-bg: #ffffff;
   --landing-section-bg: #ffffff;
   --landing-card-bg: #ffffff;
-  --landing-border: #e1e7ef;
-  --landing-text: #0f223d;
-  --landing-muted-text: #65758b;
-  --landing-notice-bg: #ff640a;
-  --landing-button-primary: #002252;
-  --landing-button-secondary: #009de6;
-  --landing-button-accent: #ff640a;
+  --landing-border: #dce8d8;
+  --landing-text: #071427;
+  --landing-muted-text: #5f6f62;
+  --landing-notice-bg: #0b7d23;
+  --landing-button-primary: #0b7d23;
+  --landing-button-secondary: #128a2c;
+  --landing-button-accent: #2fb344;
   --landing-max-width: 980px;
   --landing-radius: 8px;
   --landing-gradient: linear-gradient(

@@ -6,11 +6,14 @@ import React from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useCart } from "../context/CartContext";
 import {
+  ChevronDown,
   Grid2X2,
   Home,
   List,
   MessageCircle,
+  Search,
   ShoppingBag,
+  UserRound,
 } from "lucide-react";
 
 const NavBar = ({ refs }) => {
@@ -37,11 +40,11 @@ const NavBar = ({ refs }) => {
   return (
     <div>
       {/* Large screen Navbar */}
-      <div className="hidden md:flex fixed top-0 left-0 w-full shadow-lg theme-gradient theme-gradient-hover z-50">
+      <div className="hidden md:flex fixed top-0 left-0 w-full border-b border-[var(--theme-border-color)] bg-white/95 shadow-[0_10px_30px_rgba(15,23,42,0.08)] backdrop-blur z-50">
         <div
           className={
             design.navbarContainer +
-            " flex items-center justify-between gap-x-12"
+            " flex items-center justify-between gap-x-12 py-3"
           }
         >
           {/* logo */}
@@ -61,36 +64,55 @@ const NavBar = ({ refs }) => {
 
           {/* center */}
           <div className="navbar-center">
-            <SlideTabs>
-              <TabItem onClick={() => scrollToSection(profileRef)}>
-                <Link to="/">Home</Link>
-              </TabItem>
-              <TabItem onClick={() => scrollToSection(allProductsRef)}>
-                All products
-              </TabItem>
-              <TabItem onClick={() => scrollToSection(contactRef)}>
+            <nav className="flex items-center gap-9 text-[15px] font-semibold text-slate-950">
+              <button
+                type="button"
+                onClick={() => scrollToSection(profileRef)}
+                className="relative py-2 text-[var(--theme-primary)] after:absolute after:left-0 after:right-0 after:-bottom-1 after:h-0.5 after:rounded-full after:bg-[var(--theme-primary)]"
+              >
+                Home
+              </button>
+              <button
+                type="button"
+                onClick={() => scrollToSection(allProductsRef)}
+                className="py-2 transition-colors hover:text-[var(--theme-primary)]"
+              >
+                All Products
+              </button>
+              <button
+                type="button"
+                onClick={() => scrollToSection(allProductsRef)}
+                className="flex items-center gap-1.5 py-2 transition-colors hover:text-[var(--theme-primary)]"
+              >
+                Categories <ChevronDown size={16} strokeWidth={2.4} />
+              </button>
+              <button
+                type="button"
+                onClick={() => scrollToSection(contactRef)}
+                className="py-2 transition-colors hover:text-[var(--theme-primary)]"
+              >
                 Contact Us
-              </TabItem>
-            </SlideTabs>
+              </button>
+            </nav>
           </div>
 
           {/* navbar end */}
-          <div className="navbar-end gap-4 pr-4 flex items-center !justify-center">
-            <Link to="/cart" className="relative" aria-label="Open cart">
-              <img src="/nav-icon/cart.png" alt="cart" className="w-8" />
+          <div className="navbar-end gap-6 pr-2 flex items-center !justify-center text-slate-950">
+            <button type="button" aria-label="Search" className="transition-colors hover:text-[var(--theme-primary)]">
+              <Search size={28} strokeWidth={2.1} />
+            </button>
+            <button type="button" aria-label="Account" className="transition-colors hover:text-[var(--theme-primary)]">
+              <UserRound size={28} strokeWidth={2.1} />
+            </button>
+            <Link to="/cart" className="relative flex items-center gap-2 transition-colors hover:text-[var(--theme-primary)]" aria-label="Open cart">
+              <ShoppingBag size={30} strokeWidth={2.1} />
               {cartItems.length > 0 && (
-                <span className="absolute -top-2 -right-2 bg-[#c40000] text-white text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full">
+                <span className="absolute -top-3 left-5 bg-[var(--theme-primary)] text-white text-xs font-bold w-6 h-6 flex items-center justify-center rounded-full">
                   {cartItems.length}
                 </span>
               )}
+              <span className="text-base font-bold">৳0</span>
             </Link>
-            <button type="button" aria-label="Track order" className="p-0">
-              <img
-                src="/nav-icon/tracking.png"
-                alt="tracking"
-                className="w-8"
-              />
-            </button>
           </div>
         </div>
       </div>
