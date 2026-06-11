@@ -66,7 +66,7 @@ function AnalyticsWrapper() {
   useEffect(() => {
     const initAnalytics = async () => {
       try {
-        const res = await api.get("/marketing-tools");
+        const res = await api.get("/marketing-tools", { skipAuth: true });
         const settings = res.data || {};
 
         if (settings.gaMeasurementId) initGA(settings.gaMeasurementId);

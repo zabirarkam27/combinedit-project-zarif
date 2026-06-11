@@ -6,13 +6,24 @@ import design from "../styles/design";
 import { useProfileSection } from "../context/ProfileSectionContext";
 import { Headphones, Leaf, ShieldCheck, Truck } from "lucide-react";
 import { Link } from "react-router-dom";
+import { useEffect } from "react";
+import { useLocation } from "react-router-dom";
 
 const Home = ({ refs }) => {
   const { profileRef, allProductsRef, contactRef } = refs;
   const { showProfileSection } = useProfileSection();
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.hash === "#contact" && contactRef?.current) {
+      requestAnimationFrame(() => {
+        contactRef.current.scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+    }
+  }, [contactRef, location.hash]);
 
   return (
-    <div className="theme-page-bg pt-6 md:pt-24">
+    <div className="theme-page-bg pt-6 lg:pt-24">
       <div className={`md:min-h-screen`}>
         <div className="text-center">
           {showProfileSection && (

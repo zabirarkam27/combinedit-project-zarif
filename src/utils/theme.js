@@ -5,6 +5,9 @@ export const defaultThemeColors = {
   pageBg: "#f7fbf5",
   dashboardBg: "#f3f8f1",
   text: "#071427",
+  logo: "#0b7d23",
+  icon: "#0b7d23",
+  cartIcon: "#0b7d23",
 };
 
 export const defaultLandingTheme = {
@@ -80,6 +83,9 @@ export const applyThemeColors = (themeColors = {}) => {
   root.style.setProperty("--theme-secondary", colors.secondary);
   root.style.setProperty("--theme-accent", colors.accent);
   root.style.setProperty("--theme-accent-hover", accentHover);
+  root.style.setProperty("--theme-logo-color", colors.logo);
+  root.style.setProperty("--theme-icon-color", colors.icon);
+  root.style.setProperty("--theme-cart-icon-color", colors.cartIcon);
   root.style.setProperty("--theme-page-bg", colors.pageBg);
   root.style.setProperty("--theme-dashboard-bg", colors.dashboardBg);
   root.style.setProperty("--theme-card-bg", "#ffffff");

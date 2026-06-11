@@ -1,5 +1,4 @@
 import axios from "axios";
-import { auth } from "./firebase/firebase.config";
 
 const api = axios.create({
   baseURL:
@@ -12,6 +11,11 @@ const api = axios.create({
 });
 
 api.interceptors.request.use(async (config) => {
+  if (config.skipAuth) {
+    return config;
+  }
+
+  const { auth } = await import("./firebase/firebase.config");
   const user = auth.currentUser;
 
   if (user) {

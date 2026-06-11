@@ -6,6 +6,11 @@ import useImageUpload from "../../hooks/useImageUpload";
 import { updateProfile } from "../../services/profile";
 import SocialLinksManager from "../../components/SocialLinksManager";
 import debounce from "lodash/debounce";
+import {
+  applyThemeColors,
+  defaultThemeColors,
+  normalizeThemeColors,
+} from "../../utils/theme";
 
 
 const EditProfile = () => {
@@ -43,6 +48,88 @@ const EditProfile = () => {
     if (imageUrl) {
       setFormData((prev) => ({ ...prev, [fieldName]: imageUrl }));
     }
+  };
+
+  const themeColors = useMemo(
+    () => normalizeThemeColors(formData?.themeColors),
+    [formData?.themeColors]
+  );
+
+  useEffect(() => {
+    if (formData?.themeColors) {
+      applyThemeColors(themeColors);
+    }
+  }, [formData?.themeColors, themeColors]);
+
+  const colorControls = useMemo(
+    () => [
+      {
+        group: "Theme Palette",
+        items: [
+          {
+            key: "primary",
+            label: "Primary",
+            helper: "Buttons, active routes, highlights",
+          },
+          {
+            key: "secondary",
+            label: "Secondary",
+            helper: "Gradient and supporting actions",
+          },
+          {
+            key: "accent",
+            label: "Accent",
+            helper: "Hover and emphasis color",
+          },
+        ],
+      },
+      {
+        group: "Brand Assets",
+        items: [
+          {
+            key: "logo",
+            label: "Logo",
+            helper: "Navbar and profile logo tint",
+          },
+          {
+            key: "icon",
+            label: "Profile Icons",
+            helper: "Email, phone, website, social icons",
+          },
+          {
+            key: "cartIcon",
+            label: "Cart Icon",
+            helper: "Desktop and mobile cart icon",
+          },
+        ],
+      },
+    ],
+    []
+  );
+
+  const handleThemeColorChange = (name, value) => {
+    setFormData((prev) => ({
+      ...prev,
+      themeColors: {
+        ...normalizeThemeColors(prev?.themeColors),
+        [name]: value,
+      },
+    }));
+  };
+
+  const syncBrandColorsWithTheme = () => {
+    setFormData((prev) => {
+      const colors = normalizeThemeColors(prev?.themeColors);
+      return {
+        ...prev,
+        themeColors: {
+          ...colors,
+          logo: colors.primary,
+          icon: colors.secondary,
+          cartIcon: colors.primary,
+        },
+      };
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -99,6 +186,104 @@ const EditProfile = () => {
         onSubmit={handleSubmit}
         className="grid grid-cols-1 md:grid-cols-2 gap-4"
       >
+        <section className="md:col-span-2 rounded-2xl border border-[var(--theme-border-color)] bg-white p-5 shadow-[0_14px_34px_rgba(15,23,42,0.06)]">
+          <div className="mb-5 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+            <div>
+              <h3 className="text-lg font-extrabold text-[var(--theme-text)]">
+                Brand & Theme Colors
+              </h3>
+              <p className="text-sm text-[var(--theme-muted-text)]">
+                Tune the shop palette, logo tint, profile icons, and cart icon from one place.
+              </p>
+            </div>
+            <button
+              type="button"
+              onClick={syncBrandColorsWithTheme}
+              className="w-fit rounded-lg border border-[var(--theme-primary)] px-4 py-2 text-sm font-bold text-[var(--theme-primary)] transition hover:bg-[var(--theme-primary)] hover:text-white"
+            >
+              Match Theme
+            </button>
+          </div>
+
+          <div className="mb-5 grid gap-4 rounded-xl border border-slate-200 bg-slate-50/80 p-4 lg:grid-cols-[1.2fr_0.8fr]">
+            <div className="flex flex-wrap items-center gap-3">
+              {["primary", "secondary", "accent", "logo", "icon", "cartIcon"].map(
+                (key) => (
+                  <div key={key} className="flex items-center gap-2 rounded-lg bg-white px-3 py-2 shadow-sm">
+                    <span
+                      className="h-5 w-5 rounded-full border border-slate-200"
+                      style={{ backgroundColor: themeColors[key] }}
+                    />
+                    <span className="text-xs font-bold uppercase text-slate-600">
+                      {key}
+                    </span>
+                  </div>
+                )
+              )}
+            </div>
+            <div className="flex items-center justify-start gap-5 rounded-xl bg-white px-4 py-3 shadow-sm lg:justify-end">
+              {formData.logo && (
+                <span
+                  aria-label="Logo color preview"
+                  className="h-14 w-24"
+                  style={{
+                    backgroundColor: themeColors.logo,
+                    WebkitMask: `url(${formData.logo}) center / contain no-repeat`,
+                    mask: `url(${formData.logo}) center / contain no-repeat`,
+                  }}
+                />
+              )}
+              <span className="h-9 w-9 rounded-full bg-[var(--theme-icon-color)]" />
+              <span className="h-9 w-9 rounded-full bg-[var(--theme-cart-icon-color)]" />
+            </div>
+          </div>
+
+          <div className="grid gap-5 lg:grid-cols-2">
+            {colorControls.map(({ group, items }) => (
+              <div key={group} className="rounded-xl border border-slate-200 p-4">
+                <h4 className="mb-4 text-sm font-extrabold uppercase text-slate-500">
+                  {group}
+                </h4>
+                <div className="grid gap-3">
+                  {items.map(({ key, label, helper }) => (
+                    <label
+                      key={key}
+                      className="grid gap-2 rounded-lg bg-slate-50 p-3 sm:grid-cols-[130px_1fr] sm:items-center"
+                    >
+                      <span>
+                        <span className="block text-sm font-bold text-slate-900">
+                          {label}
+                        </span>
+                        <span className="block text-xs font-medium text-slate-500">
+                          {helper}
+                        </span>
+                      </span>
+                      <span className="flex min-w-0 items-center gap-3">
+                        <input
+                          type="color"
+                          value={themeColors[key] || defaultThemeColors[key]}
+                          onChange={(e) =>
+                            handleThemeColorChange(key, e.target.value)
+                          }
+                          className="h-10 w-12 shrink-0 cursor-pointer rounded-lg border border-slate-200 bg-white p-1"
+                        />
+                        <input
+                          type="text"
+                          value={themeColors[key] || defaultThemeColors[key]}
+                          onChange={(e) =>
+                            handleThemeColorChange(key, e.target.value)
+                          }
+                          className="input min-w-0 flex-1 border border-slate-200 bg-white text-sm font-semibold"
+                        />
+                      </span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
         {/* Logo & Profile Image */}
         {["logo", "profileImage"].map((field) => (
           <div
@@ -111,11 +296,24 @@ const EditProfile = () => {
               </span>
             </label>
             {formData[field] && (
-              <img
-                src={formData[field]}
-                alt={field}
-                className="w-32 h-32 object-contain mb-2"
-              />
+              <div className="mb-3 flex flex-col items-center gap-2">
+                <img
+                  src={formData[field]}
+                  alt={field}
+                  className="w-32 h-32 object-contain"
+                />
+                {field === "logo" && (
+                  <div
+                    aria-label="Logo color preview"
+                    className="h-16 w-28"
+                    style={{
+                      backgroundColor: themeColors.logo,
+                      WebkitMask: `url(${formData[field]}) center / contain no-repeat`,
+                      mask: `url(${formData[field]}) center / contain no-repeat`,
+                    }}
+                  />
+                )}
+              </div>
             )}
             <input
               type="file"
@@ -182,11 +380,22 @@ const EditProfile = () => {
             >
               <div className="col-span-1 flex flex-col items-center">
                 {formData[iconField] && (
-                  <img
-                    src={formData[iconField]}
-                    alt={item}
-                    className="w-16 h-16 object-contain mb-2"
-                  />
+                  <div className="mb-2 flex items-center gap-3">
+                    <img
+                      src={formData[iconField]}
+                      alt={item}
+                      className="h-14 w-14 object-contain"
+                    />
+                    <div
+                      aria-label={`${item} icon color preview`}
+                      className="h-12 w-12"
+                      style={{
+                        backgroundColor: themeColors.icon,
+                        WebkitMask: `url(${formData[iconField]}) center / contain no-repeat`,
+                        mask: `url(${formData[iconField]}) center / contain no-repeat`,
+                      }}
+                    />
+                  </div>
                 )}
               </div>
               <div className="col-span-2">

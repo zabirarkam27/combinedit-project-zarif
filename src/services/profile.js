@@ -3,7 +3,7 @@ import api from "../api";
 
 // Get Profile
 export const getProfile = () => {
-  return api.get("/admin-profile");
+  return api.get("/admin-profile", { skipAuth: true });
 };
 
 // Update Profile

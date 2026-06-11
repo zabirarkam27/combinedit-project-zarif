@@ -23,7 +23,7 @@ const isValidImageUrl = (url) => {
     return /\.(jpeg|jpg|jfif|pjpeg|pjp|gif|png|apng|webp|avif|bmp|ico|svg|tif|tiff|heif|heic)$/i.test(
       cleanUrl
     );
-  } catch (e) {
+  } catch {
     return false;
   }
 };

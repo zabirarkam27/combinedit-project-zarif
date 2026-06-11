@@ -1,11 +1,11 @@
 import api from "../api";
 
 export const getProducts = () => {
-  return api.get("/products");
+  return api.get("/products", { skipAuth: true });
 };
 
 export const getProductById = (id) => {
-  return api.get(`/products/${id}`);
+  return api.get(`/products/${id}`, { skipAuth: true });
 };
 
 export const addProduct = (productData) => {

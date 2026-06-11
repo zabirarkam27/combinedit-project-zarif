@@ -1,6 +1,23 @@
 import useProfileData from "../hooks/useProfileData";
 import design from "../styles/design";
 
+const TintedAsset = ({ src, label, className = "h-9 w-9" }) => {
+  if (!src) return null;
+
+  return (
+    <span
+      role="img"
+      aria-label={label}
+      className={`inline-block shrink-0 ${className}`}
+      style={{
+        backgroundColor: "var(--theme-icon-color)",
+        WebkitMask: `url(${src}) center / contain no-repeat`,
+        mask: `url(${src}) center / contain no-repeat`,
+      }}
+    />
+  );
+};
+
 const Footer = () => {
   const { profile, loading } = useProfileData();
 
@@ -14,7 +31,7 @@ const Footer = () => {
           <a href={profile.emailLink} target="_blank" rel="noopener noreferrer">
             <div className="theme-secondary-bg border border-white/50 hover:shadow-xl transition duration-300 hover:-translate-y-1 ease-in-out rounded-lg grid grid-cols-5 gap-1 p-1 h-20 items-center opacity-90">
               <div className="rounded-lg col-span-1 flex items-center justify-center">
-                <img src={profile.emailIcon} alt="Email Icon" className="p-1 h-10 w-10" loading="lazy" />
+                <TintedAsset src={profile.emailIcon} label="Email Icon" className="h-9 w-9" />
               </div>
               <div className="text-white col-span-4">
                 <h2 className="text-[12px] font-black">Email Us</h2>
@@ -26,7 +43,7 @@ const Footer = () => {
           <a href={profile.phoneLink} target="_blank" rel="noopener noreferrer">
             <div className="theme-secondary-bg border border-white/50 hover:shadow-xl transition duration-300 hover:-translate-y-1 ease-in-out rounded-lg grid grid-cols-5 gap-1 p-1 h-20 items-center opacity-90">
               <div className="rounded-lg col-span-1 flex items-center justify-center">
-                <img src={profile.phoneIcon} alt="Phone icon" className="p-2 h-10 w-10" loading="lazy" />
+                <TintedAsset src={profile.phoneIcon} label="Phone icon" className="h-9 w-9" />
               </div>
               <div className="text-white col-span-4">
                 <h2 className="text-[12px] font-black">Call Us</h2>
@@ -38,7 +55,7 @@ const Footer = () => {
           <a href="https://maps.app.goo.gl/gNuBTVRF4E49yr7d7" target="_blank" rel="noopener noreferrer">
             <div className="theme-secondary-bg border border-white/50 hover:shadow-xl transition duration-300 hover:-translate-y-1 ease-in-out rounded-lg grid grid-cols-5 gap-1 p-1 h-20 items-center opacity-90">
               <div className="rounded-lg col-span-1 flex items-center justify-center">
-                <img src="/footer-location-icon.png" alt="location icon" className="px-1 h-8 w-8" loading="lazy" />
+                <TintedAsset src="/footer-location-icon.png" label="location icon" className="h-8 w-8" />
               </div>
               <div className="text-white col-span-4">
                 <h2 className="text-[12px] font-black">Visit Us</h2>
@@ -53,13 +70,13 @@ const Footer = () => {
         <div className="flex items-center gap-4">
           <h6>Social:</h6>
           <a href={profile.facebookLink || "#"} aria-label="Facebook">
-            <img src="/footer-facebook-icon.png" alt="facebook icon" className="h-9 w-9" loading="lazy" />
+            <TintedAsset src="/footer-facebook-icon.png" label="facebook icon" />
           </a>
           <a href={profile.phoneLink || "#"} aria-label="WhatsApp">
-            <img src="/footer-whatsapp-icon.png" alt="whatsapp icon" className="h-11 w-11" loading="lazy" />
+            <TintedAsset src="/footer-whatsapp-icon.png" label="whatsapp icon" className="h-10 w-10" />
           </a>
           <a href={profile.websiteLink || "#"} aria-label="X">
-            <img src="/x-icon.png" alt="x icon" className="h-8 w-8" loading="lazy" />
+            <TintedAsset src="/x-icon.png" label="x icon" className="h-8 w-8" />
           </a>
         </div>
 

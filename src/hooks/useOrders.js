@@ -1,9 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { toast } from "react-toastify";
-import * as XLSX from "xlsx";
 import { getOrders, deleteOrder } from "../services/orders";
 import api from "../api";
 import { useAuth } from "../context/AuthContext";
+import { downloadCsv } from "../utils/csv";
 
 const normalizeImages = (images) => {
   if (!images) return [];
@@ -133,13 +133,33 @@ export const useOrders = ({ autoFetch = true } = {}) => {
     return matchTab && matchSearch;
   });
 
-  // Download filtered orders as Excel
+  // Download filtered orders as CSV
   const handleDownload = () => {
     if (!filteredOrders.length) return toast.info("No orders to download.");
-    const worksheet = XLSX.utils.json_to_sheet(filteredOrders);
-    const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Orders");
-    XLSX.writeFile(workbook, `orders-${activeTab}.xlsx`);
+
+    const exported = downloadCsv(
+      `orders-${activeTab}.csv`,
+      filteredOrders.map((order) => ({
+        OrderNumber: order.orderNumber || order.orderId || "",
+        CustomerName: order.name || "",
+        CustomerPhone: order.phone || "",
+        Address: order.address || "",
+        Products: order.products || "",
+        Quantities: order.quantities || "",
+        UnitPrices: order.unitPrices || "",
+        FinalPrices: order.finalPrices || "",
+        ShippingCharge: order.shippingCharge ?? "",
+        TotalAmount: order.grandTotal ?? "",
+        PaymentMethod: order.paymentMethod || "",
+        PaymentStatus: order.paymentStatus || "",
+        OrderStatus: order.status || "",
+        DatePlaced: order.createdAt
+          ? new Date(order.createdAt).toLocaleDateString()
+          : "",
+      }))
+    );
+
+    if (!exported) toast.info("No orders to download.");
   };
 
   // Print filtered orders

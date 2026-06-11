@@ -1,7 +1,6 @@
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { PDFDownloadLink } from "@react-pdf/renderer";
-import * as XLSX from "xlsx";
 import { Buffer } from "buffer";
 
 import OrdersContext from "../../context/OrdersContext";
@@ -136,12 +135,12 @@ const HandleOrders = () => {
     );
   }, []);
 
-  // ✅ Selected orders for PDF / Excel
+  // ✅ Selected orders for PDF / CSV
   const selectedOrderData = useMemo(() => {
     return filteredOrders.filter((o) => selectedOrders.includes(o.orderId));
   }, [filteredOrders, selectedOrders]);
 
-  const exportToExcel = () => {
+  const exportSelectedCsv = () => {
     if (!selectedOrders.length) {
       toast.error("⚠️ No orders selected!");
       return;
@@ -162,10 +161,8 @@ const HandleOrders = () => {
       DatePlaced: new Date(order.createdAt).toLocaleDateString(),
     }));
 
-    const ws = XLSX.utils.json_to_sheet(selectedData);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, "Orders");
-    XLSX.writeFile(wb, "selected_orders.xlsx");
+    const exported = downloadCsv("selected-orders.csv", selectedData);
+    if (!exported) toast.error("No selected orders available to export.");
   };
 
   const exportFilteredCsv = () => {
@@ -258,10 +255,10 @@ const HandleOrders = () => {
             </PDFDownloadLink>
           )}
 
-          {/* Excel Download for selected */}
+          {/* CSV Download for selected */}
           {selectedOrders.length > 0 && (
-            <button className="btn btn-sm btn-primary" onClick={exportToExcel}>
-              Download Excel
+            <button className="btn btn-sm btn-primary" onClick={exportSelectedCsv}>
+              Download CSV
             </button>
           )}
 

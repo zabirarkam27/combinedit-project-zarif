@@ -8,6 +8,9 @@
   --theme-secondary: #2fb344;
   --theme-accent: #5fd35f;
   --theme-accent-hover: #006b1b;
+  --theme-logo-color: #0b7d23;
+  --theme-icon-color: #0b7d23;
+  --theme-cart-icon-color: #0b7d23;
   --theme-page-bg: #f7fbf5;
   --theme-dashboard-bg: #f3f8f1;
   --theme-card-bg: #ffffff;
@@ -251,6 +254,12 @@ body {
   background: color-mix(in srgb, var(--theme-primary) 10%, transparent);
 }
 
+.mobile-nav-item:focus-visible,
+.mobile-nav-center:focus-visible {
+  outline: 2px solid var(--theme-primary);
+  outline-offset: 4px;
+}
+
 .mobile-nav-icon-wrap {
   position: relative;
   display: inline-flex;
@@ -287,25 +296,47 @@ body {
 
 .mobile-nav-badge {
   position: absolute;
-  right: 1px;
-  top: 0;
+  right: 4px;
+  top: 4px;
   display: inline-flex;
-  min-width: 18px;
-  height: 18px;
+  min-width: 14px;
+  height: 14px;
   align-items: center;
   justify-content: center;
   border: 2px solid #ffffff;
   border-radius: 999px;
   background: #ef4444;
   color: #ffffff;
-  font-size: 10px;
+  font-size: 8px;
   font-weight: 800;
   line-height: 1;
 }
 
-@media (max-width: 767px) {
+@media (max-width: 1023px) {
   body {
     padding-bottom: 100px;
+  }
+}
+
+@media (max-width: 374px) {
+  .mobile-nav-wrap {
+    width: calc(100vw - 20px);
+  }
+
+  .mobile-nav-shell {
+    min-height: 68px;
+    padding: 9px 10px;
+    border-radius: 22px;
+  }
+
+  .mobile-nav-icon-wrap {
+    width: 40px;
+    height: 40px;
+  }
+
+  .mobile-nav-center-inner {
+    width: 58px;
+    height: 58px;
   }
 }
 

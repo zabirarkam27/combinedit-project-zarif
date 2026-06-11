@@ -2,7 +2,7 @@ import api from "../api";
 
 // Create order
 export const createOrder = (orderData) => {
-  return api.post("/orders", orderData);
+  return api.post("/orders", orderData, { skipAuth: true });
 };
 
 // Get all orders

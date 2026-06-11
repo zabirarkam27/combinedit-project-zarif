@@ -1,6 +1,23 @@
 import useProfileData from "../hooks/useProfileData";
 import {forwardRef } from "react";
 
+const TintedAsset = ({ src, label, className = "h-8 w-8", color = "var(--theme-icon-color)" }) => {
+  if (!src) return null;
+
+  return (
+    <span
+      role="img"
+      aria-label={label}
+      className={`inline-block shrink-0 ${className}`}
+      style={{
+        backgroundColor: color,
+        WebkitMask: `url(${src}) center / contain no-repeat`,
+        mask: `url(${src}) center / contain no-repeat`,
+      }}
+    />
+  );
+};
+
 const ProfileInfo = forwardRef((props, ref) => {
   const { profile, loading } = useProfileData();
 
@@ -11,7 +28,12 @@ const ProfileInfo = forwardRef((props, ref) => {
     <div className="pt-10 max-w-2xl mx-auto ">
       {/* company info */}
       <div className="mx-auto pt-10">
-        <img src={profile.logo} alt="Company Logo" className="w-1/3 mx-auto" />
+        <TintedAsset
+          src={profile.logo}
+          label="Company Logo"
+          className="mx-auto h-24 w-40"
+          color="var(--theme-logo-color)"
+        />
       </div>
 
       {/* Profile info */}
@@ -37,20 +59,16 @@ const ProfileInfo = forwardRef((props, ref) => {
         <div className="mx-auto my-4 flex gap-6 flex-wrap justify-center">
           {/* Fixed links */}
           <a href={profile.emailLink} className="hover:animate-bounce">
-            <img src={profile.emailIcon} alt="Email" className="w-8 h-8" />
+            <TintedAsset src={profile.emailIcon} label="Email" />
           </a>
           <a href={profile.phoneLink} className="hover:animate-bounce">
-            <img src={profile.phoneIcon} alt="Phone" className="w-8 h-8" />
+            <TintedAsset src={profile.phoneIcon} label="Phone" />
           </a>
           <a href={profile.websiteLink} className="hover:animate-bounce">
-            <img src={profile.websiteIcon} alt="Website" className="w-8 h-8" />
+            <TintedAsset src={profile.websiteIcon} label="Website" />
           </a>
           <a href={profile.facebookLink} className="hover:animate-bounce">
-            <img
-              src={profile.facebookIcon}
-              alt="Facebook"
-              className="w-8 h-8"
-            />
+            <TintedAsset src={profile.facebookIcon} label="Facebook" />
           </a>
 
           {/* Custom links */}
@@ -62,11 +80,7 @@ const ProfileInfo = forwardRef((props, ref) => {
               rel="noopener noreferrer"
               className="hover:animate-bounce"
             >
-              <img
-                src={link.icon}
-                alt={`Custom Link ${index + 1}`}
-                className="w-8 h-8"
-              />
+              <TintedAsset src={link.icon} label={`Custom Link ${index + 1}`} />
             </a>
           ))}
         </div>

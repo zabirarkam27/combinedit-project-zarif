@@ -2,7 +2,7 @@ import api from "../api";
 
 // GET: fetch marketing settings
 export const fetchMarketingSettings = async () => {
-  const res = await api.get("/marketing-tools");
+  const res = await api.get("/marketing-tools", { skipAuth: true });
   return res.data;
 };
 
