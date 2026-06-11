@@ -167,6 +167,16 @@ body {
   font-family: 'Montserrat', sans-serif;
 }
 
+.carousel .control-dots {
+  bottom: 16px;
+  margin: 0;
+  z-index: 30;
+}
+
+.carousel .control-dots .dot {
+  display: none;
+}
+
 .mobile-nav-wrap {
   position: fixed;
   left: 50%;
