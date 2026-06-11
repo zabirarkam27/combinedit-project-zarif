@@ -3,29 +3,40 @@
 @import "react-responsive-carousel/lib/styles/carousel.min.css";
 
 :root {
-  --theme-primary: #00ad9c;
-  --theme-secondary: #3a8881;
-  --theme-accent: #009e8e;
-  --theme-page-bg: #a8e2dd;
-  --theme-dashboard-bg: #ebf0f0;
-  --theme-text: #0c2955;
+  --theme-primary: #002252;
+  --theme-primary-glow: #07387e;
+  --theme-secondary: #009de6;
+  --theme-accent: #ff640a;
+  --theme-accent-hover: #eb5600;
+  --theme-page-bg: #f3f6fa;
+  --theme-dashboard-bg: #f3f6fa;
+  --theme-card-bg: #ffffff;
+  --theme-popover-bg: #ffffff;
+  --theme-text: #0f223d;
+  --theme-muted-bg: #f3f6fa;
+  --theme-muted-text: #65758b;
+  --theme-border-color: #e1e7ef;
+  --theme-destructive: #ef4343;
   --theme-gradient: linear-gradient(
     90deg,
     var(--theme-primary),
-    var(--theme-secondary),
-    var(--theme-accent)
+    var(--theme-primary-glow),
+    var(--theme-secondary)
   );
-  --landing-page-bg: #fcefdb;
-  --landing-content-bg: #fcf7ef;
+  --theme-cta-gradient: linear-gradient(90deg, #ff640a, #ff3c00);
+  --theme-brand-gradient: linear-gradient(90deg, #002252, #009de6);
+  --theme-hero-gradient: linear-gradient(135deg, #002252, #006a9e);
+  --landing-page-bg: #f3f6fa;
+  --landing-content-bg: #ffffff;
   --landing-section-bg: #ffffff;
   --landing-card-bg: #ffffff;
-  --landing-border: #d1d5db;
-  --landing-text: #0c2955;
-  --landing-muted-text: #4b5563;
-  --landing-notice-bg: #eb920d;
-  --landing-button-primary: #398881;
-  --landing-button-secondary: #00ad9c;
-  --landing-button-accent: #009e8e;
+  --landing-border: #e1e7ef;
+  --landing-text: #0f223d;
+  --landing-muted-text: #65758b;
+  --landing-notice-bg: #ff640a;
+  --landing-button-primary: #002252;
+  --landing-button-secondary: #009de6;
+  --landing-button-accent: #ff640a;
   --landing-max-width: 980px;
   --landing-radius: 8px;
   --landing-gradient: linear-gradient(
@@ -71,6 +82,21 @@
 
 .theme-secondary-bg {
   background-color: var(--theme-secondary);
+}
+
+.theme-cta-gradient {
+  background-image: var(--theme-cta-gradient);
+  background-size: 200% 200%;
+}
+
+.theme-brand-gradient {
+  background-image: var(--theme-brand-gradient);
+  background-size: 200% 200%;
+}
+
+.theme-hero-gradient {
+  background-image: var(--theme-hero-gradient);
+  background-size: 200% 200%;
 }
 
 .landing-page-bg {
