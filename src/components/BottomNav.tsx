@@ -1,0 +1,118 @@
+import { memo, useEffect, useMemo, useRef, useState } from "react";
+import { motion } from "framer-motion";
+import {
+  LayoutGrid,
+  Menu as MenuIcon,
+  RefreshCw,
+  User,
+  type LucideIcon,
+} from "lucide-react";
+import { useNavAnimation } from "../hooks/useNavAnimation";
+import {
+  CIRCLE_DIAMETER,
+  CURVE_DEPTH,
+  CURVE_WIDTH,
+  NAV_HEIGHT,
+} from "./geometry";
+import { iconSpring } from "./animation";
+import SvgNotch from "./SvgNotch";
+import NavItem from "./NavItem";
+import "./BottomNav.css";
+
+export type BottomNavKey = "home" | "menu" | "swap" | "profile";
+
+type BottomNavTab = {
+  key: BottomNavKey;
+  label: string;
+  icon: LucideIcon;
+};
+
+type BottomNavProps = {
+  activeKey?: BottomNavKey;
+  onTabSelect?: (key: BottomNavKey) => void;
+};
+
+const tabs: BottomNavTab[] = [
+  { key: "home", label: "Home", icon: LayoutGrid },
+  { key: "menu", label: "Menu", icon: MenuIcon },
+  { key: "swap", label: "Swap", icon: RefreshCw },
+  { key: "profile", label: "Profile", icon: User },
+];
+
+const BottomNav = ({ activeKey = "home", onTabSelect }: BottomNavProps) => {
+  const [selectedKey, setSelectedKey] = useState<BottomNavKey>(activeKey);
+  const navRef = useRef<HTMLElement>(null);
+
+  useEffect(() => {
+    setSelectedKey(activeKey);
+  }, [activeKey]);
+
+  const activeIndex = Math.max(
+    0,
+    tabs.findIndex((tab) => tab.key === selectedKey)
+  );
+  const activeTab = tabs[activeIndex] ?? tabs[0];
+  const ActiveIcon = activeTab.icon;
+
+  const { navWidth, centerX, indicatorX, indicatorTransition } = useNavAnimation(
+    activeIndex,
+    tabs.length,
+    navRef
+  );
+
+  const renderedTabs = useMemo(
+    () =>
+      tabs.map((tab) => (
+        <NavItem
+          key={tab.key}
+          icon={tab.icon}
+          label={tab.label}
+          active={tab.key === selectedKey}
+          onClick={() => {
+            setSelectedKey(tab.key);
+            onTabSelect?.(tab.key);
+          }}
+        />
+      )),
+    [onTabSelect, selectedKey]
+  );
+
+  return (
+    <nav ref={navRef} className="bottom-nav" aria-label="Mobile bottom navigation">
+      <div className="bottom-nav__inner">
+        <SvgNotch
+          centerX={centerX}
+          width={navWidth || 1}
+          height={NAV_HEIGHT}
+          curveWidth={CURVE_WIDTH}
+          curveDepth={CURVE_DEPTH}
+        />
+
+        <motion.div
+          className="bottom-nav__indicator"
+          style={{ x: indicatorX }}
+          transition={indicatorTransition}
+        >
+          <motion.span
+            key={activeTab.key}
+            className="bottom-nav__indicator-icon"
+            initial={{ scale: 0.82, opacity: 0.7 }}
+            animate={{ scale: 1.15, opacity: 1 }}
+            transition={iconSpring}
+          >
+            <ActiveIcon size={26} strokeWidth={2.25} />
+          </motion.span>
+        </motion.div>
+
+        <div
+          className="bottom-nav__items"
+          style={{ paddingTop: CIRCLE_DIAMETER / 3 }}
+        >
+          {renderedTabs}
+        </div>
+      </div>
+    </nav>
+  );
+};
+
+export default memo(BottomNav);

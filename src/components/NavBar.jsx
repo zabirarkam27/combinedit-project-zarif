@@ -1,11 +1,7 @@
 import { useState } from "react";
-import { motion } from "framer-motion";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   ChevronDown,
-  Home,
-  List,
-  MessageCircle,
   Search,
   ShoppingBag,
   UserRound,
@@ -13,6 +9,7 @@ import {
 
 import { useCart } from "../context/CartContext";
 import design from "../styles/design";
+import BottomNav from "./BottomNav";
 import GlobalSearch from "./GlobalSearch";
 import useProfileData from "../hooks/useProfileData";
 
@@ -27,13 +24,13 @@ const NavBar = ({ refs }) => {
   const logoSrc = profile?.logo || "/nav-icon/logo.png";
 
   const routeMobileItem = location.pathname.startsWith("/products")
-    ? "products"
+    ? "menu"
     : location.pathname === "/cart"
-    ? "cart"
+    ? "swap"
     : location.pathname === "/"
     ? "home"
     : activeMobileItem;
-  const currentMobileItem = ["contact", "search"].includes(activeMobileItem)
+  const currentMobileItem = ["profile"].includes(activeMobileItem)
     ? activeMobileItem
     : routeMobileItem;
 
@@ -61,6 +58,25 @@ const NavBar = ({ refs }) => {
   const handleMobileAction = (item, action) => {
     setActiveMobileItem(item);
     if (action) action();
+  };
+
+  const handleBottomNavSelect = (key) => {
+    if (key === "home") {
+      handleMobileAction("home", goHome);
+      return;
+    }
+
+    if (key === "menu") {
+      handleMobileAction("menu", () => navigate("/products"));
+      return;
+    }
+
+    if (key === "swap") {
+      handleMobileAction("swap", () => navigate("/cart"));
+      return;
+    }
+
+    handleMobileAction("profile", goToContact);
   };
 
   const navLinkClass = ({ isActive }) =>
@@ -160,109 +176,15 @@ const NavBar = ({ refs }) => {
         </div>
       </div>
 
-      <motion.div
-        initial={{ x: "-50%", y: 96, opacity: 0, scale: 0.96 }}
-        animate={{ x: "-50%", y: 0, opacity: 1, scale: 1 }}
-        transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-        className="mobile-nav-wrap lg:hidden"
-      >
-        <nav className="mobile-nav-shell" aria-label="Mobile primary navigation">
-          <MobileNavButton
-            label="Search"
-            icon={Search}
-            active={searchOpen}
-            onClick={() =>
-              handleMobileAction("search", () => setSearchOpen(true))
-            }
-          />
-          <MobileNavButton
-            label="Products"
-            icon={List}
-            active={currentMobileItem === "products"}
-            to="/products"
-            onClick={() => handleMobileAction("products")}
-          />
-
-          <Link
-            to="/"
-            aria-label="Home"
-            onClick={() => handleMobileAction("home", goHome)}
-            className="mobile-nav-center"
-          >
-            <motion.span
-              animate={{
-                rotate: currentMobileItem === "home" ? 0 : -18,
-                scale: currentMobileItem === "home" ? 1.05 : 1,
-              }}
-              whileTap={{ scale: 0.9, rotate: 12 }}
-              transition={{ type: "spring", stiffness: 420, damping: 24 }}
-              className="mobile-nav-center-inner"
-            >
-              <Home size={24} strokeWidth={2.4} />
-            </motion.span>
-          </Link>
-
-          <Link
-            to="/cart"
-            aria-label="Cart"
-            onClick={() => handleMobileAction("cart")}
-            className={`mobile-nav-item ${
-              currentMobileItem === "cart" ? "is-active" : ""
-            }`}
-          >
-            <motion.span
-              whileTap={{ y: -3, scale: 0.92 }}
-              transition={{ type: "spring", stiffness: 420, damping: 24 }}
-              className="mobile-nav-icon-wrap"
-            >
-              <ShoppingBag
-                className="text-[var(--theme-cart-icon-color)]"
-                size={25}
-                strokeWidth={2.1}
-              />
-              {cartItems.length > 0 && (
-                <span className="mobile-nav-badge">{cartItems.length}</span>
-              )}
-            </motion.span>
-            <span className="sr-only">Cart</span>
-          </Link>
-          <MobileNavButton
-            label="Contact"
-            icon={MessageCircle}
-            active={currentMobileItem === "contact"}
-            onClick={() =>
-              handleMobileAction("contact", goToContact)
-            }
-          />
-        </nav>
-      </motion.div>
+      <div className="lg:hidden">
+        <BottomNav
+          activeKey={currentMobileItem}
+          onTabSelect={handleBottomNavSelect}
+        />
+      </div>
 
       <GlobalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
     </div>
-  );
-};
-
-const MobileNavButton = ({ label, icon: Icon, active, onClick, to }) => {
-  const Component = to ? Link : "button";
-  const componentProps = to ? { to } : { type: "button" };
-
-  return (
-    <Component
-      {...componentProps}
-      aria-label={label}
-      aria-current={active ? "page" : undefined}
-      onClick={onClick}
-      className={`mobile-nav-item ${active ? "is-active" : ""}`}
-    >
-      <motion.span
-        whileTap={{ y: -3, scale: 0.92 }}
-        transition={{ type: "spring", stiffness: 420, damping: 24 }}
-        className="mobile-nav-icon-wrap"
-      >
-        <Icon size={25} strokeWidth={2.1} />
-      </motion.span>
-      <span className="sr-only">{label}</span>
-    </Component>
   );
 };
 
