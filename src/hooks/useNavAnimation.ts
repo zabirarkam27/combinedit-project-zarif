@@ -1,5 +1,5 @@
-import { RefObject, useEffect, useMemo, useState } from "react";
-import { animate, useMotionValue, useTransform } from "framer-motion";
+import { RefObject, useEffect, useMemo, useRef, useState } from "react";
+import { useMotionValue, useSpring, useTransform } from "framer-motion";
 import { CIRCLE_DIAMETER } from "../components/geometry";
 import { indicatorSpring, notchSpring } from "../components/animation";
 
@@ -9,8 +9,10 @@ export const useNavAnimation = (
   navRef: RefObject<HTMLElement>
 ) => {
   const [navWidth, setNavWidth] = useState(0);
-  const centerX = useMotionValue(0);
-  const indicatorCenterX = useMotionValue(0);
+  const targetCenterX = useMotionValue(0);
+  const didMeasure = useRef(false);
+  const centerX = useSpring(targetCenterX, notchSpring);
+  const indicatorCenterX = useSpring(targetCenterX, indicatorSpring);
 
   useEffect(() => {
     const node = navRef.current;
@@ -38,18 +40,16 @@ export const useNavAnimation = (
   useEffect(() => {
     if (!targetCenter) return;
 
-    const notchControls = animate(centerX, targetCenter, notchSpring);
-    const indicatorControls = animate(
-      indicatorCenterX,
-      targetCenter,
-      indicatorSpring
-    );
+    if (!didMeasure.current) {
+      didMeasure.current = true;
+      targetCenterX.set(targetCenter);
+      centerX.jump(targetCenter);
+      indicatorCenterX.jump(targetCenter);
+      return;
+    }
 
-    return () => {
-      notchControls.stop();
-      indicatorControls.stop();
-    };
-  }, [centerX, indicatorCenterX, targetCenter]);
+    targetCenterX.set(targetCenter);
+  }, [centerX, indicatorCenterX, targetCenter, targetCenterX]);
 
   const indicatorX = useTransform(
     indicatorCenterX,

@@ -93,7 +93,7 @@ const NavBar = ({ refs }) => {
 
   return (
     <div>
-      <div className="fixed left-0 top-0 z-50 hidden w-full border-b border-[var(--theme-border-color)] bg-white/95 shadow-[0_10px_30px_rgba(15,23,42,0.08)] backdrop-blur lg:flex">
+      <div className="fixed left-0 top-0 z-50 hidden w-full border-b border-[var(--theme-border-color)] bg-white/95 shadow-[0_10px_30px_rgba(15,23,42,0.08)] backdrop-blur md:flex">
         <div
           className={`${design.navbarContainer} flex items-center justify-between gap-5 py-3`}
         >
@@ -176,7 +176,7 @@ const NavBar = ({ refs }) => {
         </div>
       </div>
 
-      <div className="lg:hidden">
+      <div className="md:hidden">
         <BottomNav
           activeKey={currentMobileItem}
           onTabSelect={handleBottomNavSelect}

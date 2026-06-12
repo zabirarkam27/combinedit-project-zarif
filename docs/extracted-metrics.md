@@ -30,8 +30,8 @@ Because the implementation is an upright mobile bottom navigation, the traced pe
 - Navigation height: `80px`
 - Floating circle: `64px`
 - Circle top offset: `-28px`
-- Notch width: `120px`
-- Notch depth: `28px`
+- Notch width after screenshot refinement: `108px`
+- Notch depth after screenshot refinement: `31px`
 - Icon count: `4`
 - Tab centers: `navWidth / 4 * index + tabWidth / 2`
 

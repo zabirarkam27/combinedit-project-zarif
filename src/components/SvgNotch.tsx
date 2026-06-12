@@ -28,7 +28,7 @@ const SvgNotch = ({
       preserveAspectRatio="none"
       aria-hidden="true"
     >
-      <motion.path d={path} fill="white" />
+      <motion.path d={path} fill="var(--bottom-nav-bg)" />
     </svg>
   );
 };

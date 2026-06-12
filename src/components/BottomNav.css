@@ -8,6 +8,8 @@
   height: 80px;
   transform: translateX(-50%);
   color: #c8c8c8;
+  --bottom-nav-bg: color-mix(in srgb, var(--theme-page-bg) 20%, #ffffff);
+  --bottom-nav-indicator-bg: color-mix(in srgb, var(--theme-page-bg) 12%, #ffffff);
 }
 
 .bottom-nav__inner {
@@ -76,10 +78,13 @@
   align-items: center;
   justify-content: center;
   border-radius: 50%;
-  background: white;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  background: var(--bottom-nav-indicator-bg);
+  box-shadow:
+    0 6px 20px rgba(0, 0, 0, 0.15),
+    0 0 0 1px color-mix(in srgb, var(--theme-primary) 8%, transparent);
   color: var(--theme-primary);
   will-change: transform;
+  transform: translateZ(0);
 }
 
 .bottom-nav__indicator-icon {
@@ -91,5 +96,11 @@
 @media (max-width: 360px) {
   .bottom-nav__items {
     padding-inline: 4px;
+  }
+}
+
+@media (min-width: 640px) {
+  .bottom-nav {
+    display: none;
   }
 }

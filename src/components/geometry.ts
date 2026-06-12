@@ -2,8 +2,8 @@ export const NAV_HEIGHT = 80;
 export const NAV_MAX_WIDTH = 420;
 export const CIRCLE_DIAMETER = 64;
 export const CIRCLE_TOP_OFFSET = -28;
-export const CURVE_WIDTH = 120;
-export const CURVE_DEPTH = 28;
+export const CURVE_WIDTH = 108;
+export const CURVE_DEPTH = 31;
 
 export const buildNotchPath = (
   centerX: number,
@@ -17,9 +17,9 @@ export const buildNotchPath = (
   const x1 = safeCenter - half;
   const x2 = safeCenter + half;
 
-  const shoulder = curveWidth * 0.18;
-  const inner = curveWidth * 0.31;
-  const floorLift = curveDepth * 0.04;
+  const shoulder = curveWidth * 0.2;
+  const inner = curveWidth * 0.34;
+  const floorLift = curveDepth * 0.03;
 
   return [
     `M 0 0`,

@@ -8,13 +8,13 @@ The reference notch shape is preserved as one reusable curve and translated hori
 
 Core control values:
 
-- `curveWidth = 120`
-- `curveDepth = 28`
+- `curveWidth = 108`
+- `curveDepth = 31`
 - `half = curveWidth / 2`
 - `x1 = centerX - half`
 - `x2 = centerX + half`
-- `shoulder = curveWidth * 0.18`
-- `inner = curveWidth * 0.31`
+- `shoulder = curveWidth * 0.20`
+- `inner = curveWidth * 0.34`
 
 ## Shape
 
