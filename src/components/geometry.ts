@@ -2,8 +2,8 @@ export const NAV_HEIGHT = 80;
 export const NAV_MAX_WIDTH = 420;
 export const CIRCLE_DIAMETER = 64;
 export const CIRCLE_TOP_OFFSET = -28;
-export const CURVE_WIDTH = 108;
-export const CURVE_DEPTH = 31;
+export const CURVE_WIDTH = 120;
+export const CURVE_DEPTH = 28;
 
 export const buildNotchPath = (
   centerX: number,
@@ -14,29 +14,20 @@ export const buildNotchPath = (
 ) => {
   const half = curveWidth / 2;
   const safeCenter = Math.min(Math.max(centerX, half), width - half);
-  const x1 = safeCenter - half;
-  const x2 = safeCenter + half;
-
-  const shoulder = curveWidth * 0.2;
-  const inner = curveWidth * 0.34;
-  const floorLift = curveDepth * 0.03;
+  const left = safeCenter - half;
+  const right = safeCenter + half;
+  const shoulder = half * 0.55;
 
   return [
-    `M 0 0`,
-    `L ${x1} 0`,
-    `C ${x1 + shoulder} 0 ${x1 + shoulder} ${curveDepth * 0.42} ${
-      safeCenter - inner
-    } ${curveDepth * 0.64}`,
-    `C ${safeCenter - inner * 0.62} ${curveDepth - floorLift} ${
-      safeCenter - inner * 0.28
-    } ${curveDepth} ${safeCenter} ${curveDepth}`,
-    `C ${safeCenter + inner * 0.28} ${curveDepth} ${
-      safeCenter + inner * 0.62
-    } ${curveDepth - floorLift} ${safeCenter + inner} ${curveDepth * 0.64}`,
-    `C ${x2 - shoulder} ${curveDepth * 0.42} ${x2 - shoulder} 0 ${x2} 0`,
-    `L ${width} 0`,
-    `L ${width} ${height}`,
-    `L 0 ${height}`,
+    `M0,0`,
+    `H${round(left)}`,
+    `C${round(left + shoulder)},0 ${round(safeCenter - half * 0.45)},${curveDepth} ${round(safeCenter)},${curveDepth}`,
+    `C${round(safeCenter + half * 0.45)},${curveDepth} ${round(right - shoulder)},0 ${round(right)},0`,
+    `H${round(width)}`,
+    `V${round(height)}`,
+    `H0`,
     `Z`,
   ].join(" ");
 };
+
+const round = (value: number) => Math.round(value * 100) / 100;
