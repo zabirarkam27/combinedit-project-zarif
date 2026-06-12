@@ -1,12 +1,12 @@
 .bottom-nav {
   position: fixed;
-  left: 50%;
+  left: 0;
+  right: 0;
   bottom: 0;
   z-index: 70;
-  width: 100%;
-  max-width: 420px;
+  width: 100vw;
+  max-width: none;
   height: 80px;
-  transform: translateX(-50%);
   color: #c8c8c8;
   --bottom-nav-bg: color-mix(in srgb, var(--theme-page-bg) 20%, #ffffff);
   --bottom-nav-indicator-bg: color-mix(in srgb, var(--theme-page-bg) 12%, #ffffff);
