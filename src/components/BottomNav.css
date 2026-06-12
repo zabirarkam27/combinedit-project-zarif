@@ -7,9 +7,9 @@
   width: 100vw;
   max-width: none;
   height: 80px;
-  color: #c8c8c8;
-  --bottom-nav-bg: color-mix(in srgb, var(--theme-page-bg) 20%, #ffffff);
-  --bottom-nav-indicator-bg: color-mix(in srgb, var(--theme-page-bg) 12%, #ffffff);
+  color: color-mix(in srgb, #ffffff 72%, var(--theme-primary));
+  --bottom-nav-bg: color-mix(in srgb, var(--theme-primary) 88%, var(--theme-secondary));
+  --bottom-nav-indicator-bg: #ffffff;
 }
 
 .bottom-nav__inner {
@@ -17,7 +17,9 @@
   width: 100%;
   height: 100%;
   border-radius: 24px 24px 0 0;
-  box-shadow: 0 -5px 30px rgba(0, 0, 0, 0.08);
+  box-shadow:
+    0 -5px 30px color-mix(in srgb, var(--theme-primary) 24%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.24);
 }
 
 .bottom-nav__shape {
@@ -48,7 +50,7 @@
   justify-content: center;
   border: 0;
   background: transparent;
-  color: #c8c8c8;
+  color: color-mix(in srgb, #ffffff 72%, var(--theme-primary));
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 }
@@ -80,8 +82,8 @@
   border-radius: 50%;
   background: var(--bottom-nav-indicator-bg);
   box-shadow:
-    0 6px 20px rgba(0, 0, 0, 0.15),
-    0 0 0 1px color-mix(in srgb, var(--theme-primary) 8%, transparent);
+    0 8px 24px color-mix(in srgb, var(--theme-primary) 30%, rgba(0, 0, 0, 0.12)),
+    0 0 0 1px color-mix(in srgb, var(--theme-primary) 12%, transparent);
   color: var(--theme-primary);
   will-change: transform;
   transform: translateZ(0);
