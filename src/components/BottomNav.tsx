@@ -1,5 +1,5 @@
 import { memo, useEffect, useMemo, useRef, useState } from "react";
-import { motion } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   LayoutGrid,
   Menu as MenuIcon,
@@ -9,12 +9,12 @@ import {
 } from "lucide-react";
 import { useNavAnimation } from "../hooks/useNavAnimation";
 import {
-  CIRCLE_DIAMETER,
+  CIRCLE_TOP_OFFSET,
   CURVE_DEPTH,
   CURVE_WIDTH,
   NAV_HEIGHT,
 } from "./geometry";
-import { iconSpring } from "./animation";
+import { circleIconVariants } from "./animation";
 import SvgNotch from "./SvgNotch";
 import NavItem from "./NavItem";
 import "./BottomNav.css";
@@ -41,7 +41,7 @@ const tabs: BottomNavTab[] = [
 
 const BottomNav = ({ activeKey = "home", onTabSelect }: BottomNavProps) => {
   const [selectedKey, setSelectedKey] = useState<BottomNavKey>(activeKey);
-  const navRef = useRef<HTMLElement>(null);
+  const navRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     setSelectedKey(activeKey);
@@ -90,23 +90,26 @@ const BottomNav = ({ activeKey = "home", onTabSelect }: BottomNavProps) => {
 
         <motion.div
           className="bottom-nav__indicator"
-          style={{ x: indicatorX }}
+          style={{ x: indicatorX, top: CIRCLE_TOP_OFFSET }}
           transition={indicatorTransition}
+          aria-hidden="true"
         >
-          <motion.span
-            key={activeTab.key}
-            className="bottom-nav__indicator-icon"
-            initial={{ scale: 0.82, opacity: 0.7 }}
-            animate={{ scale: 1.15, opacity: 1 }}
-            transition={iconSpring}
-          >
-            <ActiveIcon size={26} strokeWidth={2.25} />
-          </motion.span>
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.span
+              key={activeTab.key}
+              className="bottom-nav__indicator-icon"
+              variants={circleIconVariants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+            >
+              <ActiveIcon size={26} strokeWidth={2.25} aria-hidden="true" />
+            </motion.span>
+          </AnimatePresence>
         </motion.div>
 
         <div
           className="bottom-nav__items"
-          style={{ paddingTop: CIRCLE_DIAMETER / 3 }}
         >
           {renderedTabs}
         </div>

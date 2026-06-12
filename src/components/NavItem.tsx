@@ -1,7 +1,11 @@
 import { memo } from "react";
 import { motion } from "framer-motion";
 import type { LucideIcon } from "lucide-react";
-import { iconSpring } from "./animation";
+import {
+  barIconVariants,
+  pressTapAnimation,
+  pressTapTransition,
+} from "./animation";
 
 type NavItemProps = {
   icon: LucideIcon;
@@ -21,14 +25,12 @@ const NavItem = ({ icon: Icon, active, onClick, label }: NavItemProps) => {
     >
       <motion.span
         className="bottom-nav__item-icon"
-        animate={{
-          opacity: active ? 0 : 1,
-          scale: active ? 0.72 : 1,
-          y: active ? 8 : 0,
-        }}
-        transition={iconSpring}
+        variants={barIconVariants}
+        animate={active ? "hidden" : "visible"}
+        whileTap={!active ? pressTapAnimation : undefined}
+        transition={pressTapTransition}
       >
-        <Icon size={26} strokeWidth={2.05} />
+        <Icon size={24} strokeWidth={2} aria-hidden="true" />
       </motion.span>
     </button>
   );

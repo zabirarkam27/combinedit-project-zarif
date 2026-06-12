@@ -6,7 +6,7 @@ import { indicatorSpring, notchSpring } from "../components/animation";
 export const useNavAnimation = (
   activeIndex: number,
   itemCount: number,
-  navRef: RefObject<HTMLElement>
+  navRef: RefObject<HTMLElement | null>
 ) => {
   const [navWidth, setNavWidth] = useState(0);
   const targetCenterX = useMotionValue(0);

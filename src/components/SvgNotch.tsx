@@ -17,14 +17,20 @@ const SvgNotch = ({
   curveWidth,
   curveDepth,
 }: SvgNotchProps) => {
+  const safeWidth = width || 1;
+
   const path = useTransform(centerX, (value) =>
-    buildNotchPath(value, width || 1, height, curveWidth, curveDepth)
+    buildNotchPath(value, safeWidth, height, curveWidth, curveDepth)
   );
+
+  if (width <= 0) return null;
 
   return (
     <svg
       className="bottom-nav__shape"
-      viewBox={`0 0 ${width || 1} ${height}`}
+      width={safeWidth}
+      height={height}
+      viewBox={`0 0 ${safeWidth} ${height}`}
       preserveAspectRatio="none"
       aria-hidden="true"
     >
