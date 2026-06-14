@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import {
   Home,
   PackageSearch,
-  PhoneCall,
+  Search,
   ShoppingBag,
   type LucideIcon,
 } from "lucide-react";
@@ -19,7 +19,7 @@ import SvgNotch from "./SvgNotch";
 import NavItem from "./NavItem";
 import "./BottomNav.css";
 
-export type BottomNavKey = "home" | "menu" | "swap" | "profile";
+export type BottomNavKey = "home" | "menu" | "swap" | "search";
 
 type BottomNavTab = {
   key: BottomNavKey;
@@ -36,7 +36,7 @@ const tabs: BottomNavTab[] = [
   { key: "home", label: "Home", icon: Home },
   { key: "menu", label: "All Products", icon: PackageSearch },
   { key: "swap", label: "Cart", icon: ShoppingBag },
-  { key: "profile", label: "Contact Us", icon: PhoneCall },
+  { key: "search", label: "Search", icon: Search },
 ];
 
 const BottomNav = ({ activeKey = "home", onTabSelect }: BottomNavProps) => {

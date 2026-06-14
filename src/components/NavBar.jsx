@@ -15,7 +15,6 @@ import useProfileData from "../hooks/useProfileData";
 
 const NavBar = ({ refs }) => {
   const { contactRef } = refs || {};
-  const [activeMobileItem, setActiveMobileItem] = useState("home");
   const [searchOpen, setSearchOpen] = useState(false);
   const { cartItems } = useCart();
   const location = useLocation();
@@ -23,16 +22,14 @@ const NavBar = ({ refs }) => {
   const { profile } = useProfileData();
   const logoSrc = profile?.logo || "/nav-icon/logo.png";
 
-  const routeMobileItem = location.pathname.startsWith("/products")
+  const routeMobileItem = location.pathname.startsWith("/products") || location.pathname.startsWith("/categories")
     ? "menu"
     : location.pathname === "/cart"
     ? "swap"
     : location.pathname === "/"
     ? "home"
-    : activeMobileItem;
-  const currentMobileItem = ["profile"].includes(activeMobileItem)
-    ? activeMobileItem
-    : routeMobileItem;
+    : "home";
+  const currentMobileItem = searchOpen ? "search" : routeMobileItem;
 
   const goHome = () => {
     navigate("/");
@@ -55,28 +52,26 @@ const NavBar = ({ refs }) => {
     scrollToSection(contactRef);
   };
 
-  const handleMobileAction = (item, action) => {
-    setActiveMobileItem(item);
-    if (action) action();
-  };
-
   const handleBottomNavSelect = (key) => {
     if (key === "home") {
-      handleMobileAction("home", goHome);
+      setSearchOpen(false);
+      goHome();
       return;
     }
 
     if (key === "menu") {
-      handleMobileAction("menu", () => navigate("/products"));
+      setSearchOpen(false);
+      navigate("/products");
       return;
     }
 
     if (key === "swap") {
-      handleMobileAction("swap", () => navigate("/cart"));
+      setSearchOpen(false);
+      navigate("/cart");
       return;
     }
 
-    handleMobileAction("profile", goToContact);
+    setSearchOpen(true);
   };
 
   const navLinkClass = ({ isActive }) =>
