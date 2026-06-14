@@ -1,4 +1,4 @@
-export const NAV_HEIGHT = 80;
+export const NAV_HEIGHT = 72;
 export const NAV_MAX_WIDTH = 420;
 export const CIRCLE_DIAMETER = 64;
 export const CIRCLE_TOP_OFFSET = -28;

@@ -103,7 +103,7 @@ const BottomNav = ({ activeKey = "home", onTabSelect }: BottomNavProps) => {
               animate="center"
               exit="exit"
             >
-              <ActiveIcon size={26} strokeWidth={2.25} aria-hidden="true" />
+              <ActiveIcon size={24} strokeWidth={2.15} aria-hidden="true" />
             </motion.span>
           </AnimatePresence>
         </motion.div>

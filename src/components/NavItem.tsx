@@ -30,7 +30,7 @@ const NavItem = ({ icon: Icon, active, onClick, label }: NavItemProps) => {
         whileTap={!active ? pressTapAnimation : undefined}
         transition={pressTapTransition}
       >
-        <Icon size={24} strokeWidth={2} aria-hidden="true" />
+        <Icon size={22} strokeWidth={1.95} aria-hidden="true" />
       </motion.span>
     </button>
   );
