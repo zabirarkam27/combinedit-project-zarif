@@ -1,5 +1,20 @@
 import { useState, useEffect } from "react";
 
+const getUnitPrice = (item) => Number(item?.discountPrice || item?.price || 0);
+
+const getItemImages = (item) => {
+  if (!item) return [];
+  const images = [
+    item.selectedOptions?.image,
+    item.selectedImage,
+    item.thumbnail,
+    item.image,
+    ...(Array.isArray(item.images) ? item.images : [item.images]),
+  ].filter(Boolean);
+
+  return [...new Set(images)];
+};
+
 export const useOrderDrawer = (orderFormHook) => {
   const {
     selectedProduct,
@@ -16,13 +31,13 @@ export const useOrderDrawer = (orderFormHook) => {
   useEffect(() => {
     if (selectedProduct) {
       const shipping = Number(orderInfo.shippingCharge) || 0;
-      setGrandTotal(selectedProduct.discountPrice? selectedProduct.discountPrice * quantity + shipping : selectedProduct.price * quantity + shipping);
+      setGrandTotal(getUnitPrice(selectedProduct) * quantity + shipping);
     }
   }, [selectedProduct, quantity, orderInfo.shippingCharge]);
 
-  const openDrawer = (product) => {
+  const openDrawer = (product, initialQuantity = 1) => {
     setSelectedProduct(product);
-    setQuantity(1);
+    setQuantity(Math.max(1, Number(initialQuantity) || 1));
 
     // reset shipping & payment
     handleOrderChange({ target: { name: "shippingCharge", value: 70 } });
@@ -38,7 +53,7 @@ export const useOrderDrawer = (orderFormHook) => {
   const decreaseQuantity = () =>
     setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
 
-  const productTotal = selectedProduct ? (selectedProduct.discountPrice ? selectedProduct.discountPrice * quantity : selectedProduct.price * quantity) : 0;
+  const productTotal = selectedProduct ? getUnitPrice(selectedProduct) * quantity : 0;
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -50,12 +65,14 @@ export const useOrderDrawer = (orderFormHook) => {
         {
           productId: selectedProduct._id || selectedProduct.id,
           productName: selectedProduct.name,
-          unitPrice: selectedProduct.price,
+          unitPrice: getUnitPrice(selectedProduct),
           quantity,
           finalPrice: productTotal,
-          images: Array.isArray(selectedProduct.images)
-            ? selectedProduct.images
-            : [selectedProduct.images],
+          images: getItemImages(selectedProduct),
+          selectedOptions: selectedProduct.selectedOptions || {},
+          variation: selectedProduct.selectedOptions?.size || "",
+          color: selectedProduct.selectedOptions?.color || "",
+          selectedImage: selectedProduct.selectedOptions?.image || selectedProduct.selectedImage || "",
           status: "pending",
         },
       ],

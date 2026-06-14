@@ -13,20 +13,25 @@ export const CartProvider = ({ children }) => {
   }, [cartItems]);
 
   // Add to cart
-  const addToCart = (product) => {
+  const addToCart = (product, amount = 1) => {
+    const safeAmount = Math.max(1, Number(amount) || 1);
+
     setCartItems((prev) => {
       const productId = product._id || product.id;
-      const existing = prev.find((item) => (item._id || item.id) === productId);
+      const productKey =
+        product.cartKey ||
+        `${productId}-${product.selectedOptions?.size || ""}-${product.selectedOptions?.color || ""}-${product.selectedOptions?.image || ""}`;
+      const existing = prev.find((item) => (item.cartKey || item._id || item.id) === productKey);
 
       if (existing) {
         return prev.map((item) =>
-          (item._id || item.id) === productId
-            ? { ...item, quantity: item.quantity + 1 }
+          (item.cartKey || item._id || item.id) === productKey
+            ? { ...item, quantity: item.quantity + safeAmount }
             : item
         );
       }
 
-      return [...prev, { ...product, quantity: 1 }];
+      return [...prev, { ...product, cartKey: productKey, quantity: safeAmount }];
     });
   };
   const clearCart = () => setCartItems([]);
@@ -34,14 +39,14 @@ export const CartProvider = ({ children }) => {
 
   // Remove from cart
   const removeFromCart = (id) => {
-    setCartItems((prev) => prev.filter((item) => (item._id || item.id) !== id));
+    setCartItems((prev) => prev.filter((item) => (item.cartKey || item._id || item.id) !== id));
   };
 
   // Update quantity
   const updateQuantity = (id, qty) => {
     setCartItems((prev) =>
       prev.map((item) =>
-        (item._id || item.id) === id ? { ...item, quantity: qty } : item
+        (item.cartKey || item._id || item.id) === id ? { ...item, quantity: qty } : item
       )
     );
   };

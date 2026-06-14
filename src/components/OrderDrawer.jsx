@@ -1,7 +1,35 @@
 const productImage = (product) => {
   if (!product) return "";
+  if (product.selectedOptions?.image) return product.selectedOptions.image;
+  if (product.selectedImage) return product.selectedImage;
   if (Array.isArray(product.images)) return product.images[0];
   return product.image || product.thumbnail || product.images;
+};
+
+const itemPrice = (item) => Number(item?.discountPrice || item?.price || 0);
+
+const SelectedOptionBadges = ({ item }) => {
+  const selectedOptions = item?.selectedOptions || {};
+  if (!selectedOptions.size && !selectedOptions.color) return null;
+
+  return (
+    <div className="mt-1 flex flex-wrap gap-1">
+      {selectedOptions.size && (
+        <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-semibold text-gray-700">
+          Size: {selectedOptions.size}
+        </span>
+      )}
+      {selectedOptions.color && (
+        <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-semibold text-gray-700">
+          <span
+            className="h-2 w-2 rounded-full border border-black/10"
+            style={{ backgroundColor: selectedOptions.color }}
+          />
+          {selectedOptions.color}
+        </span>
+      )}
+    </div>
+  );
 };
 
 const FieldIcon = () => (
@@ -51,8 +79,8 @@ const OrderDrawer = ({
         {cartItems.length > 0 ? (
           <div className="space-y-4 mb-5">
             {cartItems.map((item) => {
-              const itemId = item._id || item.id;
-              const itemTotal = item.price * item.quantity;
+              const itemId = item.cartKey || item._id || item.id;
+              const itemTotal = itemPrice(item) * item.quantity;
 
               return (
                 <div key={itemId} className="flex items-center gap-2 md:gap-3 pb-3">
@@ -67,6 +95,7 @@ const OrderDrawer = ({
                       <p className="text-xs text-gray-600">
                         {item.weight || item.volume}
                       </p>
+                      <SelectedOptionBadges item={item} />
                     </div>
                     <div className="text-right">
                       <p className="text-sm font-semibold text-gray-600">
@@ -109,6 +138,7 @@ const OrderDrawer = ({
                   <p className="text-xs text-gray-600">
                     {selectedProduct.weight || selectedProduct.volume}
                   </p>
+                  <SelectedOptionBadges item={selectedProduct} />
                 </div>
                 <div className="text-right">
                   <p className="text-md font-semibold text-gray-600">

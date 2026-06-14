@@ -9,6 +9,20 @@ import "react-toastify/dist/ReactToastify.css";
 import OrderDrawer from "../components/OrderDrawer";
 import { createOrder } from "../services/orders";
 
+const getItemPrice = (item) => Number(item.discountPrice || item.price || 0);
+
+const getItemImages = (item) => {
+  const images = [
+    item.selectedOptions?.image,
+    item.selectedImage,
+    item.thumbnail,
+    item.image,
+    ...(Array.isArray(item.images) ? item.images : [item.images]),
+  ].filter(Boolean);
+
+  return [...new Set(images)];
+};
+
 const CartPage = () => {
   const { cartItems, removeFromCart, updateQuantity, clearCart } = useCart();
   const orderFormHook = useOrderForm();
@@ -18,9 +32,11 @@ const CartPage = () => {
   const [loading, setLoading] = useState(false);
 
   const totalPrice = useMemo(
-    () => cartItems.reduce((sum, item) => sum + item.price * item.quantity, 0),
+    () => cartItems.reduce((sum, item) => sum + getItemPrice(item) * item.quantity, 0),
     [cartItems]
   );
+  const shippingCharge = Number(orderFormHook.orderInfo.shippingCharge) || 0;
+  const checkoutGrandTotal = totalPrice + shippingCharge;
 
   const handleCheckoutSubmit = async (e) => {
     e.preventDefault();
@@ -37,16 +53,23 @@ const CartPage = () => {
       phone: orderFormHook.orderInfo.phone,
       address: orderFormHook.orderInfo.address,
       note: orderFormHook.orderInfo.note,
+      shippingCharge,
+      paymentMethod: orderFormHook.orderInfo.paymentMethod,
+      paymentStatus: orderFormHook.orderInfo.paymentStatus,
       items: cartItems.map((item) => ({
         productId: item._id || item.id,
         productName: item.name,
-        unitPrice: item.price,
+        unitPrice: getItemPrice(item),
         quantity: item.quantity,
-        finalPrice: item.price * item.quantity,
-        images: Array.isArray(item.images) ? item.images : [item.images],
+        finalPrice: getItemPrice(item) * item.quantity,
+        images: getItemImages(item),
+        selectedOptions: item.selectedOptions || {},
+        variation: item.selectedOptions?.size || "",
+        color: item.selectedOptions?.color || "",
+        selectedImage: item.selectedOptions?.image || item.selectedImage || "",
         status: "pending",
       })),
-      grandTotal: totalPrice,
+      grandTotal: checkoutGrandTotal,
       createdAt: new Date().toISOString(),
     };
 
@@ -84,7 +107,7 @@ const CartPage = () => {
       cancelButtonText: "Cancel",
     }).then((result) => {
       if (result.isConfirmed) {
-        removeFromCart(item._id || item.id);
+        removeFromCart(item.cartKey || item._id || item.id);
         toast.info(`🗑️ ${item.name} removed from cart`);
       }
     });
@@ -97,8 +120,11 @@ const CartPage = () => {
 
         <div className="space-y-4">
           {cartItems.map((item) => {
-            const itemId = item._id || item.id;
-            const itemTotal = item.price * item.quantity;
+            const itemId = item.cartKey || item._id || item.id;
+            const itemPrice = getItemPrice(item);
+            const itemTotal = itemPrice * item.quantity;
+            const selectedOptions = item.selectedOptions || {};
+            const itemImage = getItemImages(item)[0];
 
             return (
               <div
@@ -107,13 +133,31 @@ const CartPage = () => {
               >
                 <div className="flex items-center gap-3">
                   <img
-                    src={item.images?.[0] || item.image || item.thumbnail}
+                    src={itemImage}
                     alt={item.name}
                     className="w-20 h-20 object-cover rounded border theme-border"
                   />
                   <div>
                     <h3 className="font-semibold">{item.name}</h3>
-                    <p className="text-sm text-gray-600">Price: BDT {item.price}</p>
+                    <p className="text-sm text-gray-600">Price: BDT {itemPrice}</p>
+                    {(selectedOptions.size || selectedOptions.color) && (
+                      <div className="mt-2 flex flex-wrap gap-1.5">
+                        {selectedOptions.size && (
+                          <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-bold text-gray-700">
+                            Size: {selectedOptions.size}
+                          </span>
+                        )}
+                        {selectedOptions.color && (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-[11px] font-bold text-gray-700">
+                            <span
+                              className="h-2.5 w-2.5 rounded-full border border-black/10"
+                              style={{ backgroundColor: selectedOptions.color }}
+                            />
+                            {selectedOptions.color}
+                          </span>
+                        )}
+                      </div>
+                    )}
                     <div className="flex items-center gap-3 mt-1">
                       <button
                         onClick={() => updateQuantity(itemId, Math.max(item.quantity - 1, 1))}
@@ -162,11 +206,17 @@ const CartPage = () => {
           selectedProduct={null}
           isOpen={isOpen}
           quantity={1}
-          grandTotal={totalPrice}
+          grandTotal={checkoutGrandTotal}
           productTotal={totalPrice}
           closeDrawer={() => setIsOpen(false)}
-          increaseQuantity={(id) => updateQuantity(id, cartItems.find(i => i._id === id || i.id === id).quantity + 1)}
-          decreaseQuantity={(id) => updateQuantity(id, Math.max(cartItems.find(i => i._id === id || i.id === id).quantity - 1, 1))}
+          increaseQuantity={(id) => {
+            const item = cartItems.find((i) => (i.cartKey || i._id || i.id) === id);
+            if (item) updateQuantity(id, item.quantity + 1);
+          }}
+          decreaseQuantity={(id) => {
+            const item = cartItems.find((i) => (i.cartKey || i._id || i.id) === id);
+            if (item) updateQuantity(id, Math.max(item.quantity - 1, 1));
+          }}
           handleOrderChange={orderFormHook.handleOrderChange}
           handleSubmit={handleCheckoutSubmit}
           orderInfo={orderFormHook.orderInfo}
