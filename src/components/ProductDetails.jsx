@@ -29,6 +29,27 @@ const getProductImages = (product) => {
 const getEffectivePrice = (product) =>
   Number(product?.discountPrice || product?.price || 0);
 
+const resolveColorImage = (product, color, colorIndex, productImages) => {
+  if (!product || !color) return productImages[0] || "";
+
+  if (product.colorImages && typeof product.colorImages === "object") {
+    const mappedImage = Array.isArray(product.colorImages)
+      ? product.colorImages[colorIndex]
+      : product.colorImages[color];
+    if (mappedImage) return mappedImage;
+  }
+
+  const variant = product.variants?.find?.((item) => {
+    const variantColor = item.color || item.hex || item.name;
+    return String(variantColor).toLowerCase() === String(color).toLowerCase();
+  });
+
+  if (variant?.image) return variant.image;
+  if (Array.isArray(variant?.images) && variant.images[0]) return variant.images[0];
+
+  return productImages[colorIndex] || productImages[0] || "";
+};
+
 const buildSelectedProduct = (product, selectedOptions) => {
   const productId = product._id || product.id;
   const cartKey = [
@@ -61,6 +82,11 @@ const ProductDetails = () => {
   const [selectedColor, setSelectedColor] = useState("");
   const [selectedSize, setSelectedSize] = useState("");
   const [quantityPreview, setQuantityPreview] = useState(1);
+  const [zoomState, setZoomState] = useState({
+    active: false,
+    x: 50,
+    y: 50,
+  });
 
   const productImages = useMemo(() => getProductImages(product), [product]);
   const productSizes = useMemo(
@@ -179,214 +205,289 @@ const ProductDetails = () => {
   const regularPrice = Number(product.price || 0);
   const hasDiscount = Number(product.discountPrice) > 0;
   const totalPreview = effectivePrice * quantityPreview;
+  const isOutOfStock =
+    product.inStock === false ||
+    (product.stockQuantity !== undefined && Number(product.stockQuantity) <= 0);
+
+  const handleColorSelect = (color, colorIndex) => {
+    setSelectedColor(color);
+    const colorImage = resolveColorImage(product, color, colorIndex, productImages);
+    if (colorImage) setMainImage(colorImage);
+  };
+
+  const handleImageZoomMove = (event) => {
+    const bounds = event.currentTarget.getBoundingClientRect();
+    const x = ((event.clientX - bounds.left) / bounds.width) * 100;
+    const y = ((event.clientY - bounds.top) / bounds.height) * 100;
+
+    setZoomState({
+      active: true,
+      x: Math.min(100, Math.max(0, x)),
+      y: Math.min(100, Math.max(0, y)),
+    });
+  };
 
   return (
     <div className="theme-page-bg min-h-screen pb-12 pt-6 md:pt-28">
       <ToastContainer position="top-right" autoClose={2500} />
 
-      <section className="mx-auto grid max-w-7xl gap-6 px-3 md:grid-cols-[minmax(0,1.04fr)_minmax(360px,0.96fr)] md:px-6">
-        <div className="rounded-3xl border border-[var(--theme-border-color)] bg-white p-3 shadow-[0_20px_60px_rgba(15,23,42,0.08)] md:p-5">
-          <div className="relative aspect-square overflow-hidden rounded-2xl bg-[var(--theme-muted-bg)]">
-            {activeImage ? (
-              <img
-                src={activeImage}
-                alt={product.name}
-                className="h-full w-full object-contain p-4 transition duration-500 hover:scale-[1.03]"
-              />
-            ) : (
-              <div className="grid h-full place-items-center text-sm font-semibold text-[var(--theme-muted-text)]">
-                No image available
+      <section className="mx-auto max-w-7xl px-3 md:px-6">
+        <div className="rounded-3xl border border-[var(--theme-border-color)] bg-white p-4 shadow-[0_20px_60px_rgba(15,23,42,0.08)] md:p-7">
+          <div className="grid gap-5 md:grid-cols-[minmax(230px,33%)_minmax(0,1fr)] md:items-start">
+            <div className="md:sticky md:top-24">
+              <div
+                className="relative aspect-square overflow-hidden rounded-2xl bg-[var(--theme-muted-bg)]"
+                onMouseMove={handleImageZoomMove}
+                onMouseEnter={() => setZoomState((prev) => ({ ...prev, active: true }))}
+                onMouseLeave={() => setZoomState((prev) => ({ ...prev, active: false }))}
+              >
+                {activeImage ? (
+                  <>
+                    <img
+                      src={activeImage}
+                      alt={product.name}
+                      className="h-full w-full object-contain p-4"
+                    />
+                    {zoomState.active && (
+                      <div
+                        className="pointer-events-none absolute right-3 top-3 hidden h-32 w-32 rounded-2xl border border-white/80 bg-white shadow-[0_18px_45px_rgba(15,23,42,0.22)] ring-1 ring-black/5 md:block lg:h-40 lg:w-40"
+                        style={{
+                          backgroundImage: `url(${activeImage})`,
+                          backgroundRepeat: "no-repeat",
+                          backgroundSize: "230%",
+                          backgroundPosition: `${zoomState.x}% ${zoomState.y}%`,
+                        }}
+                      />
+                    )}
+                  </>
+                ) : (
+                  <div className="grid h-full place-items-center text-sm font-semibold text-[var(--theme-muted-text)]">
+                    No image available
+                  </div>
+                )}
+                {hasDiscount && (
+                  <span className="absolute left-4 top-4 rounded-full bg-red-600 px-3 py-1 text-xs font-extrabold text-white shadow-lg">
+                    SALE
+                  </span>
+                )}
+                {isOutOfStock && (
+                  <span className="absolute bottom-4 left-4 rounded-full bg-slate-950 px-3 py-1 text-xs font-extrabold text-white shadow-lg">
+                    OUT OF STOCK
+                  </span>
+                )}
               </div>
-            )}
-            {hasDiscount && (
-              <span className="absolute left-4 top-4 rounded-full bg-red-600 px-3 py-1 text-xs font-extrabold text-white shadow-lg">
-                SALE
-              </span>
-            )}
-          </div>
 
-          {productImages.length > 1 && (
-            <div className="mt-4 grid grid-cols-5 gap-2 sm:grid-cols-6 md:grid-cols-7">
-              {productImages.map((image) => (
-                <button
-                  key={image}
-                  type="button"
-                  onClick={() => setMainImage(image)}
-                  className={`aspect-square overflow-hidden rounded-xl border bg-white p-1 transition ${
-                    activeImage === image
-                      ? "border-[var(--theme-primary)] ring-2 ring-[var(--theme-primary)]/25"
-                      : "border-[var(--theme-border-color)] hover:border-[var(--theme-primary)]"
-                  }`}
-                  aria-label="Select product image"
-                >
-                  <img src={image} alt="" className="h-full w-full object-cover" />
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
-        <div className="rounded-3xl border border-[var(--theme-border-color)] bg-white p-5 shadow-[0_20px_60px_rgba(15,23,42,0.08)] md:p-7">
-          <div className="mb-4 flex flex-wrap items-center gap-2">
-            {product.category && (
-              <span className="rounded-full bg-[var(--theme-muted-bg)] px-3 py-1 text-xs font-bold text-[var(--theme-primary)]">
-                {product.category}
-              </span>
-            )}
-            <span className="rounded-full bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-700">
-              {product.inStock ? "In stock" : "Out of stock"}
-            </span>
-          </div>
-
-          <h1 className="text-3xl font-extrabold leading-tight text-slate-950 md:text-5xl">
-            {product.name}
-          </h1>
-
-          <div className="mt-4 flex flex-wrap items-end gap-3">
-            <span className="text-3xl font-black text-[var(--theme-primary)]">
-              BDT {effectivePrice}
-            </span>
-            {hasDiscount && (
-              <span className="pb-1 text-base font-bold text-gray-400 line-through">
-                BDT {regularPrice}
-              </span>
-            )}
-          </div>
-
-          <p className="mt-5 text-sm leading-7 text-[var(--theme-muted-text)] md:text-base">
-            {product.description || "Premium quality product selected for daily use."}
-          </p>
-
-          <div className="mt-6 grid gap-3 rounded-2xl bg-[var(--theme-muted-bg)] p-4 text-left sm:grid-cols-3">
-            <div>
-              <p className="text-xs font-bold uppercase text-[var(--theme-muted-text)]">Brand</p>
-              <p className="mt-1 font-bold text-slate-950">{product.brand || "N/A"}</p>
-            </div>
-            <div>
-              <p className="text-xs font-bold uppercase text-[var(--theme-muted-text)]">Weight</p>
-              <p className="mt-1 font-bold text-slate-950">{product.weight || product.volume || "Standard"}</p>
-            </div>
-            <div>
-              <p className="text-xs font-bold uppercase text-[var(--theme-muted-text)]">Stock</p>
-              <p className="mt-1 font-bold text-slate-950">{product.inStock ? "Available" : "Unavailable"}</p>
-            </div>
-          </div>
-
-          {productSizes.length > 0 && (
-            <div className="mt-6">
-              <p className="mb-3 text-sm font-extrabold text-slate-950">Select variation / size</p>
-              <div className="flex flex-wrap gap-2">
-                {productSizes.map((size) => (
-                  <button
-                    key={size}
-                    type="button"
-                    onClick={() => setSelectedSize(size)}
-                    className={`rounded-xl border px-4 py-2 text-sm font-bold transition ${
-                      selectedSize === size
-                        ? "border-[var(--theme-primary)] bg-[var(--theme-primary)] text-white"
-                        : "border-[var(--theme-border-color)] bg-white text-slate-700 hover:border-[var(--theme-primary)]"
-                    }`}
-                  >
-                    {size}
-                  </button>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {productColors.length > 0 && (
-            <div className="mt-6">
-              <p className="mb-3 text-sm font-extrabold text-slate-950">Select color</p>
-              <div className="flex flex-wrap gap-3">
-                {productColors.map((color) => (
-                  <button
-                    key={color}
-                    type="button"
-                    onClick={() => setSelectedColor(color)}
-                    className={`grid h-11 w-11 place-items-center rounded-full border transition ${
-                      selectedColor === color
-                        ? "border-[var(--theme-primary)] ring-2 ring-[var(--theme-primary)]/25"
-                        : "border-[var(--theme-border-color)]"
-                    }`}
-                    aria-label={`Select color ${color}`}
-                  >
-                    <span className="h-8 w-8 rounded-full border border-black/10" style={{ backgroundColor: color }} />
-                  </button>
-                ))}
-              </div>
-              {selectedColor && (
-                <p className="mt-2 text-xs font-semibold uppercase text-[var(--theme-muted-text)]">
-                  Selected: {selectedColor}
-                </p>
+              {productImages.length > 1 && (
+                <div className="mt-4 grid grid-cols-5 gap-2 sm:grid-cols-6 md:grid-cols-4 lg:grid-cols-5">
+                  {productImages.map((image) => (
+                    <button
+                      key={image}
+                      type="button"
+                      onClick={() => setMainImage(image)}
+                      className={`aspect-square overflow-hidden rounded-xl border bg-white p-1 transition ${
+                        activeImage === image
+                          ? "border-[var(--theme-primary)] ring-2 ring-[var(--theme-primary)]/25"
+                          : "border-[var(--theme-border-color)] hover:border-[var(--theme-primary)]"
+                      }`}
+                      aria-label="Select product image"
+                    >
+                      <img src={image} alt="" className="h-full w-full object-cover" />
+                    </button>
+                  ))}
+                </div>
               )}
             </div>
-          )}
 
-          <div className="mt-6 flex flex-wrap items-center gap-3">
-            <div className="inline-flex items-center rounded-2xl border border-[var(--theme-border-color)] bg-white">
-              <button
-                type="button"
-                onClick={() => setQuantityPreview((value) => Math.max(1, value - 1))}
-                className="grid h-12 w-12 place-items-center rounded-l-2xl text-slate-700 hover:bg-gray-50"
-                aria-label="Decrease quantity"
-              >
-                <Minus size={18} />
-              </button>
-              <span className="min-w-10 text-center font-extrabold">{quantityPreview}</span>
-              <button
-                type="button"
-                onClick={() => setQuantityPreview((value) => value + 1)}
-                className="grid h-12 w-12 place-items-center rounded-r-2xl text-slate-700 hover:bg-gray-50"
-                aria-label="Increase quantity"
-              >
-                <Plus size={18} />
-              </button>
-            </div>
-            <span className="text-sm font-bold text-[var(--theme-muted-text)]">
-              Subtotal: BDT {totalPreview}
-            </span>
-          </div>
-
-          <div className="mt-6 grid gap-3 sm:grid-cols-[auto_1fr]">
-            <button
-              type="button"
-              onClick={handleAddToCart}
-              className="inline-flex items-center justify-center gap-2 rounded-2xl border border-[var(--theme-primary)] px-5 py-3 font-extrabold text-[var(--theme-primary)] transition hover:bg-[var(--theme-primary)] hover:text-white"
-            >
-              <ShoppingCart size={20} />
-              Add to Cart
-            </button>
-            <button
-              type="button"
-              onClick={handleOrderNow}
-              className="inline-flex items-center justify-center gap-2 rounded-2xl px-5 py-3 font-extrabold text-white shadow-[0_14px_30px_rgba(11,125,35,0.22)] theme-gradient theme-gradient-hover"
-            >
-              Order Now <ChevronRight size={20} />
-            </button>
-          </div>
-
-          {!profileLoading && profile?.phoneLink && (
-            <a
-              href={profile.phoneLink}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-950 px-5 py-3 font-bold text-white transition hover:bg-slate-800"
-            >
-              Call for help: {profile.phone || "01838600619"}
-            </a>
-          )}
-
-          <div className="mt-6 grid gap-3 sm:grid-cols-3">
-            {[
-              { icon: Truck, text: "Fast delivery" },
-              { icon: ShieldCheck, text: "Secure checkout" },
-              { icon: Check, text: "Quality checked" },
-            ].map(({ icon: Icon, text }) => (
-              <div key={text} className="flex items-center gap-2 rounded-2xl bg-[var(--theme-muted-bg)] px-3 py-2 text-sm font-bold text-slate-700">
-                <Icon size={18} className="text-[var(--theme-primary)]" />
-                {text}
+            <div className="min-w-0">
+              <div className="mb-4 flex flex-wrap items-center gap-2">
+                {product.category && (
+                  <span className="rounded-full bg-[var(--theme-muted-bg)] px-3 py-1 text-xs font-bold text-[var(--theme-primary)]">
+                    {product.category}
+                  </span>
+                )}
+                <span
+                  className={`rounded-full px-3 py-1 text-xs font-bold ${
+                    isOutOfStock
+                      ? "bg-red-50 text-red-700"
+                      : "bg-emerald-50 text-emerald-700"
+                  }`}
+                >
+                  {isOutOfStock ? "Out of stock" : "In stock"}
+                </span>
               </div>
-            ))}
+
+              <h1 className="break-words text-2xl font-extrabold leading-tight text-slate-950 sm:text-3xl lg:text-4xl xl:text-5xl">
+                {product.name}
+              </h1>
+
+              <div className="mt-4 flex flex-wrap items-end gap-3">
+                <span className="text-2xl font-black text-[var(--theme-primary)] sm:text-3xl">
+                  BDT {effectivePrice}
+                </span>
+                {hasDiscount && (
+                  <span className="pb-1 text-base font-bold text-gray-400 line-through">
+                    BDT {regularPrice}
+                  </span>
+                )}
+              </div>
+
+              <p className="mt-5 text-sm leading-7 text-[var(--theme-muted-text)] md:text-base">
+                {product.description || "Premium quality product selected for daily use."}
+              </p>
+
+              <div className="mt-6 grid gap-3 rounded-2xl bg-[var(--theme-muted-bg)] p-4 text-left sm:grid-cols-3">
+                <div>
+                  <p className="text-xs font-bold uppercase text-[var(--theme-muted-text)]">Brand</p>
+                  <p className="mt-1 font-bold text-slate-950">{product.brand || "N/A"}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-bold uppercase text-[var(--theme-muted-text)]">Weight</p>
+                  <p className="mt-1 font-bold text-slate-950">{product.weight || product.volume || "Standard"}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-bold uppercase text-[var(--theme-muted-text)]">Stock</p>
+                  <p className="mt-1 font-bold text-slate-950">{isOutOfStock ? "Unavailable" : "Available"}</p>
+                </div>
+              </div>
+
+              {productSizes.length > 0 && (
+                <div className="mt-6">
+                  <p className="mb-3 text-sm font-extrabold text-slate-950">Select variation / size</p>
+                  <div className="flex flex-wrap gap-2">
+                    {productSizes.map((size) => (
+                      <button
+                        key={size}
+                        type="button"
+                        onClick={() => setSelectedSize(size)}
+                        className={`rounded-xl border px-4 py-2 text-sm font-bold transition ${
+                          selectedSize === size
+                            ? "border-[var(--theme-primary)] bg-[var(--theme-primary)] text-white"
+                            : "border-[var(--theme-border-color)] bg-white text-slate-700 hover:border-[var(--theme-primary)]"
+                        }`}
+                      >
+                        {size}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {productColors.length > 0 && (
+                <div className="mt-6">
+                  <p className="mb-3 text-sm font-extrabold text-slate-950">Select color</p>
+                  <div className="flex flex-wrap gap-3">
+                    {productColors.map((color, colorIndex) => {
+                      const colorImage = resolveColorImage(product, color, colorIndex, productImages);
+
+                      return (
+                        <button
+                          key={color}
+                          type="button"
+                          onClick={() => handleColorSelect(color, colorIndex)}
+                          className={`group grid h-14 w-14 place-items-center overflow-hidden rounded-2xl border bg-white p-1 transition ${
+                            selectedColor === color
+                              ? "border-[var(--theme-primary)] ring-2 ring-[var(--theme-primary)]/25"
+                              : "border-[var(--theme-border-color)] hover:border-[var(--theme-primary)]"
+                          }`}
+                          aria-label={`Select color ${color}`}
+                          title={color}
+                        >
+                          {colorImage ? (
+                            <span className="relative h-full w-full overflow-hidden rounded-xl">
+                              <img
+                                src={colorImage}
+                                alt=""
+                                className="h-full w-full object-cover transition group-hover:scale-110"
+                              />
+                              <span
+                                className="absolute bottom-1 right-1 h-4 w-4 rounded-full border border-white shadow"
+                                style={{ backgroundColor: color }}
+                              />
+                            </span>
+                          ) : (
+                            <span className="h-9 w-9 rounded-full border border-black/10" style={{ backgroundColor: color }} />
+                          )}
+                        </button>
+                      );
+                    })}
+                  </div>
+                  {selectedColor && (
+                    <p className="mt-2 text-xs font-semibold uppercase text-[var(--theme-muted-text)]">
+                      Selected: {selectedColor}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              <div className="mt-6 flex flex-wrap items-center gap-3">
+                <div className="inline-flex items-center rounded-2xl border border-[var(--theme-border-color)] bg-white">
+                  <button
+                    type="button"
+                    onClick={() => setQuantityPreview((value) => Math.max(1, value - 1))}
+                    className="grid h-12 w-12 place-items-center rounded-l-2xl text-slate-700 hover:bg-gray-50"
+                    aria-label="Decrease quantity"
+                  >
+                    <Minus size={18} />
+                  </button>
+                  <span className="min-w-10 text-center font-extrabold">{quantityPreview}</span>
+                  <button
+                    type="button"
+                    onClick={() => setQuantityPreview((value) => value + 1)}
+                    className="grid h-12 w-12 place-items-center rounded-r-2xl text-slate-700 hover:bg-gray-50"
+                    aria-label="Increase quantity"
+                  >
+                    <Plus size={18} />
+                  </button>
+                </div>
+                <span className="text-sm font-bold text-[var(--theme-muted-text)]">
+                  Subtotal: BDT {totalPreview}
+                </span>
+              </div>
+
+              <div className="mt-6 grid gap-3 sm:grid-cols-[auto_1fr]">
+                <button
+                  type="button"
+                  onClick={handleAddToCart}
+                  disabled={isOutOfStock}
+                  className="inline-flex items-center justify-center gap-2 rounded-2xl border border-[var(--theme-primary)] px-5 py-3 font-extrabold text-[var(--theme-primary)] transition hover:bg-[var(--theme-primary)] hover:text-white disabled:cursor-not-allowed disabled:border-gray-300 disabled:bg-gray-100 disabled:text-gray-400"
+                >
+                  <ShoppingCart size={20} />
+                  Add to Cart
+                </button>
+                <button
+                  type="button"
+                  onClick={handleOrderNow}
+                  disabled={isOutOfStock}
+                  className="inline-flex items-center justify-center gap-2 rounded-2xl px-5 py-3 font-extrabold text-white shadow-[0_14px_30px_rgba(11,125,35,0.22)] theme-gradient theme-gradient-hover disabled:cursor-not-allowed disabled:bg-none disabled:bg-gray-300 disabled:shadow-none"
+                >
+                  Order Now <ChevronRight size={20} />
+                </button>
+              </div>
+
+              {!profileLoading && profile?.phoneLink && (
+                <a
+                  href={profile.phoneLink}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-950 px-5 py-3 font-bold text-white transition hover:bg-slate-800"
+                >
+                  Call for help: {profile.phone || "01838600619"}
+                </a>
+              )}
+
+              <div className="mt-6 grid gap-3 sm:grid-cols-3">
+                {[
+                  { icon: Truck, text: "Fast delivery" },
+                  { icon: ShieldCheck, text: "Secure checkout" },
+                  { icon: Check, text: "Quality checked" },
+                ].map(({ icon: Icon, text }) => (
+                  <div key={text} className="flex items-center gap-2 rounded-2xl bg-[var(--theme-muted-bg)] px-3 py-2 text-sm font-bold text-slate-700">
+                    <Icon size={18} className="text-[var(--theme-primary)]" />
+                    {text}
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </section>
