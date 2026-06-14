@@ -1,3 +1,16 @@
+import {
+  CreditCard,
+  MapPin,
+  MessageSquare,
+  Minus,
+  Phone,
+  Plus,
+  ShoppingBag,
+  Truck,
+  User,
+  X,
+} from "lucide-react";
+
 const productImage = (product) => {
   if (!product) return "";
   if (product.selectedOptions?.image) return product.selectedOptions.image;
@@ -13,14 +26,14 @@ const SelectedOptionBadges = ({ item }) => {
   if (!selectedOptions.size && !selectedOptions.color) return null;
 
   return (
-    <div className="mt-1 flex flex-wrap gap-1">
+    <div className="mt-2 flex flex-wrap gap-1.5">
       {selectedOptions.size && (
-        <span className="rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-semibold text-gray-700">
+        <span className="rounded-full bg-white px-2 py-0.5 text-[10px] font-bold text-slate-700 ring-1 ring-slate-200">
           Size: {selectedOptions.size}
         </span>
       )}
       {selectedOptions.color && (
-        <span className="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 text-[10px] font-semibold text-gray-700">
+        <span className="inline-flex items-center gap-1 rounded-full bg-white px-2 py-0.5 text-[10px] font-bold text-slate-700 ring-1 ring-slate-200">
           <span
             className="h-2 w-2 rounded-full border border-black/10"
             style={{ backgroundColor: selectedOptions.color }}
@@ -32,9 +45,34 @@ const SelectedOptionBadges = ({ item }) => {
   );
 };
 
-const FieldIcon = () => (
-  <div className="theme-secondary-bg flex items-center justify-center px-3 self-stretch">
-    <img src="/input-phone-icon.png" alt="" className="w-6 h-6" />
+const FieldShell = ({ icon: Icon, children }) => (
+  <div className="flex items-stretch overflow-hidden rounded-2xl border border-[var(--theme-border-color)] bg-white shadow-sm transition focus-within:border-[var(--theme-primary)] focus-within:ring-2 focus-within:ring-[var(--theme-primary)]/15">
+    <div className="flex w-12 items-center justify-center bg-[var(--theme-muted-bg)] text-[var(--theme-primary)]">
+      <Icon size={18} />
+    </div>
+    {children}
+  </div>
+);
+
+const QuantityStepper = ({ quantity, onIncrease, onDecrease }) => (
+  <div className="inline-flex items-center rounded-full border border-slate-200 bg-white text-xs font-bold shadow-sm">
+    <button
+      type="button"
+      onClick={onDecrease}
+      className="grid h-7 w-7 place-items-center rounded-l-full text-slate-600 transition hover:bg-slate-100"
+      aria-label="Decrease quantity"
+    >
+      <Minus size={13} />
+    </button>
+    <span className="min-w-7 text-center text-slate-900">{quantity}</span>
+    <button
+      type="button"
+      onClick={onIncrease}
+      className="grid h-7 w-7 place-items-center rounded-r-full text-[var(--theme-primary)] transition hover:bg-[var(--theme-muted-bg)]"
+      aria-label="Increase quantity"
+    >
+      <Plus size={13} />
+    </button>
   </div>
 );
 
@@ -54,239 +92,290 @@ const OrderDrawer = ({
 }) => {
   if (!isOpen) return null;
 
+  const hasCartItems = cartItems.length > 0;
+  const singleItemTotal = selectedProduct ? itemPrice(selectedProduct) * quantity : 0;
+  const displayItems = hasCartItems
+    ? cartItems
+    : selectedProduct
+      ? [{ ...selectedProduct, quantity, lineTotal: singleItemTotal }]
+      : [];
+
+  const handleLineIncrease = (item) => {
+    if (hasCartItems) {
+      increaseQuantity(item.cartKey || item._id || item.id);
+      return;
+    }
+    increaseQuantity();
+  };
+
+  const handleLineDecrease = (item) => {
+    if (hasCartItems) {
+      decreaseQuantity(item.cartKey || item._id || item.id);
+      return;
+    }
+    decreaseQuantity();
+  };
+
   return (
-    <div className="fixed inset-0 z-50 flex">
+    <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/60 px-3 py-3 backdrop-blur-sm sm:items-center sm:px-5">
       <button
         type="button"
-        aria-label="Close order drawer"
-        className="flex-1 bg-black/50"
+        aria-label="Close checkout popup"
+        className="absolute inset-0 cursor-default"
         onClick={closeDrawer}
       />
 
-      <div className="flex flex-col gap-4 p-4 w-full md:w-96 min-h-full bg-white text-base-content shadow-lg overflow-y-auto px-4 md:px-8 relative">
-        <button
-          type="button"
-          onClick={closeDrawer}
-          className="w-7 h-7 flex items-center justify-center rounded-full border-2 theme-border text-[var(--theme-secondary)] hover:bg-[var(--theme-secondary)] hover:text-white transition font-black hover:cursor-pointer absolute top-4 right-4 md:right-8"
-        >
-          X
-        </button>
+      <div className="relative flex max-h-[94vh] w-full max-w-5xl flex-col overflow-hidden rounded-[28px] bg-white shadow-[0_30px_90px_rgba(15,23,42,0.35)] ring-1 ring-white/40">
+        <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-4 py-4 sm:px-6">
+          <div>
+            <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-[var(--theme-primary)]">
+              Secure Checkout
+            </p>
+            <h2 className="mt-1 text-xl font-black text-slate-950 sm:text-2xl">
+              Confirm your order
+            </h2>
+          </div>
+          <button
+            type="button"
+            onClick={closeDrawer}
+            className="grid h-10 w-10 shrink-0 place-items-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:border-[var(--theme-primary)] hover:text-[var(--theme-primary)]"
+            aria-label="Close checkout popup"
+          >
+            <X size={20} />
+          </button>
+        </div>
 
-        <h2 className="text-left text-[var(--theme-secondary)] font-semibold">
-          Bills
-        </h2>
+        <div className="grid min-h-0 flex-1 overflow-y-auto lg:grid-cols-[minmax(0,0.92fr)_minmax(360px,1.08fr)]">
+          <section className="bg-[var(--theme-muted-bg)]/80 p-4 sm:p-6">
+            <div className="mb-4 flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <span className="grid h-9 w-9 place-items-center rounded-2xl bg-white text-[var(--theme-primary)] shadow-sm">
+                  <ShoppingBag size={18} />
+                </span>
+                <div>
+                  <h3 className="text-sm font-black text-slate-950">Order summary</h3>
+                  <p className="text-xs font-medium text-slate-500">
+                    {displayItems.length} item{displayItems.length > 1 ? "s" : ""}
+                  </p>
+                </div>
+              </div>
+              <span className="rounded-full bg-white px-3 py-1 text-xs font-extrabold text-[var(--theme-primary)] shadow-sm">
+                BDT {grandTotal}
+              </span>
+            </div>
 
-        {cartItems.length > 0 ? (
-          <div className="space-y-4 mb-5">
-            {cartItems.map((item) => {
-              const itemId = item.cartKey || item._id || item.id;
-              const itemTotal = itemPrice(item) * item.quantity;
+            <div className="space-y-3">
+              {displayItems.map((item) => {
+                const itemId = item.cartKey || item._id || item.id;
+                const currentQuantity = item.quantity || quantity;
+                const itemTotal = item.lineTotal || itemPrice(item) * currentQuantity;
 
-              return (
-                <div key={itemId} className="flex items-center gap-2 md:gap-3 pb-3">
-                  <img
-                    src={productImage(item)}
-                    alt={item.name}
-                    className="w-16 h-16 object-cover rounded border theme-border"
-                  />
-                  <div className="flex justify-between w-full gap-4">
-                    <div className="text-left text-sm">
-                      <h3 className="font-semibold">{item.name}</h3>
-                      <p className="text-xs text-gray-600">
-                        {item.weight || item.volume}
-                      </p>
-                      <SelectedOptionBadges item={item} />
-                    </div>
-                    <div className="text-right">
-                      <p className="text-sm font-semibold text-gray-600">
-                        ৳{itemTotal}
-                      </p>
-                      <div className="flex items-center gap-2 mt-1 text-xs font-semibold">
-                        <button
-                          type="button"
-                          onClick={() => decreaseQuantity(itemId)}
-                          className="px-2 py-0 rounded text-white bg-gradient-to-r from-gray-800 to-gray-400 hover:from-gray-500 hover:to-gray-900"
-                        >
-                          -
-                        </button>
-                        <span className="font-normal">{item.quantity}</span>
-                        <button
-                          type="button"
-                          onClick={() => increaseQuantity(itemId)}
-                          className="px-2 py-0 rounded text-white theme-gradient theme-gradient-hover"
-                        >
-                          +
-                        </button>
+                return (
+                  <article
+                    key={itemId}
+                    className="flex gap-3 rounded-3xl border border-white bg-white/90 p-3 shadow-sm"
+                  >
+                    <img
+                      src={productImage(item)}
+                      alt={item.name}
+                      className="h-20 w-20 shrink-0 rounded-2xl border border-slate-100 object-cover"
+                    />
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <h4 className="line-clamp-2 text-sm font-extrabold leading-snug text-slate-950">
+                            {item.name}
+                          </h4>
+                          {(item.weight || item.volume) && (
+                            <p className="mt-1 text-xs font-medium text-slate-500">
+                              {item.weight || item.volume}
+                            </p>
+                          )}
+                          <SelectedOptionBadges item={item} />
+                        </div>
+                        <p className="shrink-0 text-sm font-black text-slate-900">
+                          BDT {itemTotal}
+                        </p>
+                      </div>
+                      <div className="mt-3 flex items-center justify-between gap-2">
+                        <p className="text-xs font-bold text-slate-500">
+                          BDT {itemPrice(item)} each
+                        </p>
+                        <QuantityStepper
+                          quantity={currentQuantity}
+                          onDecrease={() => handleLineDecrease(item)}
+                          onIncrease={() => handleLineIncrease(item)}
+                        />
                       </div>
                     </div>
+                  </article>
+                );
+              })}
+            </div>
+
+            <div className="mt-5 rounded-3xl bg-white p-4 shadow-sm">
+              <div className="flex justify-between text-sm font-semibold text-slate-500">
+                <span>Sub total</span>
+                <span>BDT {productTotal}</span>
+              </div>
+              <div className="mt-3 flex justify-between text-sm font-semibold text-slate-500">
+                <span>Delivery charge</span>
+                <span>BDT {Number(orderInfo.shippingCharge)}</span>
+              </div>
+              <div className="my-4 border-t border-dashed border-slate-300" />
+              <div className="flex justify-between text-lg font-black text-slate-950">
+                <span>Total</span>
+                <span>BDT {grandTotal}</span>
+              </div>
+            </div>
+          </section>
+
+          <form onSubmit={handleSubmit} className="flex min-h-0 flex-col bg-white">
+            <div className="grid gap-4 p-4 sm:p-6">
+              <div className="grid gap-3 sm:grid-cols-2">
+                <label className="block">
+                  <span className="mb-1.5 block text-xs font-extrabold uppercase text-slate-500">
+                    Name
+                  </span>
+                  <FieldShell icon={User}>
+                    <input
+                      type="text"
+                      name="name"
+                      placeholder="Your name"
+                      value={orderInfo.name}
+                      onChange={handleOrderChange}
+                      className="min-h-12 w-full bg-transparent px-3 text-sm font-semibold text-slate-900 outline-none placeholder:text-slate-400"
+                      required
+                    />
+                  </FieldShell>
+                </label>
+
+                <label className="block">
+                  <span className="mb-1.5 block text-xs font-extrabold uppercase text-slate-500">
+                    Phone
+                  </span>
+                  <FieldShell icon={Phone}>
+                    <input
+                      type="tel"
+                      name="phone"
+                      placeholder="Phone number"
+                      value={orderInfo.phone}
+                      onChange={handleOrderChange}
+                      className="min-h-12 w-full bg-transparent px-3 text-sm font-semibold text-slate-900 outline-none placeholder:text-slate-400"
+                      required
+                    />
+                  </FieldShell>
+                </label>
+              </div>
+
+              <label className="block">
+                <span className="mb-1.5 block text-xs font-extrabold uppercase text-slate-500">
+                  Delivery address
+                </span>
+                <FieldShell icon={MapPin}>
+                  <textarea
+                    name="address"
+                    placeholder="House, road, area, city"
+                    value={orderInfo.address}
+                    onChange={handleOrderChange}
+                    rows="3"
+                    className="w-full resize-none bg-transparent px-3 py-3 text-sm font-semibold text-slate-900 outline-none placeholder:text-slate-400"
+                    required
+                  />
+                </FieldShell>
+              </label>
+
+              <label className="block">
+                <span className="mb-1.5 block text-xs font-extrabold uppercase text-slate-500">
+                  Note
+                </span>
+                <FieldShell icon={MessageSquare}>
+                  <textarea
+                    name="note"
+                    placeholder="Optional delivery note"
+                    value={orderInfo.note}
+                    onChange={handleOrderChange}
+                    rows="2"
+                    className="w-full resize-none bg-transparent px-3 py-3 text-sm font-semibold text-slate-900 outline-none placeholder:text-slate-400"
+                  />
+                </FieldShell>
+              </label>
+
+              <div className="grid gap-4 md:grid-cols-2">
+                <div>
+                  <div className="mb-2 flex items-center gap-2 text-xs font-extrabold uppercase text-slate-500">
+                    <CreditCard size={15} />
+                    Payment
+                  </div>
+                  <div className="grid gap-2">
+                    {["Cash on Delivery", "Bkash", "Rocket"].map((method) => (
+                      <label
+                        key={method}
+                        className={`flex cursor-pointer items-center justify-between rounded-2xl border px-3 py-2 text-sm font-bold transition ${
+                          orderInfo.paymentMethod === method
+                            ? "border-[var(--theme-primary)] bg-[var(--theme-muted-bg)] text-slate-950"
+                            : "border-slate-200 bg-white text-slate-600 hover:border-[var(--theme-primary)]"
+                        }`}
+                      >
+                        <span>{method}</span>
+                        <input
+                          type="radio"
+                          name="paymentMethod"
+                          value={method}
+                          checked={orderInfo.paymentMethod === method}
+                          onChange={handleOrderChange}
+                          className="h-4 w-4 accent-[var(--theme-primary)]"
+                        />
+                      </label>
+                    ))}
                   </div>
                 </div>
-              );
-            })}
-          </div>
-        ) : (
-          selectedProduct && (
-            <div className="flex items-center gap-2 md:gap-3 mb-5">
-              <img
-                src={productImage(selectedProduct)}
-                alt={selectedProduct.name}
-                className="w-16 h-16 object-cover rounded border theme-border"
-              />
-              <div className="flex justify-between w-full gap-4">
-                <div className="text-left text-sm">
-                  <h3 className="font-semibold">{selectedProduct.name}</h3>
-                  <p className="text-xs text-gray-600">
-                    {selectedProduct.weight || selectedProduct.volume}
-                  </p>
-                  <SelectedOptionBadges item={selectedProduct} />
-                </div>
-                <div className="text-right">
-                  <p className="text-md font-semibold text-gray-600">
-                    ৳{productTotal}
-                  </p>
-                  <div className="flex items-center gap-2 mt-1 text-xs font-semibold">
-                    <button
-                      type="button"
-                      onClick={decreaseQuantity}
-                      className="px-2 py-0 bg-gray-700 rounded text-white"
-                    >
-                      -
-                    </button>
-                    <span className="font-normal">{quantity}</span>
-                    <button
-                      type="button"
-                      onClick={increaseQuantity}
-                      className="px-2 py-0 theme-primary-bg rounded text-white"
-                    >
-                      +
-                    </button>
+
+                <div>
+                  <div className="mb-2 flex items-center gap-2 text-xs font-extrabold uppercase text-slate-500">
+                    <Truck size={15} />
+                    Shipping
+                  </div>
+                  <div className="grid gap-2">
+                    {[70, 120].map((val) => (
+                      <label
+                        key={val}
+                        className={`flex cursor-pointer items-center justify-between rounded-2xl border px-3 py-2 text-sm font-bold transition ${
+                          Number(orderInfo.shippingCharge) === val
+                            ? "border-[var(--theme-primary)] bg-[var(--theme-muted-bg)] text-slate-950"
+                            : "border-slate-200 bg-white text-slate-600 hover:border-[var(--theme-primary)]"
+                        }`}
+                      >
+                        <span>{val === 70 ? "Inside Dhaka" : "Outside Dhaka"}</span>
+                        <span className="flex items-center gap-2">
+                          BDT {val}
+                          <input
+                            type="radio"
+                            name="shippingCharge"
+                            value={val}
+                            checked={Number(orderInfo.shippingCharge) === val}
+                            onChange={handleOrderChange}
+                            className="h-4 w-4 accent-[var(--theme-primary)]"
+                          />
+                        </span>
+                      </label>
+                    ))}
                   </div>
                 </div>
               </div>
             </div>
-          )
-        )}
 
-        <div className="space-y-1 mb-3">
-          <div className="text-right text-xs text-gray-500 flex justify-between pl-2">
-            <p>Sub Total</p>
-            <p>TK {productTotal}</p>
-          </div>
-          <div className="text-right text-xs text-gray-500 flex justify-between pl-2">
-            <p>Delivery Charge</p>
-            <p>TK {Number(orderInfo.shippingCharge)}</p>
-          </div>
-          <div className="border-b-2 border-gray-400 border-dotted" />
-          <div className="text-right font-semibold text-base flex justify-between pl-2">
-            <p>Total</p>
-            <p>TK {grandTotal}</p>
-          </div>
+            <div className="mt-auto border-t border-slate-100 bg-white px-4 py-4 sm:px-6">
+              <button
+                type="submit"
+                className="theme-gradient theme-gradient-hover flex w-full items-center justify-center gap-3 rounded-2xl border-0 px-5 py-3.5 text-sm font-black text-white shadow-[0_16px_36px_rgba(11,125,35,0.22)] transition active:scale-[0.99]"
+              >
+                <span>Confirm Order</span>
+                <span className="rounded-full bg-white/20 px-3 py-1">BDT {grandTotal}</span>
+              </button>
+            </div>
+          </form>
         </div>
-
-        <form onSubmit={handleSubmit} className="space-y-3">
-          <div className="flex items-center border theme-border rounded-md overflow-hidden">
-            <FieldIcon />
-            <input
-              type="text"
-              name="name"
-              placeholder="Your Name *"
-              value={orderInfo.name}
-              onChange={handleOrderChange}
-              className="w-full bg-white px-3 py-1 focus:outline-none focus:ring-1 focus:ring-[var(--theme-secondary)] focus:ring-opacity-50 placeholder:text-xs text-sm"
-              required
-            />
-          </div>
-
-          <div className="flex items-center border theme-border rounded-md overflow-hidden">
-            <FieldIcon />
-            <input
-              type="tel"
-              name="phone"
-              placeholder="Phone Number *"
-              value={orderInfo.phone}
-              onChange={handleOrderChange}
-              className="w-full bg-white px-3 py-1 focus:outline-none focus:ring-1 focus:ring-[var(--theme-secondary)] focus:ring-opacity-50 placeholder:text-xs text-sm"
-              required
-            />
-          </div>
-
-          <div className="flex border theme-border rounded-md overflow-hidden">
-            <FieldIcon />
-            <textarea
-              name="address"
-              placeholder="Delivery Address *"
-              value={orderInfo.address}
-              onChange={handleOrderChange}
-              rows="1"
-              className="flex-1 bg-white px-3 py-2 resize-y focus:outline-none focus:ring-1 focus:ring-[var(--theme-secondary)] focus:ring-opacity-50 placeholder:text-xs text-sm"
-              required
-            />
-          </div>
-
-          <div className="flex border theme-border rounded-md overflow-hidden">
-            <FieldIcon />
-            <textarea
-              name="note"
-              placeholder="Note"
-              value={orderInfo.note}
-              onChange={handleOrderChange}
-              rows="1"
-              className="flex-1 bg-white px-3 py-2 resize-y focus:outline-none focus:ring-1 focus:ring-[var(--theme-secondary)] focus:ring-opacity-50 placeholder:text-xs text-sm"
-            />
-          </div>
-
-          <div className="space-y-1 mt-6">
-            <label className="block mb-2 font-semibold text-sm text-left">
-              Payment Method
-            </label>
-            <div className="text-[11px] flex gap-4 flex-wrap">
-              {["Cash on Delivery", "Bkash", "Rocket"].map((method) => (
-                <label key={method} className="flex items-center gap-2">
-                  <input
-                    type="radio"
-                    name="paymentMethod"
-                    value={method}
-                    checked={orderInfo.paymentMethod === method}
-                    onChange={handleOrderChange}
-                    className="appearance-none w-4 h-4 border theme-border rounded-none checked:bg-[var(--theme-secondary)]"
-                  />
-                  {method}
-                </label>
-              ))}
-            </div>
-          </div>
-
-          <div className="space-y-1 mb-6 mt-4">
-            <label className="block mb-2 font-semibold text-sm text-left">
-              Shipping Charge
-            </label>
-            <div className="flex gap-2 flex-wrap text-[11px]">
-              {[70, 120].map((val) => (
-                <label key={val} className="flex items-center gap-2">
-                  <input
-                    type="radio"
-                    name="shippingCharge"
-                    value={val}
-                    checked={Number(orderInfo.shippingCharge) === val}
-                    onChange={handleOrderChange}
-                    className="appearance-none w-4 h-4 border theme-border rounded-none checked:bg-[var(--theme-secondary)]"
-                  />
-                  {val === 70
-                    ? "Inside Dhaka (BDT 70)"
-                    : "Outside Dhaka (BDT 120)"}
-                </label>
-              ))}
-            </div>
-          </div>
-
-          <button
-            type="submit"
-            className="theme-gradient theme-gradient-hover border-0 shadow-none hover:scale-105 w-full text-white font-semibold py-2 rounded-md text-sm flex items-center justify-center gap-4 mb-4"
-          >
-            <p>Confirm Order</p>
-            <p>TK {grandTotal}</p>
-          </button>
-        </form>
       </div>
     </div>
   );
