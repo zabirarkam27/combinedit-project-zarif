@@ -1,10 +1,10 @@
 import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import {
-  LayoutGrid,
-  Menu as MenuIcon,
-  RefreshCw,
-  User,
+  Home,
+  PackageSearch,
+  PhoneCall,
+  ShoppingBag,
   type LucideIcon,
 } from "lucide-react";
 import { useNavAnimation } from "../hooks/useNavAnimation";
@@ -33,10 +33,10 @@ type BottomNavProps = {
 };
 
 const tabs: BottomNavTab[] = [
-  { key: "home", label: "Home", icon: LayoutGrid },
-  { key: "menu", label: "Menu", icon: MenuIcon },
-  { key: "swap", label: "Swap", icon: RefreshCw },
-  { key: "profile", label: "Profile", icon: User },
+  { key: "home", label: "Home", icon: Home },
+  { key: "menu", label: "All Products", icon: PackageSearch },
+  { key: "swap", label: "Cart", icon: ShoppingBag },
+  { key: "profile", label: "Contact Us", icon: PhoneCall },
 ];
 
 const BottomNav = ({ activeKey = "home", onTabSelect }: BottomNavProps) => {
