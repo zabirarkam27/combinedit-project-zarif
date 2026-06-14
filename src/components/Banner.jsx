@@ -60,7 +60,7 @@ const Banner = () => {
   }, []);
 
   return (
-    <section className="mx-auto mt-4 pb-6 md:mt-0">
+    <section className="w-full pb-6">
       {bannerProducts.length > 0 ? (
         <Carousel
           autoPlay
@@ -116,7 +116,7 @@ const Banner = () => {
 
             return (
               <Link to={`/products/${product._id}`} key={product._id || index}>
-                <div className="group relative isolate min-h-[250px] overflow-hidden rounded-[22px] bg-[#061d0c] text-left shadow-[0_24px_70px_rgba(6,29,12,0.26)] sm:min-h-[330px] md:min-h-[390px]">
+                <div className="group relative isolate min-h-[250px] w-full overflow-hidden bg-[#061d0c] text-left shadow-[0_24px_70px_rgba(6,29,12,0.26)] sm:min-h-[330px] md:min-h-[390px]">
                   <img
                     src={getProductImage(product)}
                     alt=""

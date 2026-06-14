@@ -35,10 +35,11 @@ const Home = ({ refs }) => {
             </div>
           )}
 
+          <div className="w-full theme-page-bg pt-4 md:pt-6">
+            <Banner />
+          </div>
+
           <div className={`${design.container} theme-page-bg md:mt-6 sm:mt-3`}>
-            <div className="pt-4 md:pt-0">
-              <Banner />
-            </div>
             <div ref={allProductsRef}>
               <div className="mb-4 flex flex-col gap-3 text-left sm:flex-row sm:items-end sm:justify-between">
                 <div>
