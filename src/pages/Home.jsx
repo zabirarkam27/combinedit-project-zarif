@@ -35,7 +35,7 @@ const Home = ({ refs }) => {
             </div>
           )}
 
-          <div className="w-full theme-page-bg pt-4 md:pt-6">
+          <div className={`w-full theme-page-bg pt-4 md:pt-6 ${design.heroContainer}`}>
             <Banner />
           </div>
 
