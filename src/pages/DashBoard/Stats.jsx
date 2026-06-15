@@ -44,32 +44,121 @@ const monthLabels = [
   "Dec",
 ];
 
-const districts = [
-  "bagerhat",
-  "bandarban",
-  "barguna",
-  "barisal",
-  "bhola",
-  "bogura",
-  "brahmanbaria",
-  "chandpur",
-  "chattogram",
-  "cox's bazar",
-  "cumilla",
-  "dhaka",
-  "dinajpur",
-  "faridpur",
-  "feni",
-  "gazipur",
-  "jashore",
-  "khulna",
-  "mymensingh",
-  "narayanganj",
-  "rajshahi",
-  "rangpur",
-  "sylhet",
-  "tangail",
+const districtCatalog = [
+  { name: "Bagerhat", aliases: ["bagerhat", "বাগেরহাট"] },
+  { name: "Bandarban", aliases: ["bandarban", "বান্দরবান"] },
+  { name: "Barguna", aliases: ["barguna", "বরগুনা"] },
+  { name: "Barishal", aliases: ["barishal", "barisal", "বরিশাল"] },
+  { name: "Bhola", aliases: ["bhola", "ভোলা"] },
+  { name: "Bogura", aliases: ["bogura", "bogra", "বগুড়া", "বগুড়া"] },
+  { name: "Brahmanbaria", aliases: ["brahmanbaria", "brahman bariya", "ব্রাহ্মণবাড়িয়া", "ব্রাহ্মণবাড়িয়া"] },
+  { name: "Chandpur", aliases: ["chandpur", "চাঁদপুর"] },
+  { name: "Chapainawabganj", aliases: ["chapainawabganj", "chapai nawabganj", "চাঁপাইনবাবগঞ্জ"] },
+  { name: "Chattogram", aliases: ["chattogram", "chittagong", "চট্টগ্রাম"] },
+  { name: "Chuadanga", aliases: ["chuadanga", "চুয়াডাঙ্গা", "চুয়াডাঙ্গা"] },
+  { name: "Cox's Bazar", aliases: ["cox's bazar", "cox bazar", "coxsbazar", "কক্সবাজার"] },
+  { name: "Cumilla", aliases: ["cumilla", "comilla", "কুমিল্লা"] },
+  { name: "Dhaka", aliases: ["dhaka", "ঢাকা"] },
+  { name: "Dinajpur", aliases: ["dinajpur", "দিনাজপুর"] },
+  { name: "Faridpur", aliases: ["faridpur", "ফরিদপুর"] },
+  { name: "Feni", aliases: ["feni", "ফেনী"] },
+  { name: "Gaibandha", aliases: ["gaibandha", "গাইবান্ধা"] },
+  { name: "Gazipur", aliases: ["gazipur", "গাজীপুর"] },
+  { name: "Gopalganj", aliases: ["gopalganj", "গোপালগঞ্জ"] },
+  { name: "Habiganj", aliases: ["habiganj", "হবিগঞ্জ"] },
+  { name: "Jamalpur", aliases: ["jamalpur", "জামালপুর"] },
+  { name: "Jashore", aliases: ["jashore", "jessore", "যশোর"] },
+  { name: "Jhalokathi", aliases: ["jhalokathi", "jhalakathi", "ঝালকাঠি"] },
+  { name: "Jhenaidah", aliases: ["jhenaidah", "jhenaidha", "ঝিনাইদহ"] },
+  { name: "Joypurhat", aliases: ["joypurhat", "jaipurhat", "জয়পুরহাট", "জয়পুরহাট"] },
+  { name: "Khagrachhari", aliases: ["khagrachhari", "khagrachari", "খাগড়াছড়ি", "খাগড়াছড়ি"] },
+  { name: "Khulna", aliases: ["khulna", "খুলনা"] },
+  { name: "Kishoreganj", aliases: ["kishoreganj", "kishorganj", "কিশোরগঞ্জ"] },
+  { name: "Kurigram", aliases: ["kurigram", "কুড়িগ্রাম", "কুড়িগ্রাম"] },
+  { name: "Kushtia", aliases: ["kushtia", "কুষ্টিয়া", "কুষ্টিয়া"] },
+  { name: "Lakshmipur", aliases: ["lakshmipur", "laxmipur", "লক্ষ্মীপুর"] },
+  { name: "Lalmonirhat", aliases: ["lalmonirhat", "lalmonir haat", "লালমনিরহাট"] },
+  { name: "Madaripur", aliases: ["madaripur", "মাদারীপুর"] },
+  { name: "Magura", aliases: ["magura", "মাগুরা"] },
+  { name: "Manikganj", aliases: ["manikganj", "মানিকগঞ্জ"] },
+  { name: "Meherpur", aliases: ["meherpur", "মেহেরপুর"] },
+  { name: "Moulvibazar", aliases: ["moulvibazar", "moulvi bazar", "maulvibazar", "মৌলভীবাজার"] },
+  { name: "Munshiganj", aliases: ["munshiganj", "munshigonj", "মুন্সিগঞ্জ"] },
+  { name: "Mymensingh", aliases: ["mymensingh", "mymensing", "ময়মনসিংহ", "ময়মনসিংহ"] },
+  { name: "Naogaon", aliases: ["naogaon", "নওগাঁ"] },
+  { name: "Narail", aliases: ["narail", "নড়াইল", "নড়াইল"] },
+  { name: "Narayanganj", aliases: ["narayanganj", "narayangonj", "নারায়ণগঞ্জ", "নারায়ণগঞ্জ"] },
+  { name: "Narsingdi", aliases: ["narsingdi", "narsinghdi", "নরসিংদী"] },
+  { name: "Natore", aliases: ["natore", "নাটোর"] },
+  { name: "Netrokona", aliases: ["netrokona", "netrakona", "নেত্রকোনা"] },
+  { name: "Nilphamari", aliases: ["nilphamari", "নীলফামারী"] },
+  { name: "Noakhali", aliases: ["noakhali", "নোয়াখালী", "নোয়াখালী"] },
+  { name: "Pabna", aliases: ["pabna", "পাবনা"] },
+  { name: "Panchagarh", aliases: ["panchagarh", "ponchogor", "পঞ্চগড়", "পঞ্চগড়"] },
+  { name: "Patuakhali", aliases: ["patuakhali", "পটুয়াখালী", "পটুয়াখালী"] },
+  { name: "Pirojpur", aliases: ["pirojpur", "পিরোজপুর"] },
+  { name: "Rajbari", aliases: ["rajbari", "রাজবাড়ী", "রাজবাড়ী"] },
+  { name: "Rajshahi", aliases: ["rajshahi", "রাজশাহী"] },
+  { name: "Rangamati", aliases: ["rangamati", "rangamati hill", "রাঙ্গামাটি"] },
+  { name: "Rangpur", aliases: ["rangpur", "রংপুর"] },
+  { name: "Satkhira", aliases: ["satkhira", "satkhira", "সাতক্ষীরা"] },
+  { name: "Shariatpur", aliases: ["shariatpur", "shariyatpur", "শরীয়তপুর", "শরিয়তপুর"] },
+  { name: "Sherpur", aliases: ["sherpur", "শেরপুর"] },
+  { name: "Sirajganj", aliases: ["sirajganj", "sirajgonj", "সিরাজগঞ্জ"] },
+  { name: "Sunamganj", aliases: ["sunamganj", "sunamgonj", "সুনামগঞ্জ"] },
+  { name: "Sylhet", aliases: ["sylhet", "silet", "সিলেট"] },
+  { name: "Tangail", aliases: ["tangail", "টাঙ্গাইল"] },
+  { name: "Thakurgaon", aliases: ["thakurgaon", "thakurgoan", "ঠাকুরগাঁও"] },
 ];
+
+const normalizeAddressPart = (value = "") =>
+  String(value)
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[\u200c\u200d]/g, "")
+    .replace(/[^\p{L}\p{N}]+/gu, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+const compactText = (value = "") => normalizeAddressPart(value).replace(/\s+/g, "");
+
+const districtMatchers = districtCatalog.map((district) => ({
+  ...district,
+  aliases: [district.name, ...district.aliases].map((alias) => normalizeAddressPart(alias)),
+  compactAliases: [district.name, ...district.aliases].map((alias) => compactText(alias)),
+}));
+
+const editDistance = (source, target) => {
+  if (source === target) return 0;
+  if (!source) return target.length;
+  if (!target) return source.length;
+
+  const previous = Array.from({ length: target.length + 1 }, (_, index) => index);
+  const current = Array(target.length + 1).fill(0);
+
+  for (let sourceIndex = 1; sourceIndex <= source.length; sourceIndex += 1) {
+    current[0] = sourceIndex;
+    for (let targetIndex = 1; targetIndex <= target.length; targetIndex += 1) {
+      const cost = source[sourceIndex - 1] === target[targetIndex - 1] ? 0 : 1;
+      current[targetIndex] = Math.min(
+        current[targetIndex - 1] + 1,
+        previous[targetIndex] + 1,
+        previous[targetIndex - 1] + cost
+      );
+    }
+    previous.splice(0, previous.length, ...current);
+  }
+
+  return previous[target.length];
+};
+
+const isCloseDistrictMatch = (candidate, alias) => {
+  if (!candidate || !alias || Math.abs(candidate.length - alias.length) > 2) return false;
+  const distance = editDistance(candidate, alias);
+  const tolerance = alias.length <= 4 ? 1 : alias.length <= 8 ? 2 : 3;
+  return distance <= tolerance && distance / alias.length <= 0.28;
+};
 
 const statusMeta = {
   pending: { label: "Pending", color: "#f59e0b" },
@@ -92,8 +181,35 @@ const toDate = (value) => {
 };
 
 const findDistrict = (address = "") => {
-  const lowerAddress = String(address).toLowerCase();
-  return districts.find((district) => lowerAddress.includes(district)) || "unknown";
+  const normalizedAddress = normalizeAddressPart(address);
+  if (!normalizedAddress) return null;
+
+  const compactAddress = compactText(address);
+  const paddedAddress = ` ${normalizedAddress} `;
+
+  const exactMatch = districtMatchers.find((district) =>
+    district.aliases.some((alias) => paddedAddress.includes(` ${alias} `)) ||
+    district.compactAliases.some((alias) => alias.length > 4 && compactAddress.includes(alias))
+  );
+
+  if (exactMatch) return exactMatch.name;
+
+  const tokens = normalizedAddress.split(" ").filter(Boolean);
+  const candidates = [];
+  tokens.forEach((_, index) => {
+    for (let size = 1; size <= 3; size += 1) {
+      const phrase = tokens.slice(index, index + size).join(" ");
+      if (phrase) candidates.push(phrase);
+    }
+  });
+
+  const fuzzyMatch = districtMatchers.find((district) =>
+    district.aliases.some((alias) =>
+      candidates.some((candidate) => isCloseDistrictMatch(candidate, alias))
+    )
+  );
+
+  return fuzzyMatch?.name || null;
 };
 
 const comparePercent = (current, previous) => {
@@ -243,7 +359,7 @@ const Stats = () => {
       }
 
       const district = findDistrict(order.address);
-      cityCounts[district] = (cityCounts[district] || 0) + 1;
+      if (district) cityCounts[district] = (cityCounts[district] || 0) + 1;
 
       const customerKey = order.phone || order.email || order.name;
       if (customerKey) customers.add(customerKey);
@@ -267,11 +383,24 @@ const Stats = () => {
 
     const cityData = Object.entries(cityCounts)
       .map(([name, value]) => ({
-        name: name === "unknown" ? "Unknown area" : name.replace(/\b\w/g, (c) => c.toUpperCase()),
+        name,
         value,
       }))
       .sort((a, b) => b.value - a.value)
       .slice(0, 5);
+
+    const salesTrend = Object.values(daily)
+      .sort((a, b) => a.Date.localeCompare(b.Date))
+      .slice(-14)
+      .map((item) => ({
+        month: new Date(`${item.Date}T00:00:00`).toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+        }),
+        revenue: item.Revenue,
+        orders: item.Orders,
+        completed: 0,
+      }));
 
     const recentOrders = [...orders]
       .sort((a, b) => (toDate(b.createdAt)?.getTime() || 0) - (toDate(a.createdAt)?.getTime() || 0))
@@ -289,7 +418,8 @@ const Stats = () => {
       orderChange: comparePercent(currentOrders, previousOrders),
       completionRate: orders.length ? (completedOrders / orders.length) * 100 : 0,
       cancelRate: orders.length ? (cancelledOrders / orders.length) * 100 : 0,
-      monthly,
+      monthly: salesTrend.length ? salesTrend : monthly,
+      salesTrend,
       statusData,
       cityData,
       dailyCsv: Object.values(daily).sort((a, b) => a.Date.localeCompare(b.Date)),

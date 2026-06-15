@@ -2,6 +2,23 @@ import { useState, useCallback, useMemo } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import { Buffer } from "buffer";
+import {
+  CalendarDays,
+  CheckCircle2,
+  ChevronLeft,
+  ChevronRight,
+  ClipboardList,
+  Download,
+  Eye,
+  FileText,
+  PackageCheck,
+  Printer,
+  Search,
+  Trash2,
+  Truck,
+  Wallet,
+  XCircle,
+} from "lucide-react";
 
 import OrdersContext from "../../context/OrdersContext";
 import { useOrders } from "../../hooks/useOrders";
@@ -12,7 +29,19 @@ import { confirmPopup } from "../../utils/popups";
 
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+
 window.Buffer = Buffer;
+
+const statusTabs = [
+  { label: "all", display: "All", icon: ClipboardList },
+  { label: "pending", display: "Pending", icon: CalendarDays },
+  { label: "processing", display: "Processing", icon: PackageCheck },
+  { label: "pickup", display: "Pickup", icon: Truck },
+  { label: "completed", display: "Completed", icon: CheckCircle2 },
+  { label: "cancelled", display: "Cancelled", icon: XCircle },
+];
+
+const bulkStatuses = ["pending", "processing", "pickup", "completed", "cancelled"];
 
 const HandleOrders = () => {
   const { status } = useParams();
@@ -25,28 +54,35 @@ const HandleOrders = () => {
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
 
-  // ✅ Filtered orders
+  const getString = useCallback((value) => {
+    if (typeof value === "string") return value;
+    if (typeof value === "object" && value !== null) {
+      return value.status || value.paymentStatus || "Unknown";
+    }
+    return "Unknown";
+  }, []);
+
   const filteredOrders = useMemo(() => {
-    return orders.filter((o) => {
-      // Tab/Status filter
+    return orders.filter((order) => {
       if (activeTab !== "all") {
-        const oStatus = (o.status?.status || o.status || "").toLowerCase();
-        if (oStatus !== activeTab) return false;
+        const orderStatus = getString(order.status).toLowerCase();
+        if (orderStatus !== activeTab) return false;
       }
 
-      // Search filter
       if (search) {
-        const q = search.toLowerCase();
+        const query = search.toLowerCase();
+        const products = (order.items || [])
+          .map((item) => item.productName || item.name || "")
+          .join(" ");
         const match =
-          (o.orderNumber || "").toLowerCase().includes(q) ||
-          (o.name || "").toLowerCase().includes(q) ||
-          (o.phone || "").toLowerCase().includes(q) ||
-          (o.products || "").toLowerCase().includes(q);
+          (order.orderNumber || "").toLowerCase().includes(query) ||
+          (order.name || "").toLowerCase().includes(query) ||
+          (order.phone || "").toLowerCase().includes(query) ||
+          products.toLowerCase().includes(query);
         if (!match) return false;
       }
 
-      // Date filters
-      const created = new Date(o.createdAt);
+      const created = new Date(order.createdAt);
       if (fromDate && created < new Date(fromDate)) return false;
       if (toDate) {
         const to = new Date(toDate);
@@ -56,9 +92,8 @@ const HandleOrders = () => {
 
       return true;
     });
-  }, [orders, activeTab, search, fromDate, toDate]);
+  }, [orders, activeTab, search, fromDate, toDate, getString]);
 
-  // ✅ Order counts memoized
   const orderCounts = useMemo(() => {
     const counts = {
       all: orders.length,
@@ -68,46 +103,23 @@ const HandleOrders = () => {
       completed: 0,
       cancelled: 0,
     };
-    orders.forEach((o) => {
-      const s = (o.status?.status || o.status || "").toLowerCase();
-      if (counts[s] !== undefined) counts[s]++;
-    });
-    return counts;
-  }, [orders]);
 
-  const getOrderCountByStatus = (status) => orderCounts[status] || 0;
+    orders.forEach((order) => {
+      const orderStatus = getString(order.status).toLowerCase();
+      if (counts[orderStatus] !== undefined) counts[orderStatus] += 1;
+    });
+
+    return counts;
+  }, [orders, getString]);
+
+  const getOrderCountByStatus = (statusKey) => orderCounts[statusKey] || 0;
 
   const getTodaysOrdersCount = useMemo(() => {
     const today = new Date().toLocaleDateString();
     return orders.filter(
-      (o) => new Date(o.createdAt).toLocaleDateString() === today
+      (order) => new Date(order.createdAt).toLocaleDateString() === today
     ).length;
   }, [orders]);
-
-  // ✅ Context value for table
-  const contextValue = {
-    orders,
-    filteredOrders,
-    getOrderCountByStatus,
-    getTodaysOrdersCount,
-    getPendingOrdersCount: () => orderCounts.pending,
-    getProcessingOrdersCount: () => orderCounts.processing,
-    getCompletedOrdersCount: () => orderCounts.completed,
-    getCanceledOrdersCount: () => orderCounts.cancelled,
-    handleStatusUpdate,
-    handleDeleteOrder,
-    selectedOrders,
-    setSelectedOrders,
-  };
-
-  const statusTabs = [
-    { label: "all", display: "All" },
-    { label: "pending", display: "Pending" },
-    { label: "processing", display: "Processing" },
-    { label: "pickup", display: "Pickup" },
-    { label: "completed", display: "Completed" },
-    { label: "cancelled", display: "Cancelled" },
-  ];
 
   const {
     currentPage,
@@ -118,32 +130,30 @@ const HandleOrders = () => {
     setCurrentPage,
   } = usePagination(filteredOrders, 15);
 
-  // ✅ Select all / one optimized
   const toggleSelectAll = useCallback(
-    (e) => {
+    (event) => {
       setSelectedOrders(
-        e.target.checked ? paginatedData.map((o) => o.orderId) : []
+        event.target.checked ? paginatedData.map((order) => order.orderId) : []
       );
     },
     [paginatedData]
   );
 
   const toggleSelectOne = useCallback((orderId) => {
-    setSelectedOrders((prev) =>
-      prev.includes(orderId)
-        ? prev.filter((id) => id !== orderId)
-        : [...prev, orderId]
+    setSelectedOrders((previous) =>
+      previous.includes(orderId)
+        ? previous.filter((id) => id !== orderId)
+        : [...previous, orderId]
     );
   }, []);
 
-  // ✅ Selected orders for PDF / CSV
   const selectedOrderData = useMemo(() => {
-    return filteredOrders.filter((o) => selectedOrders.includes(o.orderId));
+    return filteredOrders.filter((order) => selectedOrders.includes(order.orderId));
   }, [filteredOrders, selectedOrders]);
 
   const exportSelectedCsv = () => {
     if (!selectedOrders.length) {
-      toast.error("⚠️ No orders selected!");
+      toast.error("No orders selected.");
       return;
     }
 
@@ -151,15 +161,15 @@ const HandleOrders = () => {
       OrderNumber: order.orderNumber,
       CustomerName: order.name,
       CustomerPhone: order.phone,
-      ProductDetails: order.items
-        .map((item) => `${item.productName} (${item.quantity})`)
+      ProductDetails: (order.items || [])
+        .map((item) => `${item.productName || item.name || "Product"} (${item.quantity || 1})`)
         .join(", "),
       ShippingCharge: order.shippingCharge,
       TotalAmount: order.grandTotal,
       PaymentMethod: order.paymentMethod,
-      PaymentStatus: order.paymentStatus,
-      OrderStatus: order.status,
-      DatePlaced: new Date(order.createdAt).toLocaleDateString(),
+      PaymentStatus: getString(order.paymentStatus),
+      OrderStatus: getString(order.status),
+      DatePlaced: order.createdAt ? new Date(order.createdAt).toLocaleDateString() : "",
     }));
 
     const exported = downloadCsv("selected-orders.csv", selectedData);
@@ -180,36 +190,28 @@ const HandleOrders = () => {
         ShippingCharge: order.shippingCharge ?? "",
         TotalAmount: order.grandTotal ?? "",
         PaymentMethod: order.paymentMethod || "",
-        PaymentStatus: order.paymentStatus || "",
+        PaymentStatus: getString(order.paymentStatus),
         OrderStatus: getString(order.status),
-        DatePlaced: order.createdAt
-          ? new Date(order.createdAt).toLocaleDateString()
-          : "",
+        DatePlaced: order.createdAt ? new Date(order.createdAt).toLocaleDateString() : "",
       }))
     );
 
     if (!exported) toast.error("No filtered orders available to export.");
   };
 
-  const handleBulkAction = async (status) => {
+  const handleBulkAction = async (nextStatus) => {
     if (!selectedOrders.length) {
-      toast.error("⚠️ No orders selected!");
+      toast.error("No orders selected.");
       return;
     }
+
     await Promise.all(
-      selectedOrders.map((id) => handleStatusUpdate(id, status))
+      selectedOrders.map((orderId) => handleStatusUpdate(orderId, nextStatus))
     );
-    toast.success(`✅ Order status changed to ${status}`);
+    toast.success(`Order status changed to ${nextStatus}`);
     setSelectedOrders([]);
     setCurrentPage(1);
   };
-
-  const getString = useCallback((value) => {
-    if (typeof value === "string") return value;
-    if (typeof value === "object" && value !== null)
-      return value.status || value.paymentStatus || "Unknown";
-    return "Unknown";
-  }, []);
 
   const handleDelete = useCallback(
     async (orderId) => {
@@ -227,288 +229,376 @@ const HandleOrders = () => {
     [handleDeleteOrder]
   );
 
+  const filteredTotal = useMemo(
+    () =>
+      filteredOrders.reduce(
+        (sum, order) => sum + Number(order.grandTotal || 0),
+        0
+      ),
+    [filteredOrders]
+  );
+
+  const contextValue = {
+    orders,
+    filteredOrders,
+    getOrderCountByStatus,
+    getTodaysOrdersCount,
+    getPendingOrdersCount: () => orderCounts.pending,
+    getProcessingOrdersCount: () => orderCounts.processing,
+    getCompletedOrdersCount: () => orderCounts.completed,
+    getCanceledOrdersCount: () => orderCounts.cancelled,
+    handleStatusUpdate,
+    handleDeleteOrder,
+    selectedOrders,
+    setSelectedOrders,
+  };
+
+  const statusTone = (value) => {
+    const normalized = getString(value).toLowerCase();
+    return {
+      pending: "bg-amber-50 text-amber-700 ring-amber-200",
+      processing: "bg-blue-50 text-blue-700 ring-blue-200",
+      pickup: "bg-violet-50 text-violet-700 ring-violet-200",
+      completed: "bg-emerald-50 text-emerald-700 ring-emerald-200",
+      cancelled: "bg-rose-50 text-rose-700 ring-rose-200",
+    }[normalized] || "bg-slate-50 text-slate-700 ring-slate-200";
+  };
+
   return (
-    <div className="w-full mx-auto p-1 md:p-4 bg-[#ebf0f0] shadow-md">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl md:text-4xl font-bold text-center text-black my-10">
-          Placed Orders
-        </h1>
-        <div className="flex flex-col md:flex-row gap-2">
-          {/* Single PDF Download */}
-          {paginatedData.length === 1 && (
-            <PDFDownloadLink
-              document={<InvoiceDocument order={paginatedData[0]} />}
-              fileName={`invoice_${paginatedData[0].orderNumber}.pdf`}
-            >
-              {({ loading }) => (
-                <button className="btn btn-sm btn-success">
-                  {loading ? "Generating..." : "Download Single PDF"}
-                </button>
-              )}
-            </PDFDownloadLink>
-          )}
+    <div className="min-h-screen w-full bg-slate-50 px-2 py-4 md:px-4">
+      <div className="mx-auto w-full max-w-7xl space-y-5">
+        <section className="overflow-hidden rounded-[28px] border border-white/70 bg-white shadow-[0_20px_60px_rgba(15,23,42,0.08)]">
+          <div className="flex flex-col gap-5 p-5 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <p className="text-xs font-black uppercase tracking-wide text-[var(--theme-primary)]">
+                Orders workspace
+              </p>
+              <h1 className="mt-2 text-2xl font-black tracking-tight text-slate-950 md:text-4xl">
+                Placed Orders
+              </h1>
+              <p className="mt-2 max-w-2xl text-sm font-medium text-slate-500">
+                Manage invoices, status updates, exports, and customer orders from one focused table.
+              </p>
+            </div>
 
-          {/* Merged PDF Download for selected */}
-          {selectedOrders.length > 0 && (
-            <PDFDownloadLink
-              document={<InvoiceDocument orders={selectedOrderData} />}
-              fileName="merged_invoices.pdf"
-            >
-              {({ loading }) => (
-                <button className="btn btn-sm btn-info">
-                  {loading ? "Generating..." : "Print Selected"}
-                </button>
-              )}
-            </PDFDownloadLink>
-          )}
-
-          {/* CSV Download for selected */}
-          {selectedOrders.length > 0 && (
-            <button className="btn btn-sm btn-primary" onClick={exportSelectedCsv}>
-              Download CSV
-            </button>
-          )}
-
-          <button className="btn btn-sm btn-primary" onClick={exportFilteredCsv}>
-            Export Filtered CSV
-          </button>
-
-          {/* Print button fallback */}
-          {selectedOrders.length === 0 && paginatedData.length !== 1 && (
-            <button
-              className="btn btn-sm btn-info"
-              onClick={() =>
-                toast.error("⚠️ Select orders or single order first!")
-              }
-            >
-              Print
-            </button>
-          )}
-        </div>
-      </div>
-
-      {/* Tabs + Filters */}
-      <div className="flex flex-col md:flex-row justify-between mb-2">
-        {/* Tabs */}
-        <div className="flex justify-center gap-2 flex-wrap mb-4">
-          {statusTabs.map((tab) => (
-            <button
-              key={tab.label}
-              onClick={() => setActiveTab(tab.label)}
-              className={`px-4 py-2 rounded-lg font-semibold ${
-                activeTab === tab.label
-                  ? "bg-green-600 text-white"
-                  : "bg-gray-200 text-black"
-              }`}
-            >
-              {tab.display} ({getOrderCountByStatus(tab.label)})
-            </button>
-          ))}
-        </div>
-
-        {/* Date Filter */}
-        <div className="flex gap-2">
-          <div className="flex flex-col w-full">
-            <label className="text-xs mb-1">From Date</label>
-            <input
-              type="date"
-              className="input input-bordered w-full"
-              value={fromDate}
-              onChange={(e) => setFromDate(e.target.value)}
-            />
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:min-w-[520px]">
+              <div className="rounded-2xl bg-slate-50 p-3">
+                <p className="text-[11px] font-black uppercase text-slate-500">Filtered</p>
+                <p className="mt-1 text-xl font-black text-slate-950">{filteredOrders.length}</p>
+              </div>
+              <div className="rounded-2xl bg-slate-50 p-3">
+                <p className="text-[11px] font-black uppercase text-slate-500">Selected</p>
+                <p className="mt-1 text-xl font-black text-slate-950">{selectedOrders.length}</p>
+              </div>
+              <div className="rounded-2xl bg-slate-50 p-3">
+                <p className="text-[11px] font-black uppercase text-slate-500">Today</p>
+                <p className="mt-1 text-xl font-black text-slate-950">{getTodaysOrdersCount}</p>
+              </div>
+              <div className="rounded-2xl bg-[var(--theme-muted-bg)] p-3 text-[var(--theme-primary)]">
+                <p className="text-[11px] font-black uppercase">Revenue</p>
+                <p className="mt-1 text-lg font-black">
+                  BDT {filteredTotal.toLocaleString("en-US")}
+                </p>
+              </div>
+            </div>
           </div>
-          <div className="flex flex-col w-full">
-            <label className="text-xs mb-1">To Date</label>
-            <input
-              type="date"
-              className="input input-bordered w-full"
-              value={toDate}
-              onChange={(e) => setToDate(e.target.value)}
-            />
-          </div>
-        </div>
-      </div>
+        </section>
 
-      {/* Search + Bulk Actions */}
-      <div className="flex flex-col md:flex-row justify-between items-center mb-4 gap-2">
-        <select
-          className="select select-bordered w-full md:w-40"
-          defaultValue=""
-          onChange={(e) => e.target.value && handleBulkAction(e.target.value)}
-        >
-          <option value="" disabled>
-            Select Action
-          </option>
-          {["pending", "processing", "pickup", "completed", "cancelled"].map(
-            (status) => (
-              <option key={status} value={status}>
-                {status.charAt(0).toUpperCase() + status.slice(1)}
+        <section className="rounded-[28px] border border-white/70 bg-white p-4 shadow-[0_18px_45px_rgba(15,23,42,0.06)]">
+          <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+            <div className="flex flex-wrap gap-2">
+              {statusTabs.map((tab) => {
+                const Icon = tab.icon;
+                const active = activeTab === tab.label;
+                return (
+                  <button
+                    key={tab.label}
+                    onClick={() => setActiveTab(tab.label)}
+                    className={`inline-flex items-center gap-2 rounded-2xl px-3 py-2 text-xs font-black transition ${
+                      active
+                        ? "bg-[var(--theme-primary)] text-white shadow-[0_12px_28px_rgba(34,197,94,0.22)]"
+                        : "bg-slate-50 text-slate-600 hover:bg-[var(--theme-muted-bg)] hover:text-[var(--theme-primary)]"
+                    }`}
+                  >
+                    <Icon size={15} />
+                    {tab.display}
+                    <span className={active ? "text-white/80" : "text-slate-400"}>
+                      {getOrderCountByStatus(tab.label)}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="grid gap-3 md:grid-cols-[minmax(180px,1fr)_150px_150px]">
+              <label className="relative block">
+                <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={17} />
+                <input
+                  type="text"
+                  placeholder="Search order, customer, phone..."
+                  className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 pl-10 pr-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-[var(--theme-primary)] focus:bg-white focus:ring-2 focus:ring-[var(--theme-muted-bg)]"
+                  value={search}
+                  onChange={(event) => setSearch(event.target.value)}
+                />
+              </label>
+              <input
+                type="date"
+                aria-label="From Date"
+                className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-[var(--theme-primary)] focus:bg-white focus:ring-2 focus:ring-[var(--theme-muted-bg)]"
+                value={fromDate}
+                onChange={(event) => setFromDate(event.target.value)}
+              />
+              <input
+                type="date"
+                aria-label="To Date"
+                className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-[var(--theme-primary)] focus:bg-white focus:ring-2 focus:ring-[var(--theme-muted-bg)]"
+                value={toDate}
+                onChange={(event) => setToDate(event.target.value)}
+              />
+            </div>
+          </div>
+
+          <div className="mt-4 flex flex-col gap-3 border-t border-slate-100 pt-4 lg:flex-row lg:items-center lg:justify-between">
+            <select
+              className="h-11 w-full rounded-2xl border border-slate-200 bg-white px-3 text-sm font-black text-slate-700 outline-none transition focus:border-[var(--theme-primary)] focus:ring-2 focus:ring-[var(--theme-muted-bg)] lg:w-52"
+              defaultValue=""
+              onChange={(event) => event.target.value && handleBulkAction(event.target.value)}
+            >
+              <option value="" disabled>
+                Bulk status action
               </option>
-            )
-          )}
-        </select>
-        <input
-          type="text"
-          placeholder="Search by Order number or name"
-          className="input input-bordered w-full md:w-80"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
-      </div>
-      {/* Orders Table wrapped in Context */}
-      <OrdersContext.Provider value={contextValue}>
-        <div className="overflow-x-auto">
-          <table className="table table-zebra w-full text-sm">
-            <thead>
-              <tr className="bg-base-200">
-                <th>
-                  <input
-                    type="checkbox"
-                    className="checkbox checkbox-sm"
-                    onChange={toggleSelectAll}
-                    checked={
-                      paginatedData.length > 0 &&
-                      selectedOrders.length === paginatedData.length
-                    }
-                  />
-                </th>
-                <th>Order#</th>
-                <th>Date</th>
-                <th>Customer</th>
-                <th>Shipping</th>
-                <th>Total</th>
-                <th>Payment</th>
-                <th>Pay Status</th>
-                <th>Order Status</th>
-                <th>Action</th>
-              </tr>
-            </thead>
-            <tbody>
-              {paginatedData.length ? (
-                paginatedData.map((order) => (
-                  <tr key={order.orderId}>
-                    <td>
+              {bulkStatuses.map((nextStatus) => (
+                <option key={nextStatus} value={nextStatus}>
+                  {nextStatus.charAt(0).toUpperCase() + nextStatus.slice(1)}
+                </option>
+              ))}
+            </select>
+
+            <div className="flex flex-wrap gap-2">
+              {paginatedData.length === 1 && (
+                <PDFDownloadLink
+                  document={<InvoiceDocument order={paginatedData[0]} />}
+                  fileName={`invoice_${paginatedData[0].orderNumber}.pdf`}
+                >
+                  {({ loading }) => (
+                    <button className="inline-flex h-10 items-center gap-2 rounded-2xl bg-emerald-600 px-3 text-xs font-black text-white transition hover:bg-emerald-700">
+                      <FileText size={15} />
+                      {loading ? "Generating..." : "Download Single PDF"}
+                    </button>
+                  )}
+                </PDFDownloadLink>
+              )}
+
+              {selectedOrders.length > 0 && (
+                <PDFDownloadLink
+                  document={<InvoiceDocument orders={selectedOrderData} />}
+                  fileName="merged_invoices.pdf"
+                >
+                  {({ loading }) => (
+                    <button className="inline-flex h-10 items-center gap-2 rounded-2xl bg-blue-600 px-3 text-xs font-black text-white transition hover:bg-blue-700">
+                      <Printer size={15} />
+                      {loading ? "Generating..." : "Print Selected"}
+                    </button>
+                  )}
+                </PDFDownloadLink>
+              )}
+
+              {selectedOrders.length > 0 && (
+                <button
+                  className="inline-flex h-10 items-center gap-2 rounded-2xl bg-slate-950 px-3 text-xs font-black text-white transition hover:bg-slate-800"
+                  onClick={exportSelectedCsv}
+                >
+                  <Download size={15} />
+                  Download CSV
+                </button>
+              )}
+
+              <button
+                className="inline-flex h-10 items-center gap-2 rounded-2xl bg-[var(--theme-primary)] px-3 text-xs font-black text-white transition hover:opacity-90"
+                onClick={exportFilteredCsv}
+              >
+                <Download size={15} />
+                Export Filtered CSV
+              </button>
+
+              {selectedOrders.length === 0 && paginatedData.length !== 1 && (
+                <button
+                  className="inline-flex h-10 items-center gap-2 rounded-2xl bg-slate-100 px-3 text-xs font-black text-slate-600 transition hover:bg-slate-200"
+                  onClick={() => toast.error("Select orders or a single order first.")}
+                >
+                  <Printer size={15} />
+                  Print
+                </button>
+              )}
+            </div>
+          </div>
+        </section>
+
+        <OrdersContext.Provider value={contextValue}>
+          <section className="overflow-hidden rounded-[28px] border border-white/70 bg-white shadow-[0_18px_45px_rgba(15,23,42,0.07)]">
+            <div className="overflow-x-auto">
+              <table className="w-full min-w-[980px] text-left text-sm">
+                <thead className="bg-slate-50 text-xs font-black uppercase tracking-wide text-slate-500">
+                  <tr>
+                    <th className="w-12 px-4 py-4">
                       <input
                         type="checkbox"
-                        className="checkbox checkbox-sm"
-                        checked={selectedOrders.includes(order.orderId)}
-                        onChange={() => toggleSelectOne(order.orderId)}
+                        className="checkbox checkbox-sm border-slate-300"
+                        onChange={toggleSelectAll}
+                        checked={
+                          paginatedData.length > 0 &&
+                          selectedOrders.length === paginatedData.length
+                        }
                       />
-                    </td>
-                    <td>
-                      <Link
-                        to={`/dashboard/view-order/${order.orderId}`}
-                        className="text-blue-600 hover:underline"
-                      >
-                        {order.orderNumber}
-                      </Link>
-                    </td>
-                    <td>
-                      {order.createdAt
-                        ? new Date(order.createdAt).toLocaleDateString()
-                        : "-"}
-                    </td>
-                    <td>{order.name}</td>
-                    <td>BDT {order.shippingCharge}</td>
-                    <td>BDT {order.grandTotal}</td>
-                    <td>{order.paymentMethod}</td>
-                    <td>
-                      <span
-                        className={`px-2 py-1 rounded text-white ${
-                          getString(order.paymentStatus) === "pending"
-                            ? "bg-yellow-500"
-                            : getString(order.paymentStatus) === "completed"
-                            ? "bg-green-600"
-                            : "bg-red-600"
-                        }`}
-                      >
-                        {getString(order.paymentStatus)}
-                      </span>
-                    </td>
-                    <td>
-                      <span
-                        className={`px-2 py-1 rounded text-white ${
-                          getString(order.status) === "pending"
-                            ? "bg-yellow-500"
-                            : getString(order.status) === "processing"
-                            ? "bg-blue-500"
-                            : getString(order.status) === "pickup"
-                            ? "bg-purple-500"
-                            : getString(order.status) === "completed"
-                            ? "bg-green-600"
-                            : "bg-red-600"
-                        }`}
-                      >
-                        {getString(order.status)}
-                      </span>
-                    </td>
-                    <td className="align-middle">
-                      {/* Individual PDF download */}
-                      <div className="flex flex-row gap-3 md:gap-2 items-center">
-                        <PDFDownloadLink
-                          document={<InvoiceDocument order={order} />}
-                          fileName={`invoice_${order.orderNumber}.pdf`}
-                        >
-                          {({ loading }) => (
-                            <img
-                              src="/print-dash.png"
-                              alt="invoice"
-                              className="w-5 max-w-5 cursor-pointer"
-                            />
-                          )}
-                        </PDFDownloadLink>
-                        {/* Edit */}
-                        <img
-                          src="/edit-icon.png"
-                          alt="edit"
-                          className="w-5 max-w-5 cursor-pointer"
-                          onClick={() =>
-                            navigate(`/dashboard/view-order/${order.orderId}`)
-                          }
-                        />
-                        {/* Delete */}
-                        <img
-                          src="/delete-icon.png"
-                          alt="delete"
-                          className="w-5 h-4 max-w-5 cursor-pointer"
-                          onClick={() => handleDelete(order.orderId)}
-                        />
-                      </div>
-                    </td>
+                    </th>
+                    <th className="px-4 py-4">Order</th>
+                    <th className="px-4 py-4">Date</th>
+                    <th className="px-4 py-4">Customer</th>
+                    <th className="px-4 py-4">Shipping</th>
+                    <th className="px-4 py-4">Total</th>
+                    <th className="px-4 py-4">Payment</th>
+                    <th className="px-4 py-4">Pay Status</th>
+                    <th className="px-4 py-4">Order Status</th>
+                    <th className="px-4 py-4 text-right">Action</th>
                   </tr>
-                ))
-              ) : (
-                <tr>
-                  <td colSpan={10} className="text-center">
-                    No {activeTab} orders found.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
-        </div>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {paginatedData.length ? (
+                    paginatedData.map((order) => (
+                      <tr key={order.orderId} className="transition hover:bg-slate-50/80">
+                        <td className="px-4 py-4">
+                          <input
+                            type="checkbox"
+                            className="checkbox checkbox-sm border-slate-300"
+                            checked={selectedOrders.includes(order.orderId)}
+                            onChange={() => toggleSelectOne(order.orderId)}
+                          />
+                        </td>
+                        <td className="px-4 py-4">
+                          <Link
+                            to={`/dashboard/view-order/${order.orderId}`}
+                            className="font-black text-[var(--theme-primary)] hover:underline"
+                          >
+                            {order.orderNumber}
+                          </Link>
+                        </td>
+                        <td className="px-4 py-4 font-semibold text-slate-600">
+                          {order.createdAt
+                            ? new Date(order.createdAt).toLocaleDateString()
+                            : "-"}
+                        </td>
+                        <td className="px-4 py-4">
+                          <p className="font-black text-slate-900">{order.name}</p>
+                          <p className="mt-0.5 text-xs font-semibold text-slate-500">
+                            {order.phone || "No phone"}
+                          </p>
+                        </td>
+                        <td className="px-4 py-4 font-bold text-slate-600">
+                          BDT {Number(order.shippingCharge || 0).toLocaleString("en-US")}
+                        </td>
+                        <td className="px-4 py-4 font-black text-slate-950">
+                          BDT {Number(order.grandTotal || 0).toLocaleString("en-US")}
+                        </td>
+                        <td className="px-4 py-4">
+                          <span className="inline-flex items-center gap-1 rounded-full bg-slate-100 px-2.5 py-1 text-xs font-black text-slate-700">
+                            <Wallet size={13} />
+                            {order.paymentMethod || "N/A"}
+                          </span>
+                        </td>
+                        <td className="px-4 py-4">
+                          <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-black ring-1 ${statusTone(order.paymentStatus)}`}>
+                            {getString(order.paymentStatus)}
+                          </span>
+                        </td>
+                        <td className="px-4 py-4">
+                          <span className={`inline-flex rounded-full px-2.5 py-1 text-xs font-black ring-1 ${statusTone(order.status)}`}>
+                            {getString(order.status)}
+                          </span>
+                        </td>
+                        <td className="px-4 py-4 align-middle">
+                          <div className="flex items-center justify-end gap-2">
+                            <PDFDownloadLink
+                              document={<InvoiceDocument order={order} />}
+                              fileName={`invoice_${order.orderNumber}.pdf`}
+                            >
+                              {({ loading }) => (
+                                <button
+                                  type="button"
+                                  title={loading ? "Generating invoice" : "Download invoice"}
+                                  className="grid h-9 w-9 place-items-center rounded-xl bg-blue-50 text-blue-700 transition hover:bg-blue-100"
+                                >
+                                  <Printer size={16} />
+                                </button>
+                              )}
+                            </PDFDownloadLink>
+                            <button
+                              type="button"
+                              title="View order"
+                              className="grid h-9 w-9 place-items-center rounded-xl bg-slate-100 text-slate-700 transition hover:bg-slate-200"
+                              onClick={() => navigate(`/dashboard/view-order/${order.orderId}`)}
+                            >
+                              <Eye size={16} />
+                            </button>
+                            <button
+                              type="button"
+                              title="Delete order"
+                              className="grid h-9 w-9 place-items-center rounded-xl bg-rose-50 text-rose-700 transition hover:bg-rose-100"
+                              onClick={() => handleDelete(order.orderId)}
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan={10} className="px-4 py-16 text-center">
+                        <div className="mx-auto max-w-sm rounded-3xl border border-dashed border-slate-200 bg-slate-50 p-8">
+                          <ClipboardList className="mx-auto text-slate-400" size={32} />
+                          <p className="mt-3 font-black text-slate-700">
+                            No {activeTab} orders found.
+                          </p>
+                          <p className="mt-1 text-xs font-medium text-slate-500">
+                            Try changing status, date, or search filters.
+                          </p>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
 
-        {/* Pagination */}
-        <div className="flex justify-center items-center gap-3 mt-4">
-          <button
-            className="btn btn-xs"
-            onClick={prevPage}
-            disabled={currentPage === 1}
-          >
-            Prev
-          </button>
-          <span>
-            Page {currentPage} of {totalPages}
-          </span>
-          <button
-            className="btn btn-xs"
-            onClick={nextPage}
-            disabled={currentPage === totalPages}
-          >
-            Next
-          </button>
-        </div>
-      </OrdersContext.Provider>
+            <div className="flex flex-col items-center justify-between gap-3 border-t border-slate-100 px-4 py-4 sm:flex-row">
+              <p className="text-xs font-bold text-slate-500">
+                Showing {paginatedData.length} of {filteredOrders.length} filtered orders
+              </p>
+              <div className="flex items-center gap-3">
+                <button
+                  className="inline-flex h-9 items-center gap-1 rounded-xl bg-slate-100 px-3 text-xs font-black text-slate-700 transition hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-40"
+                  onClick={prevPage}
+                  disabled={currentPage === 1}
+                >
+                  <ChevronLeft size={15} />
+                  Prev
+                </button>
+                <span className="text-sm font-black text-slate-700">
+                  Page {currentPage} of {totalPages}
+                </span>
+                <button
+                  className="inline-flex h-9 items-center gap-1 rounded-xl bg-slate-100 px-3 text-xs font-black text-slate-700 transition hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-40"
+                  onClick={nextPage}
+                  disabled={currentPage === totalPages}
+                >
+                  Next
+                  <ChevronRight size={15} />
+                </button>
+              </div>
+            </div>
+          </section>
+        </OrdersContext.Provider>
+      </div>
       <ToastContainer />
     </div>
   );
