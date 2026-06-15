@@ -6,6 +6,7 @@ import {
 import { Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import { downloadCsv } from "../../../utils/csv";
+import { confirmPopup } from "../../../utils/popups";
 
 const ExistingPages = () => {
   const [pages, setPages] = useState([]);
@@ -71,7 +72,13 @@ const ExistingPages = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Delete this landing page?")) return;
+    const confirmed = await confirmPopup({
+      title: "Delete this landing page?",
+      text: "This public landing page will no longer be available.",
+      confirmButtonText: "Delete Page",
+    });
+
+    if (!confirmed) return;
 
     try {
       await deleteLandingPage(id);

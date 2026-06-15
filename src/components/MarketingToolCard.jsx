@@ -1,6 +1,6 @@
-import Swal from "sweetalert2";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { confirmPopup, showInfoPopup, showSuccessPopup } from "../utils/popups";
 
 const MarketingToolCard = ({
   name,
@@ -22,43 +22,29 @@ const MarketingToolCard = ({
 
   // sweetalert handler (How it works)
   const handleHowItWorks = () => {
-    Swal.fire({
-      title: `How ${name} works`,
-      text: howItWorksContent,
-      icon: "info",
-      confirmButtonText: "Got it!",
-    });
+    showInfoPopup(`How ${name} works`, howItWorksContent);
   };
 
   // sweetalert handler (Confirm toggle)
-  const handleToggleConfirm = () => {
-    Swal.fire({
+  const handleToggleConfirm = async () => {
+    const confirmed = await confirmPopup({
       title: toggleAction === "on" ? `Turn on ${name}?` : `Turn off ${name}?`,
       text:
         toggleAction === "on"
           ? `Are you sure you want to turn on ${name}?`
           : `Are you sure you want to turn off ${name}?`,
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#1455ac",
-      cancelButtonColor: "#aaa",
       confirmButtonText: "Yes",
-      cancelButtonText: "Cancel",
-    }).then((result) => {
-      if (result.isConfirmed) {
-        handleConfirmToggle();
-        Swal.fire({
-          title: "Done!",
-          text:
-            toggleAction === "on"
-              ? `${name} has been turned on.`
-              : `${name} has been turned off.`,
-          icon: "success",
-          timer: 2000,
-          showConfirmButton: false,
-        });
-      }
     });
+
+    if (!confirmed) return;
+
+    handleConfirmToggle();
+    showSuccessPopup(
+      "Done",
+      toggleAction === "on"
+        ? `${name} has been turned on.`
+        : `${name} has been turned off.`
+    );
   };
 
   // save handler with validation

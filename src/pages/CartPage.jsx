@@ -3,11 +3,11 @@ import { useCart } from "../context/CartContext";
 import { useNavigate } from "react-router-dom";
 import useOrderForm from "../hooks/useOrderForm";
 import { toast } from "react-toastify";
-import Swal from "sweetalert2";
 import "react-toastify/dist/ReactToastify.css";
 
 import OrderDrawer from "../components/OrderDrawer";
 import { createOrder } from "../services/orders";
+import { confirmPopup } from "../utils/popups";
 
 const getItemPrice = (item) => Number(item.discountPrice || item.price || 0);
 
@@ -95,22 +95,17 @@ const CartPage = () => {
     );
   }
 
-  const handleRemoveItem = (item) => {
-    Swal.fire({
+  const handleRemoveItem = async (item) => {
+    const confirmed = await confirmPopup({
       title: `Remove "${item.name}" from cart?`,
-      text: "You won't be able to revert this!",
-      icon: "warning",
-      showCancelButton: true,
-      confirmButtonColor: "#3085d6",
-      cancelButtonColor: "#d33",
-      confirmButtonText: "Yes, remove it!",
-      cancelButtonText: "Cancel",
-    }).then((result) => {
-      if (result.isConfirmed) {
-        removeFromCart(item.cartKey || item._id || item.id);
-        toast.info(`🗑️ ${item.name} removed from cart`);
-      }
+      text: "This item will be removed from your cart.",
+      confirmButtonText: "Remove Item",
     });
+
+    if (!confirmed) return;
+
+    removeFromCart(item.cartKey || item._id || item.id);
+    toast.info(`${item.name} removed from cart`);
   };
 
   return (

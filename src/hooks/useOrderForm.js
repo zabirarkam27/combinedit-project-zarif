@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { createOrder } from "../services/orders";
+import { showErrorPopup, showSuccessPopup } from "../utils/popups";
 
 const defaultOrderInfo = {
   name: "",
@@ -26,12 +27,12 @@ const useOrderForm = (initialProduct = null) => {
   const handleOrderSubmit = async (payload) => {
     try {
       await createOrder(payload);
-      alert("Order placed successfully!");
+      showSuccessPopup("Order placed successfully", "Thank you. We received your order.");
       setOrderInfo(defaultOrderInfo);
       setSelectedProduct(null);
     } catch (error) {
       console.error("Failed to submit order:", error);
-      alert("Failed to place order. Try again.");
+      showErrorPopup("Failed to place order", "Please check your details and try again.");
     }
   };
 

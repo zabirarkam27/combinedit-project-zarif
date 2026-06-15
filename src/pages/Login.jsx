@@ -6,7 +6,11 @@ import {
 } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import Swal from "sweetalert2";
+import {
+  showErrorPopup,
+  showSuccessPopup,
+  showWarningPopup,
+} from "../utils/popups";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -41,22 +45,20 @@ const Login = () => {
       if (loggedInEmail === adminGmail) {
         navigate("/dashboard");
       } else {
-        await Swal.fire({
-          icon: "error",
-          title: "Unauthorized",
-          text: "You are not authorized to access the dashboard.",
-        });
+        await showErrorPopup(
+          "Unauthorized",
+          "You are not authorized to access the dashboard."
+        );
         await auth.signOut();
       }
     } catch (error) {
       console.error("Google login error:", error);
-      Swal.fire({
-        icon: "error",
-        title: "Login Error",
-        text: error?.code
+      showErrorPopup(
+        "Login Error",
+        error?.code
           ? `${error.code}: ${error.message}`
-          : "Something went wrong. Try again!",
-      });
+          : "Something went wrong. Try again!"
+      );
     }
   };
 
@@ -70,60 +72,48 @@ const Login = () => {
       if (loggedInEmail === adminEmail) {
         navigate("/dashboard");
       } else {
-        await Swal.fire({
-          icon: "error",
-          title: "Unauthorized",
-          text: "You are not authorized to access the dashboard.",
-        });
+        await showErrorPopup(
+          "Unauthorized",
+          "You are not authorized to access the dashboard."
+        );
         await auth.signOut();
       }
     } catch (error) {
-      Swal.fire({
-        icon: "error",
-        title: "Login Failed",
-        text: error?.code
+      showErrorPopup(
+        "Login Failed",
+        error?.code
           ? `${error.code}: ${error.message}`
-          : "Invalid email or password.",
-      });
+          : "Invalid email or password."
+      );
     }
   };
 
   // Forget Password Handler
   const handleForgotPassword = async () => {
     if (!email) {
-      Swal.fire({
-        icon: "warning",
-        title: "Enter Email",
-        text: "Please enter your registered email first.",
-      });
+      showWarningPopup("Enter Email", "Please enter your registered email first.");
       return;
     }
 
     // Allow reset only for admin email
     if (email !== adminEmail) {
-      Swal.fire({
-        icon: "error",
-        title: "Not Allowed",
-        text: "Your email is not authorized for password reset. If you are the admin, please use the registered admin email. Your registered email maybe: " + getEmailHint(adminEmail),
-      });
+      showErrorPopup(
+        "Not Allowed",
+        "Your email is not authorized for password reset. If you are the admin, please use the registered admin email. Your registered email maybe: " + getEmailHint(adminEmail)
+      );
       return;
     }
 
     try {
       await sendPasswordResetEmail(auth, email);
-      Swal.fire({
-        icon: "success",
-        title: "Email Sent",
-        text: `Password reset email sent to ${getEmailHint(
+      showSuccessPopup(
+        "Email Sent",
+        `Password reset email sent to ${getEmailHint(
           email
-        )}. Please check your inbox.`,
-      });
+        )}. Please check your inbox.`
+      );
     } catch (error) {
-      Swal.fire({
-        icon: "error",
-        title: "Error",
-        text: "Failed to send password reset email. Try again.",
-      });
+      showErrorPopup("Error", "Failed to send password reset email. Try again.");
     }
   };
 

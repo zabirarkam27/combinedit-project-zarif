@@ -5,6 +5,7 @@ import "react-toastify/dist/ReactToastify.css";
 
 import { deleteProduct, getProducts } from "../../services/products";
 import { downloadCsv } from "../../utils/csv";
+import { confirmPopup } from "../../utils/popups";
 
 const AllProductsAdminView = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -82,7 +83,13 @@ const AllProductsAdminView = () => {
   };
 
   const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this product?")) return;
+    const confirmed = await confirmPopup({
+      title: "Delete this product?",
+      text: "This product will be removed from your catalog.",
+      confirmButtonText: "Delete Product",
+    });
+
+    if (!confirmed) return;
 
     setDeletingId(id);
     try {

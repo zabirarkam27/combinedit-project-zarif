@@ -8,6 +8,7 @@ import { useOrders } from "../../hooks/useOrders";
 import usePagination from "../../hooks/usePagination";
 import InvoiceDocument from "./InvoiceDocument";
 import { downloadCsv } from "../../utils/csv";
+import { confirmPopup } from "../../utils/popups";
 
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -211,11 +212,17 @@ const HandleOrders = () => {
   }, []);
 
   const handleDelete = useCallback(
-    (orderId) => {
-      if (window.confirm("Are you sure you want to delete this order?")) {
-        handleDeleteOrder(orderId);
-        toast.success("✅ Order deleted successfully");
-      }
+    async (orderId) => {
+      const confirmed = await confirmPopup({
+        title: "Delete this order?",
+        text: "This order will be removed from your dashboard.",
+        confirmButtonText: "Delete Order",
+      });
+
+      if (!confirmed) return;
+
+      await handleDeleteOrder(orderId);
+      toast.success("Order deleted successfully");
     },
     [handleDeleteOrder]
   );
