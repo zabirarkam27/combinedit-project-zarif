@@ -117,7 +117,7 @@ const OrderDrawer = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-end justify-center bg-slate-950/60 px-3 py-3 backdrop-blur-sm sm:items-center sm:px-5">
+    <div className="fixed inset-0 z-[100] flex items-end justify-center bg-slate-950/60 px-3 pb-[calc(0.75rem+env(safe-area-inset-bottom))] pt-3 backdrop-blur-sm sm:items-center sm:px-5 sm:py-5">
       <button
         type="button"
         aria-label="Close checkout popup"
@@ -125,7 +125,7 @@ const OrderDrawer = ({
         onClick={closeDrawer}
       />
 
-      <div className="relative flex max-h-[94vh] w-full max-w-5xl flex-col overflow-hidden rounded-[28px] bg-white shadow-[0_30px_90px_rgba(15,23,42,0.35)] ring-1 ring-white/40">
+      <div className="relative flex max-h-[calc(100dvh-1.5rem-env(safe-area-inset-bottom))] w-full max-w-5xl flex-col overflow-hidden rounded-[28px] bg-white shadow-[0_30px_90px_rgba(15,23,42,0.35)] ring-1 ring-white/40 sm:max-h-[94vh]">
         <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-4 py-4 sm:px-6">
           <div>
             <p className="text-xs font-extrabold uppercase tracking-[0.18em] text-[var(--theme-primary)]">
