@@ -1,11 +1,34 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
+import {
+  AlertTriangle,
+  Boxes,
+  Download,
+  Edit3,
+  Layers3,
+  PackagePlus,
+  Search,
+  Sparkles,
+  Trash2,
+} from "lucide-react";
 import "react-toastify/dist/ReactToastify.css";
 
 import { deleteProduct, getProducts } from "../../services/products";
 import { downloadCsv } from "../../utils/csv";
 import { confirmPopup } from "../../utils/popups";
+
+const getProductImage = (product) => {
+  const images = [
+    product?.thumbnail,
+    product?.image,
+    ...(Array.isArray(product?.images) ? product.images : [product?.images]),
+  ].filter(Boolean);
+  return images[0] || "";
+};
+
+const formatCurrency = (value) =>
+  `BDT ${Number(value || 0).toLocaleString("en-US")}`;
 
 const AllProductsAdminView = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -41,7 +64,6 @@ const AllProductsAdminView = () => {
     return products
       .filter((product) => {
         if (stockFilter === "out" && product?.inStock) return false;
-
         if (!query) return true;
 
         return [product?.name, product?.brand, product?.category, product?.volume]
@@ -50,6 +72,18 @@ const AllProductsAdminView = () => {
       })
       .sort((a, b) => (a?.name || "").localeCompare(b?.name || ""));
   }, [products, search, stockFilter]);
+
+  const catalogStats = useMemo(() => {
+    const outOfStock = products.filter((product) => !product?.inStock).length;
+    const active = products.filter((product) => product?.active !== false).length;
+    const categories = new Set(products.map((product) => product?.category).filter(Boolean)).size;
+    return {
+      total: products.length,
+      active,
+      outOfStock,
+      categories,
+    };
+  }, [products]);
 
   const activeFilterLabel = useMemo(() => {
     if (stockFilter === "out") return "Out of stock products";
@@ -105,156 +139,239 @@ const AllProductsAdminView = () => {
   };
 
   return (
-    <div className="w-full mx-auto p-3 md:p-6 theme-dashboard-bg min-h-screen">
-      <div className="mb-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-xl md:text-3xl font-bold theme-text">
-            All Products
-          </h1>
-          <p className="text-sm text-gray-600">
-            Manage product details, pricing, stock, and catalog visibility.
-          </p>
-        </div>
+    <div className="min-h-screen w-full theme-dashboard-bg px-2 py-4 md:px-4">
+      <div className="mx-auto w-full max-w-7xl space-y-5">
+        <section className="overflow-hidden rounded-[28px] border border-white/70 bg-white shadow-[0_20px_60px_rgba(15,23,42,0.08)]">
+          <div className="flex flex-col gap-5 p-5 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <p className="text-xs font-black uppercase tracking-wide text-[var(--theme-primary)]">
+                Product catalog
+              </p>
+              <h1 className="mt-2 text-2xl font-black tracking-tight text-slate-950 md:text-4xl">
+                All Products
+              </h1>
+              <p className="mt-2 max-w-2xl text-sm font-medium leading-6 text-slate-500">
+                Manage product details, pricing, stock, images, and catalog visibility.
+              </p>
+            </div>
 
-        <Link
-          to="/dashboard/edit-your-products/add"
-          className="btn border-0 text-white theme-gradient theme-gradient-hover"
-        >
-          Add Product
-        </Link>
-      </div>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:min-w-[560px]">
+              <div className="rounded-2xl bg-slate-50 p-3">
+                <p className="text-[11px] font-black uppercase text-slate-500">Total</p>
+                <p className="mt-1 text-xl font-black text-slate-950">{catalogStats.total}</p>
+              </div>
+              <div className="rounded-2xl bg-slate-50 p-3">
+                <p className="text-[11px] font-black uppercase text-slate-500">Active</p>
+                <p className="mt-1 text-xl font-black text-slate-950">{catalogStats.active}</p>
+              </div>
+              <div className="rounded-2xl bg-slate-50 p-3">
+                <p className="text-[11px] font-black uppercase text-slate-500">Categories</p>
+                <p className="mt-1 text-xl font-black text-slate-950">{catalogStats.categories}</p>
+              </div>
+              <div className="rounded-2xl bg-rose-50 p-3 text-rose-700">
+                <p className="text-[11px] font-black uppercase">Out Stock</p>
+                <p className="mt-1 text-xl font-black">{catalogStats.outOfStock}</p>
+              </div>
+            </div>
+          </div>
+        </section>
 
-      <div className="mb-4 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-        <div>
-          <p className="text-sm text-gray-600">
-            Showing {filteredProducts.length} of {products.length} products
-          </p>
-          {activeFilterLabel && (
-            <button
-              type="button"
-              onClick={clearRouteFilters}
-              className="mt-1 text-sm font-medium text-[var(--theme-secondary)] hover:underline"
+        <section className="rounded-[28px] border border-white/70 bg-white p-4 shadow-[0_18px_45px_rgba(15,23,42,0.06)]">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <p className="text-sm font-bold text-slate-500">
+                Showing <span className="text-slate-950">{filteredProducts.length}</span> of{" "}
+                <span className="text-slate-950">{products.length}</span> products
+              </p>
+              {activeFilterLabel && (
+                <button
+                  type="button"
+                  onClick={clearRouteFilters}
+                  className="mt-2 inline-flex items-center gap-2 rounded-full bg-[var(--theme-muted-bg)] px-3 py-1 text-xs font-black text-[var(--theme-primary)] transition hover:opacity-80"
+                >
+                  {stockFilter === "out" ? <AlertTriangle size={14} /> : viewFilter === "brands" ? <Sparkles size={14} /> : <Layers3 size={14} />}
+                  {activeFilterLabel} - clear
+                </button>
+              )}
+            </div>
+
+            <div className="grid gap-2 md:grid-cols-[minmax(220px,1fr)_auto_auto]">
+              <label className="relative block">
+                <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={17} />
+                <input
+                  type="text"
+                  placeholder="Search name, brand, category, volume..."
+                  className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 pl-10 pr-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-[var(--theme-primary)] focus:bg-white focus:ring-2 focus:ring-[var(--theme-muted-bg)] md:w-96"
+                  value={search}
+                  onChange={(event) => setSearch(event.target.value)}
+                />
+              </label>
+              <button
+                type="button"
+                onClick={exportProductsCsv}
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-slate-950 px-4 text-sm font-black text-white transition hover:bg-slate-800"
+              >
+                <Download size={17} />
+                Export CSV
+              </button>
+              <Link
+                to="/dashboard/edit-your-products/add"
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-[var(--theme-primary)] px-4 text-sm font-black text-white transition hover:opacity-90"
+              >
+                <PackagePlus size={17} />
+                Add Product
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        <section className="overflow-hidden rounded-[28px] border border-white/70 bg-white shadow-[0_18px_45px_rgba(15,23,42,0.07)]">
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[980px] text-left text-sm">
+              <thead className="bg-slate-50 text-xs font-black uppercase tracking-wide text-slate-500">
+                <tr>
+                  <th className="px-5 py-4">Product</th>
+                  <th className="px-5 py-4">Brand</th>
+                  <th className="px-5 py-4">Category</th>
+                  <th className="px-5 py-4">Volume</th>
+                  <th className="px-5 py-4">Price</th>
+                  <th className="px-5 py-4">Stock</th>
+                  <th className="px-5 py-4 text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {loading ? (
+                  Array.from({ length: 5 }).map((_, index) => (
+                    <tr key={index}>
+                      <td colSpan="7" className="px-5 py-4">
+                        <div className="h-12 w-full animate-pulse rounded-2xl bg-slate-100" />
+                      </td>
+                    </tr>
+                  ))
+                ) : filteredProducts.length ? (
+                  filteredProducts.map((product) => {
+                    const image = getProductImage(product);
+                    return (
+                      <tr key={product._id} className="transition hover:bg-slate-50/80">
+                        <td className="px-5 py-4">
+                          <div className="flex items-center gap-3">
+                            {image ? (
+                              <img
+                                src={image}
+                                alt={product.name || "Product"}
+                                className="h-14 w-14 rounded-2xl object-cover ring-1 ring-slate-100"
+                              />
+                            ) : (
+                              <span className="grid h-14 w-14 place-items-center rounded-2xl bg-slate-100 text-slate-400">
+                                <Boxes size={20} />
+                              </span>
+                            )}
+                            <div className="min-w-0">
+                              <p className="max-w-[280px] truncate font-black text-slate-950">
+                                {product.name || "Untitled product"}
+                              </p>
+                              <p className="mt-1 text-xs font-semibold text-slate-500">
+                                {product.active === false ? "Hidden from catalog" : "Visible in catalog"}
+                              </p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-5 py-4 font-bold text-slate-600">
+                          {product.brand || "-"}
+                        </td>
+                        <td className="px-5 py-4">
+                          <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-black text-slate-700">
+                            {product.category || "Uncategorized"}
+                          </span>
+                        </td>
+                        <td className="px-5 py-4 font-bold text-slate-600">
+                          {product.volume || "-"}
+                        </td>
+                        <td className="px-5 py-4">
+                          <p className="font-black text-slate-950">{formatCurrency(product.discountPrice || product.price)}</p>
+                          {product.discountPrice && product.price && (
+                            <p className="mt-1 text-xs font-semibold text-slate-400 line-through">
+                              {formatCurrency(product.price)}
+                            </p>
+                          )}
+                        </td>
+                        <td className="px-5 py-4">
+                          <span
+                            className={`inline-flex rounded-full px-2.5 py-1 text-xs font-black ring-1 ${
+                              product.inStock
+                                ? "bg-emerald-50 text-emerald-700 ring-emerald-200"
+                                : "bg-rose-50 text-rose-700 ring-rose-200"
+                            }`}
+                          >
+                            {product.inStock ? "In Stock" : "Out"}
+                          </span>
+                        </td>
+                        <td className="px-5 py-4">
+                          <div className="flex items-center justify-end gap-2">
+                            <Link
+                              to={`/dashboard/update-product/${product._id}`}
+                              title="Edit product"
+                              className="grid h-9 w-9 place-items-center rounded-xl bg-blue-50 text-blue-700 transition hover:bg-blue-100"
+                            >
+                              <Edit3 size={16} />
+                            </Link>
+                            <button
+                              type="button"
+                              title="Delete product"
+                              onClick={() => handleDelete(product._id)}
+                              disabled={deletingId === product._id}
+                              className="grid h-9 w-9 place-items-center rounded-xl bg-rose-50 text-rose-700 transition hover:bg-rose-100 disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })
+                ) : (
+                  <tr>
+                    <td colSpan="7" className="px-5 py-16 text-center">
+                      <div className="mx-auto max-w-sm rounded-3xl border border-dashed border-slate-200 bg-slate-50 p-8">
+                        <Boxes className="mx-auto text-slate-400" size={34} />
+                        <p className="mt-3 font-black text-slate-700">
+                          No products found.
+                        </p>
+                        <p className="mt-1 text-xs font-medium text-slate-500">
+                          Try changing search or route filters.
+                        </p>
+                        {search && (
+                          <button
+                            type="button"
+                            onClick={() => setSearch("")}
+                            className="mt-4 inline-flex h-10 items-center rounded-2xl bg-[var(--theme-primary)] px-4 text-xs font-black text-white"
+                          >
+                            Clear search
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        {!loading && products.length === 0 && (
+          <section className="rounded-[28px] border border-white/70 bg-white p-8 text-center shadow-[0_18px_45px_rgba(15,23,42,0.07)]">
+            <Boxes className="mx-auto text-slate-400" size={36} />
+            <p className="mt-3 font-black text-slate-950">Your catalog is empty.</p>
+            <Link
+              to="/dashboard/edit-your-products/add"
+              className="mt-5 inline-flex h-11 items-center gap-2 rounded-2xl bg-[var(--theme-primary)] px-4 text-sm font-black text-white transition hover:opacity-90"
             >
-              {activeFilterLabel} - clear filter
-            </button>
-          )}
-        </div>
-        <input
-          type="text"
-          placeholder="Search name, brand, category, volume..."
-          className="input w-full md:w-96 bg-white border theme-border"
-          value={search}
-          onChange={(event) => setSearch(event.target.value)}
-        />
-        <button
-          type="button"
-          onClick={exportProductsCsv}
-          className="btn border-0 text-white theme-gradient theme-gradient-hover"
-        >
-          Export CSV
-        </button>
+              <PackagePlus size={17} />
+              Add your first product
+            </Link>
+          </section>
+        )}
       </div>
-
-      <div className="overflow-x-auto rounded-lg border theme-border bg-white shadow-sm">
-        <table className="table table-zebra w-full text-sm">
-          <thead>
-            <tr className="theme-dashboard-bg theme-text">
-              <th>#</th>
-              <th>Name</th>
-              <th>Brand</th>
-              <th>Category</th>
-              <th>Volume</th>
-              <th>Price</th>
-              <th>Stock</th>
-              <th>Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
-              Array.from({ length: 5 }).map((_, index) => (
-                <tr key={index}>
-                  <td colSpan="8">
-                    <div className="h-5 w-full animate-pulse rounded bg-gray-200" />
-                  </td>
-                </tr>
-              ))
-            ) : filteredProducts.length ? (
-              filteredProducts.map((product, index) => (
-                <tr key={product._id} className="hover:bg-gray-50">
-                  <td>{index + 1}</td>
-                  <td className="min-w-48 font-medium theme-text">
-                    {product.name || "Untitled product"}
-                  </td>
-                  <td>{product.brand || "-"}</td>
-                  <td>{product.category || "-"}</td>
-                  <td>{product.volume || "-"}</td>
-                  <td>BDT {product.price ?? 0}</td>
-                  <td>
-                    <span
-                      className={`badge ${
-                        product.inStock ? "badge-success" : "badge-error"
-                      }`}
-                    >
-                      {product.inStock ? "In Stock" : "Out"}
-                    </span>
-                  </td>
-                  <td>
-                    <div className="flex min-w-32 gap-2">
-                      <Link
-                        to={`/dashboard/update-product/${product._id}`}
-                        className="btn btn-xs border-0 text-white theme-gradient theme-gradient-hover"
-                      >
-                        Edit
-                      </Link>
-                      <button
-                        type="button"
-                        onClick={() => handleDelete(product._id)}
-                        disabled={deletingId === product._id}
-                        className="btn btn-xs btn-error text-white"
-                      >
-                        {deletingId === product._id ? "Deleting..." : "Delete"}
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="8" className="text-center py-10">
-                  <div className="space-y-2">
-                    <p className="font-semibold theme-text">
-                      No products found.
-                    </p>
-                    {search && (
-                      <button
-                        type="button"
-                        onClick={() => setSearch("")}
-                        className="btn btn-sm border-0 text-white theme-gradient theme-gradient-hover"
-                      >
-                        Clear Search
-                      </button>
-                    )}
-                  </div>
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
-
-      {!loading && products.length === 0 && (
-        <div className="mt-5 rounded-lg border theme-border bg-white p-5 text-center">
-          <p className="mb-3 theme-text font-semibold">
-            Your catalog is empty.
-          </p>
-          <Link
-            to="/dashboard/edit-your-products/add"
-            className="btn border-0 text-white theme-gradient theme-gradient-hover"
-          >
-            Add your first product
-          </Link>
-        </div>
-      )}
 
       <ToastContainer />
     </div>
