@@ -29,9 +29,9 @@ const Dashboard = () => {
       </div>
 
       {/* Sidebar */}
-      <div className="drawer-side z-40 lg:sticky lg:top-0 lg:h-screen lg:overflow-y-auto">
+      <div className="drawer-side z-[80] lg:sticky lg:top-0 lg:z-40 lg:h-screen lg:overflow-y-auto">
         <label htmlFor="dashboard-drawer" className="drawer-overlay"></label>
-        <ul className="menu p-4 w-64 min-h-full lg:min-h-screen theme-dashboard-bg border-r-white text-base-content relative">
+        <ul className="menu relative h-full min-h-full w-64 overflow-y-auto border-r-white theme-dashboard-bg p-4 pt-20 text-base-content lg:min-h-screen lg:pt-4">
           <li className="border-b-2 border-gray-300">
             <Link to="/dashboard">Dashboard Home</Link>
           </li>

@@ -176,9 +176,9 @@ const AllProductsAdminView = () => {
           </div>
         </section>
 
-        <section className="rounded-[28px] border border-white/70 bg-white p-4 shadow-[0_18px_45px_rgba(15,23,42,0.06)]">
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
-            <div>
+        <section className="rounded-[28px] border border-white/70 bg-white p-3 shadow-[0_18px_45px_rgba(15,23,42,0.06)] sm:p-4">
+          <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
+            <div className="min-w-0">
               <p className="text-sm font-bold text-slate-500">
                 Showing <span className="text-slate-950">{filteredProducts.length}</span> of{" "}
                 <span className="text-slate-950">{products.length}</span> products
@@ -195,13 +195,13 @@ const AllProductsAdminView = () => {
               )}
             </div>
 
-            <div className="grid gap-2 md:grid-cols-[minmax(220px,1fr)_auto_auto]">
-              <label className="relative block">
+            <div className="grid w-full min-w-0 gap-2 sm:grid-cols-2 lg:grid-cols-[minmax(0,1fr)_auto_auto] xl:w-auto">
+              <label className="relative block min-w-0 sm:col-span-2 lg:col-span-1">
                 <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={17} />
                 <input
                   type="text"
                   placeholder="Search name, brand, category, volume..."
-                  className="h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 pl-10 pr-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-[var(--theme-primary)] focus:bg-white focus:ring-2 focus:ring-[var(--theme-muted-bg)] md:w-96"
+                  className="h-11 w-full min-w-0 rounded-2xl border border-slate-200 bg-slate-50 pl-10 pr-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-[var(--theme-primary)] focus:bg-white focus:ring-2 focus:ring-[var(--theme-muted-bg)] lg:w-[min(24rem,42vw)] xl:w-96"
                   value={search}
                   onChange={(event) => setSearch(event.target.value)}
                 />
@@ -209,14 +209,14 @@ const AllProductsAdminView = () => {
               <button
                 type="button"
                 onClick={exportProductsCsv}
-                className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-slate-950 px-4 text-sm font-black text-white transition hover:bg-slate-800"
+                className="inline-flex h-11 w-full items-center justify-center gap-2 whitespace-nowrap rounded-2xl bg-slate-950 px-4 text-sm font-black text-white transition hover:bg-slate-800 sm:w-auto"
               >
                 <Download size={17} />
                 Export CSV
               </button>
               <Link
                 to="/dashboard/edit-your-products/add"
-                className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-[var(--theme-primary)] px-4 text-sm font-black text-white transition hover:opacity-90"
+                className="inline-flex h-11 w-full items-center justify-center gap-2 whitespace-nowrap rounded-2xl bg-[var(--theme-primary)] px-4 text-sm font-black text-white transition hover:opacity-90 sm:w-auto"
               >
                 <PackagePlus size={17} />
                 Add Product
