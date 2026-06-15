@@ -56,7 +56,7 @@ const quickActions = [
 const QuickActionCard = memo(({ to, title, description, icon: Icon }) => (
   <Link
     to={to}
-    className="group rounded-3xl border border-white/70 bg-white p-4 shadow-[0_16px_40px_rgba(15,23,42,0.07)] transition hover:-translate-y-0.5 hover:shadow-[0_22px_55px_rgba(15,23,42,0.12)] focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)]"
+    className="group rounded-2xl border border-white/70 bg-white p-3 shadow-[0_16px_40px_rgba(15,23,42,0.07)] transition hover:-translate-y-0.5 hover:shadow-[0_22px_55px_rgba(15,23,42,0.12)] focus:outline-none focus:ring-2 focus:ring-[var(--theme-primary)] sm:rounded-3xl sm:p-4"
   >
     <div className="flex items-start gap-3">
       <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[var(--theme-muted-bg)] text-[var(--theme-primary)] transition group-hover:bg-[var(--theme-primary)] group-hover:text-white">
@@ -96,7 +96,7 @@ const MiniTile = memo(
     className="block rounded-xl focus:outline-none focus:ring-2 focus:ring-[var(--theme-secondary)] focus:ring-offset-2"
     aria-label={`Open ${title1} ${title2}`}
   >
-    <div className="relative h-40 w-full overflow-hidden rounded-xl shadow-lg transition-transform duration-200 ease-in-out hover:scale-105 hover:shadow-2xl sm:h-44">
+    <div className="relative h-32 w-full overflow-hidden rounded-xl shadow-lg transition-transform duration-200 ease-in-out hover:scale-105 hover:shadow-2xl xs:h-36 sm:h-44">
       <div
         className="absolute inset-0"
         style={{
@@ -109,10 +109,10 @@ const MiniTile = memo(
           background: `linear-gradient(to bottom, ${gradientFromB}, ${gradientToB})`,
         }}
       />
-      <div className="relative z-10 p-6 text-white">
+      <div className="relative z-10 p-4 text-white sm:p-6">
         <p className="text-sm font-semibold">{title1}</p>
         <p className="text-sm font-semibold">{title2}</p>
-        <h2 className="mt-2 text-3xl font-bold">{count}</h2>
+        <h2 className="mt-2 break-words text-2xl font-bold sm:text-3xl">{count}</h2>
       </div>
     </div>
   </Link>
@@ -288,11 +288,11 @@ const DashboardLayout = () => {
   }, [orders, products]);
 
   return (
-    <div className="min-h-screen w-full theme-dashboard-bg">
-      <div className="mx-auto w-full max-w-7xl space-y-6 px-2 pb-10 md:px-4">
-        <section className="overflow-hidden rounded-[32px] border border-white/60 bg-white/80 shadow-[0_24px_70px_rgba(15,23,42,0.09)]">
-          <div className="flex flex-col gap-5 p-5 md:flex-row md:items-center md:justify-between md:p-7">
-            <div className="max-w-2xl">
+    <div className="min-h-screen w-full overflow-x-hidden theme-dashboard-bg">
+      <div className="mx-auto w-full max-w-7xl space-y-4 px-3 pb-24 sm:space-y-6 md:px-4 md:pb-10">
+        <section className="overflow-hidden rounded-3xl border border-white/60 bg-white/80 shadow-[0_24px_70px_rgba(15,23,42,0.09)] sm:rounded-[32px]">
+          <div className="flex flex-col gap-4 p-4 md:flex-row md:items-center md:justify-between md:p-7">
+            <div className="min-w-0 max-w-2xl">
               <div className="mb-3 inline-flex items-center gap-2 rounded-full bg-[var(--theme-muted-bg)] px-3 py-1 text-xs font-black text-[var(--theme-primary)]">
                 <Store size={14} />
                 {today}
@@ -306,7 +306,7 @@ const DashboardLayout = () => {
             </div>
             <Link
               to="/dashboard/settings"
-              className="inline-flex w-fit items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-black text-slate-700 transition hover:border-[var(--theme-primary)] hover:text-[var(--theme-primary)]"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-black text-slate-700 transition hover:border-[var(--theme-primary)] hover:text-[var(--theme-primary)] sm:w-fit"
             >
               <Settings size={17} />
               Settings
@@ -316,7 +316,7 @@ const DashboardLayout = () => {
 
         <Stats />
 
-        <section className="rounded-[32px] border border-white/70 bg-white/60 p-4 shadow-[0_18px_45px_rgba(15,23,42,0.06)] md:p-5">
+        <section className="rounded-3xl border border-white/70 bg-white/60 p-3 shadow-[0_18px_45px_rgba(15,23,42,0.06)] sm:p-4 md:p-5">
           <div className="mb-4">
             <p className="text-xs font-extrabold uppercase tracking-wide text-[var(--theme-primary)]">
               Quick tiles
@@ -326,14 +326,14 @@ const DashboardLayout = () => {
             </h2>
           </div>
 
-          <div className="grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-3 sm:gap-5 md:grid-cols-3 lg:grid-cols-4 xl:gap-6">
             {dashboardTiles.map((tile) => (
               <MiniTile key={`${tile.title1}-${tile.title2}`} {...tile} />
             ))}
           </div>
         </section>
 
-        <section className="rounded-[32px] border border-white/70 bg-white/60 p-4 shadow-[0_18px_45px_rgba(15,23,42,0.06)] md:p-5">
+        <section className="rounded-3xl border border-white/70 bg-white/60 p-3 shadow-[0_18px_45px_rgba(15,23,42,0.06)] sm:p-4 md:p-5">
           <div className="mb-4 flex items-end justify-between gap-3">
             <div>
               <p className="text-xs font-extrabold uppercase tracking-wide text-[var(--theme-primary)]">
