@@ -345,7 +345,7 @@ const DashboardLayout = () => {
             </div>
           </div>
 
-          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
             {quickActions.map((action) => (
               <QuickActionCard key={action.title} {...action} />
             ))}

@@ -114,7 +114,7 @@ const ProductSkeleton = () => (
   </div>
 );
 
-const AllProducts = ({ pageSize = 6, initialProducts = null }) => {
+const AllProducts = ({ pageSize = 6, initialProducts = null, largeColumns = 3 }) => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [visibleCount, setVisibleCount] = useState(pageSize);
@@ -212,9 +212,11 @@ const AllProducts = ({ pageSize = 6, initialProducts = null }) => {
     [products, visibleCount]
   );
 
+  const largeGridClass = largeColumns === 4 ? "lg:grid-cols-4" : "lg:grid-cols-3";
+
   return (
     <div className="md:mb-0">
-      <div className="grid grid-cols-1 gap-4 py-3 md:grid-cols-2 lg:grid-cols-3">
+      <div className={`grid grid-cols-1 gap-4 py-3 md:grid-cols-2 ${largeGridClass}`}>
         {loading &&
           Array.from({ length: 8 }).map((_, index) => (
             <ProductSkeleton key={index} />

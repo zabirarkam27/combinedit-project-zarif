@@ -29,7 +29,7 @@ const Home = ({ refs }) => {
           {showProfileSection && (
             <div
               ref={profileRef}
-              className={`theme-primary-bg shadow-2xl pb-3 ${design.container}`}
+              className={`theme-primary-bg shadow-2xl pb-3 ${design.heroContainer}`}
             >
               <ProfileInfo ref={contactRef} />
             </div>
@@ -57,7 +57,7 @@ const Home = ({ refs }) => {
                   View All Products
                 </Link>
               </div>
-              <AllProducts pageSize={6} />
+              <AllProducts pageSize={6} largeColumns={4} />
               <CategorySection limit={6} />
               <div className="mb-8 mt-6 grid gap-0 overflow-hidden rounded-2xl bg-white/80 p-4 text-left shadow-[0_14px_40px_rgba(15,23,42,0.06)] backdrop-blur md:grid-cols-4">
                 {[

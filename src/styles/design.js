@@ -24,6 +24,9 @@ const design = {
   container:
     "max-w-[320px] xs:max-w-[375px] sm:max-w-[425px] sm2:max-w-[640px] md:max-w-[768px] lg:max-w-[1024px] xl:max-w-[1280px] mx-auto px-2 sm:px-4 md:px-6 lg:px-8 xl:px-10",
 
+  heroContainer:
+    "max-w-[320px] xs:max-w-[375px] sm:max-w-[425px] sm2:max-w-[640px] md:max-w-[860px] lg:max-w-[1180px] xl:max-w-[1440px] 2xl:max-w-[1536px] mx-auto px-2 sm:px-4 md:px-6 lg:px-8 xl:px-10",
+
   navbarContainer:
     "w-full max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between py-2",
 };
