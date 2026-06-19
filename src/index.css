@@ -155,6 +155,30 @@
   max-width: var(--landing-max-width);
 }
 
+.dashboard-visible-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: color-mix(in srgb, var(--theme-primary) 70%, #94a3b8) #e2e8f0;
+}
+
+.dashboard-visible-scrollbar::-webkit-scrollbar {
+  height: 12px;
+}
+
+.dashboard-visible-scrollbar::-webkit-scrollbar-track {
+  background: #e2e8f0;
+  border-radius: 999px;
+}
+
+.dashboard-visible-scrollbar::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--theme-primary) 70%, #94a3b8);
+  border: 3px solid #e2e8f0;
+  border-radius: 999px;
+}
+
+.dashboard-visible-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--theme-primary);
+}
+
 body {
   @apply font-sans; 
   font-family: 'Montserrat', sans-serif;

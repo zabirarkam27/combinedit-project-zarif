@@ -23,7 +23,7 @@ const Dashboard = () => {
       {/* Main content */}
       <div className="drawer-content flex min-h-screen flex-col lg:h-screen lg:overflow-hidden">
         <AdminNav />
-        <main className="min-h-screen w-full px-3 py-4 md:px-6 md:py-6 lg:flex-1 lg:min-h-0 lg:overflow-y-auto">
+        <main className="min-h-screen w-full overflow-x-hidden px-0 py-0 md:px-3 md:py-4 lg:flex-1 lg:min-h-0 lg:overflow-y-auto">
           <Outlet /> {/* Child routes render here */}
         </main>
       </div>

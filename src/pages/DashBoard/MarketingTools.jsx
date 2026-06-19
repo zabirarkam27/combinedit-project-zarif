@@ -101,12 +101,17 @@ const MarketingTools = () => {
     }
   };
 
-  if (loading) return <p className="text-center mt-10">Loading...</p>;
+  if (loading) return <p className="mt-10 text-center">Loading...</p>;
 
   return (
-    <div className="bg-[#ebf0f0] min-h-screen p-6 mx-auto">
-      <h2 className="text-2xl font-bold mb-6">Marketing Tools Setup</h2>
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <div className="mx-auto min-h-screen w-full overflow-x-hidden bg-[#ebf0f0] p-3 sm:p-4 md:p-6">
+      <div className="mb-4 rounded-3xl bg-white/80 p-4 shadow-[0_18px_45px_rgba(15,23,42,0.07)] md:p-5">
+        <p className="text-xs font-black uppercase tracking-wide text-[var(--theme-primary)]">
+          Operations
+        </p>
+        <h2 className="mt-1 text-2xl font-black text-slate-950">Marketing Tools Setup</h2>
+      </div>
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2 lg:gap-6">
         {toolsConfig.map((tool, idx) => (
           <MarketingToolCard
             key={tool.key}

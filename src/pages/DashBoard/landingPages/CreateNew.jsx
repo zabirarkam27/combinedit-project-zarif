@@ -64,21 +64,23 @@ const CreateNew = () => {
   );
 
   return (
-    <div className="w-full mx-auto p-2 md:p-4 theme-dashboard-bg shadow-md min-h-screen">
-      <h1 className="text-lg md:text-3xl font-bold theme-text my-10">
-        Create Your Landing Page
-      </h1>
+    <div className="mx-auto min-h-screen w-full overflow-x-hidden theme-dashboard-bg p-3 shadow-md md:p-4">
+      <div className="mb-5 rounded-3xl bg-white/80 p-4 shadow-[0_14px_34px_rgba(15,23,42,0.06)]">
+        <h1 className="text-xl font-black theme-text md:text-3xl">
+          Create Your Landing Page
+        </h1>
+      </div>
 
       <form onSubmit={handleSubmit}>
-        <div className="grid gap-1 grid-cols-8 px-2 md:px-4 md:items-center text-sm max-w-3xl">
+        <div className="grid max-w-3xl gap-3 rounded-3xl bg-white/75 p-4 text-sm shadow-sm md:grid-cols-[140px_1fr] md:items-start">
           {/* Labels */}
-          <div className="col-span-3 md:col-span-1 space-y-6 mt-2 md:mt-0">
+          <div className="space-y-2 font-bold text-slate-700 md:space-y-8 md:pt-2">
             <p>Product ID</p>
             <p>Product Name</p>
           </div>
 
           {/* Inputs */}
-          <div className="col-span-5 md:col-span-7 space-y-5">
+          <div className="min-w-0 space-y-4">
             <input
               type="text"
               name="productId"
@@ -112,7 +114,7 @@ const CreateNew = () => {
         </div>
 
         {/* Submit button */}
-        <div className="px-3">
+        <div className="max-w-3xl px-0 sm:px-3">
           <button
             type="submit"
             disabled={loading || authLoading || !user}

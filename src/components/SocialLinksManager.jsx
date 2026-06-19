@@ -49,13 +49,13 @@ const SocialLinksManager = ({ socialLinks = [], onChange }) => {
   );
 
   return (
-    <div className="col-span-full bg-[#d8e2e2] p-4 rounded-md">
+    <div className="col-span-full rounded-2xl bg-[#d8e2e2] p-3 sm:p-4">
       <h3 className="font-semibold text-lg mb-3">Custom Social Links</h3>
 
       {links.map((link, index) => (
         <div
           key={index}
-          className="grid md:grid-cols-3 gap-3 mb-3 items-center"
+          className="mb-3 grid gap-3 rounded-xl bg-white/45 p-3 md:grid-cols-3 md:items-center"
         >
           {/* Icon Preview & Upload */}
           <div className="col-span-1 flex flex-col items-center">
@@ -69,9 +69,9 @@ const SocialLinksManager = ({ socialLinks = [], onChange }) => {
           </div>
 
           {/* URL Input */}
-          <div className="col-span-2">
-            <div className="grid grid-cols-12 gap-2">
-              <div className="col-span-11">
+          <div className="md:col-span-2">
+            <div className="grid gap-2 sm:grid-cols-[1fr_auto]">
+              <div className="min-w-0">
                 <input
                   type="text"
                   placeholder="Enter link (https://...)"
@@ -88,11 +88,11 @@ const SocialLinksManager = ({ socialLinks = [], onChange }) => {
               </div>
 
               {/* Remove Button */}
-              <div className="col-span-1 h-full">
+              <div className="h-full">
                 <button
                   type="button"
                   onClick={() => handleRemove(index)}
-                  className="bg-red-600 text-white px-3 py-2 rounded-md hover:bg-red-700 transition h-[80px]"
+                  className="h-10 w-full rounded-md bg-red-600 px-3 py-2 text-white transition hover:bg-red-700 sm:h-[80px] sm:w-auto"
                 >
                   ✕
                 </button>
@@ -106,7 +106,7 @@ const SocialLinksManager = ({ socialLinks = [], onChange }) => {
         <button
           type="button"
           onClick={handleAdd}
-          className={`${design.buttons} bg-green-600 hover:bg-green-800 mt-2 w-[350px]`}
+          className={`${design.buttons} mt-2 w-full bg-green-600 hover:bg-green-800 sm:w-auto sm:min-w-72`}
         >
           + Add Social Link
         </button>

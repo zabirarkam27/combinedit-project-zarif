@@ -149,7 +149,7 @@ const EditProfile = () => {
 
   if (loading || !formData) {
     return (
-      <div className="p-6 text-center">
+      <div className="p-3 text-center sm:p-4 md:p-6">
         {/* Skeleton Loader */}
         <div className="animate-pulse space-y-4">
           <div className="h-6 bg-gray-300 rounded w-1/3 mx-auto"></div>
@@ -169,8 +169,8 @@ const EditProfile = () => {
   const contactFields = ["email", "phone", "website", "facebook"];
 
   return (
-    <div className="theme-dashboard-bg min-h-screen p-6 mx-auto">
-      <div className="flex flex-col md:flex-row justify-between items-center mb-8">
+    <div className="theme-dashboard-bg mx-auto min-h-screen overflow-x-hidden p-3 sm:p-4 md:p-6">
+      <div className="mb-6 flex flex-col items-start justify-between gap-3 rounded-3xl bg-white/75 p-4 shadow-[0_14px_34px_rgba(15,23,42,0.06)] md:mb-8 md:flex-row md:items-center">
         <h2 className="text-2xl font-bold">Edit Profile</h2>
         {/* Controlled toggle: */}
         <input
@@ -199,7 +199,7 @@ const EditProfile = () => {
             <button
               type="button"
               onClick={syncBrandColorsWithTheme}
-              className="w-fit rounded-lg border border-[var(--theme-primary)] px-4 py-2 text-sm font-bold text-[var(--theme-primary)] transition hover:bg-[var(--theme-primary)] hover:text-white"
+              className="w-full rounded-lg border border-[var(--theme-primary)] px-4 py-2 text-sm font-bold text-[var(--theme-primary)] transition hover:bg-[var(--theme-primary)] hover:text-white sm:w-fit"
             >
               Match Theme
             </button>
@@ -376,7 +376,7 @@ const EditProfile = () => {
           return (
             <div
               key={item}
-              className="form-control md:col-span-2 grid grid-cols-1 md:grid-cols-3 gap-4 items-center"
+              className="form-control grid grid-cols-1 items-center gap-4 rounded-2xl bg-white/60 p-3 md:col-span-2 md:grid-cols-3"
             >
               <div className="col-span-1 flex flex-col items-center">
                 {formData[iconField] && (

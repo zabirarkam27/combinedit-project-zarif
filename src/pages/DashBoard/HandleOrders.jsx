@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useRef } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { PDFDownloadLink } from "@react-pdf/renderer";
 import { Buffer } from "buffer";
@@ -53,6 +53,9 @@ const HandleOrders = () => {
   const [selectedOrders, setSelectedOrders] = useState([]);
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
+  const tableScrollRef = useRef(null);
+  const stickyScrollRef = useRef(null);
+  const syncingScrollRef = useRef(false);
 
   const getString = useCallback((value) => {
     if (typeof value === "string") return value;
@@ -264,12 +267,26 @@ const HandleOrders = () => {
     }[normalized] || "bg-slate-50 text-slate-700 ring-slate-200";
   };
 
+  const syncHorizontalScroll = useCallback((source) => {
+    if (syncingScrollRef.current) return;
+
+    const sourceNode = source === "table" ? tableScrollRef.current : stickyScrollRef.current;
+    const targetNode = source === "table" ? stickyScrollRef.current : tableScrollRef.current;
+    if (!sourceNode || !targetNode) return;
+
+    syncingScrollRef.current = true;
+    targetNode.scrollLeft = sourceNode.scrollLeft;
+    requestAnimationFrame(() => {
+      syncingScrollRef.current = false;
+    });
+  }, []);
+
   return (
-    <div className="min-h-screen w-full bg-slate-50 px-2 py-4 md:px-4">
-      <div className="mx-auto w-full max-w-7xl space-y-5">
-        <section className="overflow-hidden rounded-[28px] border border-white/70 bg-white shadow-[0_20px_60px_rgba(15,23,42,0.08)]">
-          <div className="flex flex-col gap-5 p-5 lg:flex-row lg:items-center lg:justify-between">
-            <div>
+    <div className="min-h-screen w-full overflow-x-hidden bg-slate-50 px-3 py-3 md:px-4 md:py-4">
+      <div className="mx-auto w-full max-w-7xl space-y-4 md:space-y-5">
+        <section className="overflow-hidden rounded-3xl border border-white/70 bg-white shadow-[0_20px_60px_rgba(15,23,42,0.08)]">
+          <div className="flex flex-col gap-4 p-4 lg:flex-row lg:items-center lg:justify-between lg:p-5">
+            <div className="min-w-0">
               <p className="text-xs font-black uppercase tracking-wide text-[var(--theme-primary)]">
                 Orders workspace
               </p>
@@ -281,7 +298,7 @@ const HandleOrders = () => {
               </p>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:min-w-[520px]">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:min-w-[520px] lg:gap-3">
               <div className="rounded-2xl bg-slate-50 p-3">
                 <p className="text-[11px] font-black uppercase text-slate-500">Filtered</p>
                 <p className="mt-1 text-xl font-black text-slate-950">{filteredOrders.length}</p>
@@ -296,7 +313,7 @@ const HandleOrders = () => {
               </div>
               <div className="rounded-2xl bg-[var(--theme-muted-bg)] p-3 text-[var(--theme-primary)]">
                 <p className="text-[11px] font-black uppercase">Revenue</p>
-                <p className="mt-1 text-lg font-black">
+                <p className="mt-1 break-words text-base font-black sm:text-lg">
                   BDT {filteredTotal.toLocaleString("en-US")}
                 </p>
               </div>
@@ -304,7 +321,7 @@ const HandleOrders = () => {
           </div>
         </section>
 
-        <section className="rounded-[28px] border border-white/70 bg-white p-4 shadow-[0_18px_45px_rgba(15,23,42,0.06)]">
+        <section className="rounded-3xl border border-white/70 bg-white p-3 shadow-[0_18px_45px_rgba(15,23,42,0.06)] sm:p-4">
           <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
             <div className="flex flex-wrap gap-2">
               {statusTabs.map((tab) => {
@@ -330,8 +347,8 @@ const HandleOrders = () => {
               })}
             </div>
 
-            <div className="grid gap-3 md:grid-cols-[minmax(180px,1fr)_150px_150px]">
-              <label className="relative block">
+            <div className="grid w-full gap-2 sm:grid-cols-2 lg:grid-cols-[minmax(180px,1fr)_150px_150px] xl:w-auto">
+              <label className="relative block sm:col-span-2 lg:col-span-1">
                 <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={17} />
                 <input
                   type="text"
@@ -374,14 +391,14 @@ const HandleOrders = () => {
               ))}
             </select>
 
-            <div className="flex flex-wrap gap-2">
+            <div className="grid grid-cols-1 gap-2 xs:grid-cols-2 sm:flex sm:flex-wrap">
               {paginatedData.length === 1 && (
                 <PDFDownloadLink
                   document={<InvoiceDocument order={paginatedData[0]} />}
                   fileName={`invoice_${paginatedData[0].orderNumber}.pdf`}
                 >
                   {({ loading }) => (
-                    <button className="inline-flex h-10 items-center gap-2 rounded-2xl bg-emerald-600 px-3 text-xs font-black text-white transition hover:bg-emerald-700">
+                    <button className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-2xl bg-emerald-600 px-3 text-xs font-black text-white transition hover:bg-emerald-700 sm:w-auto">
                       <FileText size={15} />
                       {loading ? "Generating..." : "Download Single PDF"}
                     </button>
@@ -395,7 +412,7 @@ const HandleOrders = () => {
                   fileName="merged_invoices.pdf"
                 >
                   {({ loading }) => (
-                    <button className="inline-flex h-10 items-center gap-2 rounded-2xl bg-blue-600 px-3 text-xs font-black text-white transition hover:bg-blue-700">
+                    <button className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-2xl bg-blue-600 px-3 text-xs font-black text-white transition hover:bg-blue-700 sm:w-auto">
                       <Printer size={15} />
                       {loading ? "Generating..." : "Print Selected"}
                     </button>
@@ -405,7 +422,7 @@ const HandleOrders = () => {
 
               {selectedOrders.length > 0 && (
                 <button
-                  className="inline-flex h-10 items-center gap-2 rounded-2xl bg-slate-950 px-3 text-xs font-black text-white transition hover:bg-slate-800"
+                  className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-2xl bg-slate-950 px-3 text-xs font-black text-white transition hover:bg-slate-800 sm:w-auto"
                   onClick={exportSelectedCsv}
                 >
                   <Download size={15} />
@@ -414,7 +431,7 @@ const HandleOrders = () => {
               )}
 
               <button
-                className="inline-flex h-10 items-center gap-2 rounded-2xl bg-[var(--theme-primary)] px-3 text-xs font-black text-white transition hover:opacity-90"
+                className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-2xl bg-[var(--theme-primary)] px-3 text-xs font-black text-white transition hover:opacity-90 sm:w-auto"
                 onClick={exportFilteredCsv}
               >
                 <Download size={15} />
@@ -423,7 +440,7 @@ const HandleOrders = () => {
 
               {selectedOrders.length === 0 && paginatedData.length !== 1 && (
                 <button
-                  className="inline-flex h-10 items-center gap-2 rounded-2xl bg-slate-100 px-3 text-xs font-black text-slate-600 transition hover:bg-slate-200"
+                  className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-2xl bg-slate-100 px-3 text-xs font-black text-slate-600 transition hover:bg-slate-200 sm:w-auto"
                   onClick={() => toast.error("Select orders or a single order first.")}
                 >
                   <Printer size={15} />
@@ -435,8 +452,83 @@ const HandleOrders = () => {
         </section>
 
         <OrdersContext.Provider value={contextValue}>
-          <section className="overflow-hidden rounded-[28px] border border-white/70 bg-white shadow-[0_18px_45px_rgba(15,23,42,0.07)]">
-            <div className="overflow-x-auto">
+          <section className="overflow-hidden rounded-3xl border border-white/70 bg-white shadow-[0_18px_45px_rgba(15,23,42,0.07)]">
+            <div className="grid gap-3 p-3 md:hidden">
+              {paginatedData.length ? (
+                paginatedData.map((order) => (
+                  <article key={order.orderId} className="rounded-2xl border border-slate-100 bg-slate-50 p-3">
+                    <div className="flex items-start justify-between gap-3">
+                      <label className="flex items-center gap-2 text-xs font-bold text-slate-500">
+                        <input
+                          type="checkbox"
+                          className="checkbox checkbox-sm border-slate-300"
+                          checked={selectedOrders.includes(order.orderId)}
+                          onChange={() => toggleSelectOne(order.orderId)}
+                        />
+                        Select
+                      </label>
+                      <span className={`inline-flex rounded-full px-2.5 py-1 text-[11px] font-black ring-1 ${statusTone(order.status)}`}>
+                        {getString(order.status)}
+                      </span>
+                    </div>
+                    <Link
+                      to={`/dashboard/view-order/${order.orderId}`}
+                      className="mt-3 block break-words text-sm font-black text-[var(--theme-primary)]"
+                    >
+                      {order.orderNumber || order.orderId}
+                    </Link>
+                    <div className="mt-3 grid gap-2 text-xs font-semibold text-slate-600">
+                      <p><span className="font-black text-slate-950">Customer:</span> {order.name || "N/A"}</p>
+                      <p><span className="font-black text-slate-950">Phone:</span> {order.phone || "No phone"}</p>
+                      <p><span className="font-black text-slate-950">Date:</span> {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : "-"}</p>
+                      <p><span className="font-black text-slate-950">Total:</span> BDT {Number(order.grandTotal || 0).toLocaleString("en-US")}</p>
+                    </div>
+                    <div className="mt-3 grid grid-cols-3 gap-2">
+                      <button
+                        type="button"
+                        className="inline-flex h-9 items-center justify-center rounded-xl bg-slate-100 text-slate-700"
+                        onClick={() => navigate(`/dashboard/view-order/${order.orderId}`)}
+                        aria-label="View order"
+                      >
+                        <Eye size={16} />
+                      </button>
+                      <PDFDownloadLink
+                        document={<InvoiceDocument order={order} />}
+                        fileName={`invoice_${order.orderNumber}.pdf`}
+                      >
+                        {() => (
+                          <button
+                            type="button"
+                            className="inline-flex h-9 w-full items-center justify-center rounded-xl bg-blue-50 text-blue-700"
+                            aria-label="Download invoice"
+                          >
+                            <Printer size={16} />
+                          </button>
+                        )}
+                      </PDFDownloadLink>
+                      <button
+                        type="button"
+                        className="inline-flex h-9 items-center justify-center rounded-xl bg-rose-50 text-rose-700"
+                        onClick={() => handleDelete(order.orderId)}
+                        aria-label="Delete order"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </article>
+                ))
+              ) : (
+                <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-6 text-center">
+                  <ClipboardList className="mx-auto text-slate-400" size={30} />
+                  <p className="mt-3 font-black text-slate-700">No {activeTab} orders found.</p>
+                </div>
+              )}
+            </div>
+            <div
+              ref={tableScrollRef}
+              onScroll={() => syncHorizontalScroll("table")}
+              className="dashboard-visible-scrollbar hidden overflow-x-auto md:block"
+            >
               <table className="w-full min-w-[980px] text-left text-sm">
                 <thead className="bg-slate-50 text-xs font-black uppercase tracking-wide text-slate-500">
                   <tr>
@@ -568,6 +660,17 @@ const HandleOrders = () => {
                   )}
                 </tbody>
               </table>
+            </div>
+
+            <div className="sticky bottom-0 z-20 hidden border-t border-slate-100 bg-white/95 px-3 py-2 backdrop-blur md:block">
+              <div
+                ref={stickyScrollRef}
+                onScroll={() => syncHorizontalScroll("sticky")}
+                className="dashboard-visible-scrollbar overflow-x-auto"
+                aria-label="Scroll orders table horizontally"
+              >
+                <div className="h-1 w-[980px]" />
+              </div>
             </div>
 
             <div className="flex flex-col items-center justify-between gap-3 border-t border-slate-100 px-4 py-4 sm:flex-row">

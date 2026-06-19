@@ -241,11 +241,11 @@ const InvoicePage = () => {
   if (!order) return <p className="text-center mt-10">Order not found</p>;
 
   return (
-    <>
-      <div className="flex justify-between mb-6">
+    <div className="min-h-screen w-full overflow-x-hidden bg-slate-50 p-3 sm:p-4 md:p-6">
+      <div className="mb-6 flex flex-col gap-3 rounded-3xl bg-white p-4 shadow-[0_14px_34px_rgba(15,23,42,0.07)] sm:flex-row sm:items-center sm:justify-between">
         <button
           onClick={() => navigate(`/dashboard/view-order/${order._id}`)}
-          className="btn btn-warning"
+          className="btn btn-warning w-full sm:w-auto"
         >
           Back To Order
         </button>
@@ -257,7 +257,7 @@ const InvoicePage = () => {
             fileName={`invoice_${order.orderNumber}.pdf`}
           >
             {({ loading }) => (
-              <button className="btn btn-success">
+              <button className="btn btn-success w-full">
                 {loading ? "Generating..." : "Download Invoice"}
               </button>
             )}
@@ -266,12 +266,12 @@ const InvoicePage = () => {
       </div>
 
       {/* Desktop PDF Preview */}
-      <div className="hidden md:block max-w-5xl h-[800px] mx-auto bg-gray-200 shadow-lg rounded-lg p-4 mt-6">
+      <div className="mx-auto mt-6 hidden h-[800px] max-w-5xl rounded-2xl bg-gray-200 p-4 shadow-lg md:block">
         <PDFViewer width="100%" height="100%" showToolbar={true}>
           {memoizedDocument}
         </PDFViewer>
       </div>
-    </>
+    </div>
   );
 };
 

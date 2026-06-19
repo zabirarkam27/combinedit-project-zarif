@@ -139,11 +139,11 @@ const AllProductsAdminView = () => {
   };
 
   return (
-    <div className="min-h-screen w-full theme-dashboard-bg px-2 py-4 md:px-4">
-      <div className="mx-auto w-full max-w-7xl space-y-5">
-        <section className="overflow-hidden rounded-[28px] border border-white/70 bg-white shadow-[0_20px_60px_rgba(15,23,42,0.08)]">
-          <div className="flex flex-col gap-5 p-5 lg:flex-row lg:items-center lg:justify-between">
-            <div>
+    <div className="min-h-screen w-full overflow-x-hidden theme-dashboard-bg px-3 py-3 md:px-4 md:py-4">
+      <div className="mx-auto w-full max-w-7xl space-y-4 md:space-y-5">
+        <section className="overflow-hidden rounded-3xl border border-white/70 bg-white shadow-[0_20px_60px_rgba(15,23,42,0.08)]">
+          <div className="flex flex-col gap-4 p-4 lg:flex-row lg:items-center lg:justify-between lg:p-5">
+            <div className="min-w-0">
               <p className="text-xs font-black uppercase tracking-wide text-[var(--theme-primary)]">
                 Product catalog
               </p>
@@ -155,7 +155,7 @@ const AllProductsAdminView = () => {
               </p>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:min-w-[560px]">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 lg:min-w-[560px] lg:gap-3">
               <div className="rounded-2xl bg-slate-50 p-3">
                 <p className="text-[11px] font-black uppercase text-slate-500">Total</p>
                 <p className="mt-1 text-xl font-black text-slate-950">{catalogStats.total}</p>
@@ -225,8 +225,69 @@ const AllProductsAdminView = () => {
           </div>
         </section>
 
-        <section className="overflow-hidden rounded-[28px] border border-white/70 bg-white shadow-[0_18px_45px_rgba(15,23,42,0.07)]">
-          <div className="overflow-x-auto">
+        <section className="overflow-hidden rounded-3xl border border-white/70 bg-white shadow-[0_18px_45px_rgba(15,23,42,0.07)]">
+          <div className="grid gap-3 p-3 md:hidden">
+            {loading ? (
+              Array.from({ length: 4 }).map((_, index) => (
+                <div key={index} className="h-32 animate-pulse rounded-2xl bg-slate-100" />
+              ))
+            ) : filteredProducts.length ? (
+              filteredProducts.map((product) => {
+                const image = getProductImage(product);
+                return (
+                  <article key={product._id} className="rounded-2xl border border-slate-100 bg-slate-50 p-3">
+                    <div className="flex gap-3">
+                      {image ? (
+                        <img
+                          src={image}
+                          alt={product.name || "Product"}
+                          className="h-16 w-16 shrink-0 rounded-2xl object-cover ring-1 ring-slate-100"
+                        />
+                      ) : (
+                        <span className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-white text-slate-400">
+                          <Boxes size={20} />
+                        </span>
+                      )}
+                      <div className="min-w-0 flex-1">
+                        <p className="break-words text-sm font-black text-slate-950">{product.name || "Untitled"}</p>
+                        <p className="mt-1 text-xs font-semibold text-slate-500">{product.brand || "No brand"} / {product.category || "Uncategorized"}</p>
+                        <p className="mt-2 text-sm font-black text-[var(--theme-primary)]">{formatCurrency(product.discountPrice || product.price)}</p>
+                      </div>
+                    </div>
+                    <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+                      <span className={`rounded-full px-2.5 py-1 text-xs font-black ${product.inStock ? "bg-emerald-50 text-emerald-700" : "bg-rose-50 text-rose-700"}`}>
+                        {product.inStock ? "In stock" : "Out of stock"}
+                      </span>
+                      <div className="flex gap-2">
+                        <Link
+                          to={`/dashboard/update-product/${product._id}`}
+                          className="grid h-9 w-9 place-items-center rounded-xl bg-blue-50 text-blue-700"
+                          aria-label="Edit product"
+                        >
+                          <Edit3 size={16} />
+                        </Link>
+                        <button
+                          type="button"
+                          onClick={() => handleDelete(product._id)}
+                          disabled={deletingId === product._id}
+                          className="grid h-9 w-9 place-items-center rounded-xl bg-rose-50 text-rose-700 disabled:opacity-50"
+                          aria-label="Delete product"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </div>
+                  </article>
+                );
+              })
+            ) : (
+              <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 p-6 text-center">
+                <Boxes className="mx-auto text-slate-400" size={30} />
+                <p className="mt-3 font-black text-slate-700">No products found.</p>
+              </div>
+            )}
+          </div>
+          <div className="hidden overflow-x-auto md:block">
             <table className="w-full min-w-[980px] text-left text-sm">
               <thead className="bg-slate-50 text-xs font-black uppercase tracking-wide text-slate-500">
                 <tr>

@@ -23,7 +23,7 @@ const Home = ({ refs }) => {
   }, [contactRef, location.hash]);
 
   return (
-    <div className="theme-page-bg pt-6 lg:pt-24">
+    <div className="theme-page-bg pt-6 md:pt-28">
       <div className={`md:min-h-screen`}>
         <div className="text-center">
           {showProfileSection && (

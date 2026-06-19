@@ -64,9 +64,9 @@ const MarketingToolCard = ({
   };
 
   return (
-    <div className="bg-white p-4 rounded-lg">
+    <div className="rounded-2xl bg-white p-4 shadow-[0_14px_34px_rgba(15,23,42,0.06)]">
       <h1 className="text-lg font-bold">{name}</h1>
-      <div className="flex justify-between items-center">
+      <div className="mt-2 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <p className="text-xs text-gray-700">
           To know more{" "}
           <span
@@ -76,7 +76,7 @@ const MarketingToolCard = ({
             How it works.
           </span>
         </p>
-        <div className="flex gap-6 items-center cursor-pointer">
+        <div className="flex items-center justify-between gap-4 sm:justify-end sm:gap-6">
           <div className="flex" onClick={toggleAccordion}>
             <p className="text-sm text-[#258ce6]">
               {accordionOpen ? "Hide" : "View"}
@@ -103,7 +103,7 @@ const MarketingToolCard = ({
       </div>
 
       {accordionOpen && (
-        <div className="mt-4 p-4 bg-[#ebf0f0] rounded">
+        <div className="mt-4 rounded-xl bg-[#ebf0f0] p-3 sm:p-4">
           <label className="block font-semibold mb-2">{name} ID</label>
           <input
             type="text"
@@ -114,7 +114,7 @@ const MarketingToolCard = ({
           />
           <button
             onClick={handleSave}
-            className="btn bg-[#1455ac] border-[#1455ac] text-white px-6 py-2 rounded-lg mt-6"
+            className="btn mt-4 w-full rounded-lg border-[#1455ac] bg-[#1455ac] px-6 py-2 text-white sm:mt-6 sm:w-auto"
           >
             Save
           </button>

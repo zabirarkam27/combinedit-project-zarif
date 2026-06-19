@@ -155,7 +155,7 @@ const Settings = () => {
 
   if (loading) {
     return (
-      <div className="theme-dashboard-bg min-h-screen p-6">
+      <div className="theme-dashboard-bg min-h-screen p-3 sm:p-4 md:p-6">
         <div className="animate-pulse space-y-4">
           <div className="h-8 bg-gray-300 rounded w-48" />
           <div className="h-60 bg-white/70 rounded-lg" />
@@ -168,7 +168,7 @@ const Settings = () => {
   const normalizedLandingTheme = normalizeLandingTheme(landingTheme);
 
   return (
-    <div className="theme-dashboard-bg min-h-screen p-6">
+    <div className="theme-dashboard-bg min-h-screen overflow-x-hidden p-3 sm:p-4 md:p-6">
       <div className="mb-6">
         <h2 className="text-2xl font-bold theme-text">Settings</h2>
         <p className="text-sm text-gray-600">
@@ -191,7 +191,7 @@ const Settings = () => {
           <button
             type="button"
             onClick={handleReset}
-            className="btn btn-sm border-0 text-white theme-gradient theme-gradient-hover"
+            className="btn btn-sm w-full border-0 text-white theme-gradient theme-gradient-hover sm:w-auto"
           >
             Reset Default
           </button>
@@ -318,7 +318,7 @@ const Settings = () => {
             <button
               type="button"
               onClick={handleLandingReset}
-              className="btn btn-sm border-0 text-white landing-gradient landing-gradient-hover"
+              className="btn btn-sm w-full border-0 text-white landing-gradient landing-gradient-hover sm:w-auto"
             >
               Reset Landing
             </button>
