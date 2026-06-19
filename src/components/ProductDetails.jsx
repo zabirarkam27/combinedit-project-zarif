@@ -14,6 +14,7 @@ import { useOrderDrawer } from "../hooks/useOrderDrawer";
 import useProductDetails from "../hooks/useProductDetails";
 import useProfileData from "../hooks/useProfileData";
 import OrderDrawer from "../components/OrderDrawer";
+import { normalizeHexColor, normalizeImageColorMap } from "../utils/imageColors";
 
 const getProductImages = (product) => {
   if (!product) return [];
@@ -31,6 +32,12 @@ const getEffectivePrice = (product) =>
 
 const resolveColorImage = (product, color, colorIndex, productImages) => {
   if (!product || !color) return productImages[0] || "";
+  const normalizedColor = normalizeHexColor(color);
+  const imageColorMap = normalizeImageColorMap(product);
+  const mappedByImageColor = productImages.find(
+    (image) => normalizeHexColor(imageColorMap[image]) === normalizedColor
+  );
+  if (mappedByImageColor) return mappedByImageColor;
 
   if (product.colorImages && typeof product.colorImages === "object") {
     const mappedImage = Array.isArray(product.colorImages)
@@ -97,7 +104,9 @@ const ProductDetails = () => {
     () => (Array.isArray(product?.colors) ? product.colors.filter(Boolean) : []),
     [product]
   );
+  const imageColorMap = useMemo(() => normalizeImageColorMap(product), [product]);
   const activeImage = mainImage || productImages[0] || "";
+  const activeImageColor = normalizeHexColor(imageColorMap[activeImage]);
   const selectedOptions = useMemo(
     () => ({
       size: selectedSize,
@@ -117,6 +126,12 @@ const ProductDetails = () => {
     if (!selectedColor && productColors.length > 0) setSelectedColor(productColors[0]);
     if (!selectedSize && productSizes.length > 0) setSelectedSize(productSizes[0]);
   }, [product, productColors, productSizes, selectedColor, selectedSize]);
+
+  useEffect(() => {
+    if (activeImageColor && selectedColor !== activeImageColor) {
+      setSelectedColor(activeImageColor);
+    }
+  }, [activeImageColor, selectedColor]);
 
   useEffect(() => {
     const fetchPopular = async () => {
@@ -210,9 +225,15 @@ const ProductDetails = () => {
     (product.stockQuantity !== undefined && Number(product.stockQuantity) <= 0);
 
   const handleColorSelect = (color, colorIndex) => {
-    setSelectedColor(color);
+    setSelectedColor(normalizeHexColor(color) || color);
     const colorImage = resolveColorImage(product, color, colorIndex, productImages);
     if (colorImage) setMainImage(colorImage);
+  };
+
+  const handleImageSelect = (image) => {
+    setMainImage(image);
+    const mappedColor = normalizeHexColor(imageColorMap[image]);
+    if (mappedColor) setSelectedColor(mappedColor);
   };
 
   const handleImageZoomMove = (event) => {
@@ -283,15 +304,21 @@ const ProductDetails = () => {
                     <button
                       key={image}
                       type="button"
-                      onClick={() => setMainImage(image)}
-                      className={`aspect-square overflow-hidden rounded-xl border bg-white p-1 transition ${
+                      onClick={() => handleImageSelect(image)}
+                      className={`relative aspect-square overflow-hidden rounded-xl border bg-white p-1 transition ${
                         activeImage === image
                           ? "border-[var(--theme-primary)] ring-2 ring-[var(--theme-primary)]/25"
                           : "border-[var(--theme-border-color)] hover:border-[var(--theme-primary)]"
                       }`}
-                      aria-label="Select product image"
+                      aria-label="Select product image and color"
                     >
                       <img src={image} alt="" className="h-full w-full object-cover" />
+                      {imageColorMap[image] && (
+                        <span
+                          className="absolute bottom-1.5 right-1.5 h-4 w-4 rounded-full border-2 border-white shadow"
+                          style={{ backgroundColor: imageColorMap[image] }}
+                        />
+                      )}
                     </button>
                   ))}
                 </div>

@@ -22,6 +22,14 @@ import {
 import useVolumeInput from "../../hooks/useVolumeInput";
 import useImageGallery from "../../hooks/useImageGallery";
 import { getProductById, updateProduct } from "../../services/products";
+import {
+  addUniqueColor,
+  buildImageColorPairs,
+  extractDominantColor,
+  normalizeHexColor,
+  normalizeImageColorMap,
+  removeColorFromMap,
+} from "../../utils/imageColors";
 import "react-toastify/dist/ReactToastify.css";
 
 const VOLUME_UNITS = ["ml", "liter", "gram", "kg", "dozen", "piece"];
@@ -71,6 +79,7 @@ const UpdateProduct = () => {
     stockQuantity: 0,
     colors: [],
     sizes: [],
+    imageColorMap: {},
   });
 
   const [selectedColor, setSelectedColor] = useState("#ffffff");
@@ -118,6 +127,7 @@ const UpdateProduct = () => {
           stockQuantity: data.stockQuantity ?? 0,
           colors: data.colors || [],
           sizes: data.sizes || [],
+          imageColorMap: normalizeImageColorMap(data),
         });
 
         setThumbnail(data.thumbnail || (data.images?.[0] ?? null));
@@ -163,8 +173,17 @@ const UpdateProduct = () => {
   };
 
   const handleAddColor = () => {
-    if (selectedColor && !product.colors.includes(selectedColor)) {
-      setProduct((prev) => ({ ...prev, colors: [...prev.colors, selectedColor] }));
+    const normalizedColor = normalizeHexColor(selectedColor);
+
+    if (normalizedColor && !product.colors.some((color) => normalizeHexColor(color) === normalizedColor)) {
+      setProduct((prev) => ({
+        ...prev,
+        colors: [...prev.colors, normalizedColor],
+        imageColorMap: thumbnail
+          ? { ...prev.imageColorMap, [thumbnail]: normalizedColor }
+          : prev.imageColorMap,
+      }));
+      setSelectedColor(normalizedColor);
       toast.success("Color added!");
     } else {
       toast.error("Color already added or invalid!");
@@ -172,7 +191,44 @@ const UpdateProduct = () => {
   };
 
   const handleRemoveColor = (color) => {
-    setProduct((prev) => ({ ...prev, colors: prev.colors.filter((c) => c !== color) }));
+    setProduct((prev) => ({
+      ...prev,
+      colors: prev.colors.filter((c) => normalizeHexColor(c) !== normalizeHexColor(color)),
+      imageColorMap: removeColorFromMap(prev.imageColorMap, color),
+    }));
+  };
+
+  const rememberImageColor = (imageUrl, color) => {
+    const normalizedColor = normalizeHexColor(color);
+    if (!imageUrl || !normalizedColor) return;
+
+    setProduct((prev) => ({
+      ...prev,
+      colors: addUniqueColor(prev.colors, normalizedColor),
+      imageColorMap: {
+        ...prev.imageColorMap,
+        [imageUrl]: normalizedColor,
+      },
+    }));
+    setSelectedColor(normalizedColor);
+  };
+
+  const handleGalleryImageSelect = (imageUrl) => {
+    setThumbnail(imageUrl);
+    const mappedColor = normalizeHexColor(product.imageColorMap?.[imageUrl]);
+    if (mappedColor) setSelectedColor(mappedColor);
+  };
+
+  const handleRemoveGalleryImage = (index, imageUrl) => {
+    removeImage(index);
+    setProduct((prev) => {
+      const imageColorMap = { ...prev.imageColorMap };
+      delete imageColorMap[imageUrl];
+      return { ...prev, imageColorMap };
+    });
+    if (thumbnail === imageUrl) {
+      setThumbnail(images.filter((_, imageIndex) => imageIndex !== index)[0] || null);
+    }
   };
 
   const handleAddSize = (size) => {
@@ -212,6 +268,15 @@ const UpdateProduct = () => {
 
     setSubmitting(true);
     try {
+      const imageColors = buildImageColorPairs(
+        [thumbnail, ...images].filter(Boolean),
+        product.imageColorMap
+      );
+      const colors = imageColors.reduce(
+        (items, item) => addUniqueColor(items, item.color),
+        product.colors.map(normalizeHexColor).filter(Boolean)
+      );
+
       const updatedProduct = {
         ...product,
         volume: getCombinedVolume(),
@@ -223,7 +288,10 @@ const UpdateProduct = () => {
         discountPrice,
         thumbnail,
         images,
+        colors,
+        imageColors,
       };
+      delete updatedProduct.imageColorMap;
 
       const res = await updateProduct(id, updatedProduct);
       if (res.data?.modifiedCount > 0 || res.data?.acknowledged) {
@@ -654,8 +722,12 @@ const UpdateProduct = () => {
                         onChange={async (e) => {
                           const file = e.target.files?.[0];
                           if (file) {
-                            const uploadedUrl = await addSingleImage(file);
+                            const [autoColor, uploadedUrl] = await Promise.all([
+                              extractDominantColor(file),
+                              addSingleImage(file),
+                            ]);
                             if (uploadedUrl) setThumbnail(uploadedUrl);
+                            rememberImageColor(uploadedUrl, autoColor);
                           }
                           e.target.value = "";
                         }}
@@ -679,6 +751,7 @@ const UpdateProduct = () => {
                       if (isValidImageUrl(singleUrlInput)) {
                         addSingleImageFromUrl(singleUrlInput);
                         setThumbnail(singleUrlInput);
+                        rememberImageColor(singleUrlInput, selectedColor);
                         setSingleUrlInput("");
                         toast.success("Thumbnail URL added");
                       } else {
@@ -699,23 +772,29 @@ const UpdateProduct = () => {
                     <div key={`${imgUrl}-${index}`} className="group relative">
                       <button
                         type="button"
-                        onClick={() => setThumbnail(imgUrl)}
-                        className={`block h-28 w-28 overflow-hidden rounded-2xl border bg-slate-50 ${
+                        onClick={() => handleGalleryImageSelect(imgUrl)}
+                        className={`relative block h-28 w-28 overflow-hidden rounded-2xl border bg-slate-50 ${
                           thumbnail === imgUrl
                             ? "border-[var(--theme-primary)] ring-2 ring-[var(--theme-muted-bg)]"
                             : "border-slate-100"
                         }`}
-                        title="Set as thumbnail"
+                        title="Set thumbnail and matching color"
                       >
                         <img
                           src={imgUrl}
                           alt={`Product ${index}`}
                           className="h-full w-full object-cover"
                         />
+                        {product.imageColorMap?.[imgUrl] && (
+                          <span
+                            className="absolute bottom-2 right-2 h-5 w-5 rounded-full border-2 border-white shadow"
+                            style={{ backgroundColor: product.imageColorMap[imgUrl] }}
+                          />
+                        )}
                       </button>
                       <button
                         type="button"
-                        onClick={() => removeImage(index)}
+                        onClick={() => handleRemoveGalleryImage(index, imgUrl)}
                         className="absolute -right-2 -top-2 grid h-7 w-7 place-items-center rounded-full bg-rose-600 text-white shadow"
                         title="Remove image"
                       >
@@ -737,7 +816,11 @@ const UpdateProduct = () => {
                       onChange={async (e) => {
                         const files = Array.from(e.target.files || []);
                         for (const file of files) {
-                          await addImage(file);
+                          const [autoColor, uploadedUrl] = await Promise.all([
+                            extractDominantColor(file),
+                            addImage(file),
+                          ]);
+                          rememberImageColor(uploadedUrl, autoColor);
                         }
                         e.target.value = "";
                       }}
@@ -766,6 +849,7 @@ const UpdateProduct = () => {
                     onClick={() => {
                       if (isValidImageUrl(galleryUrlInput)) {
                         addImageFromUrl(galleryUrlInput);
+                        rememberImageColor(galleryUrlInput, selectedColor);
                         setGalleryUrlInput("");
                         toast.success("Gallery image URL added");
                       } else {

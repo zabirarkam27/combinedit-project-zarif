@@ -21,6 +21,13 @@ import "react-toastify/dist/ReactToastify.css";
 
 import useImageUpload from "../../hooks/useImageUpload";
 import { addProduct } from "../../services/products";
+import {
+  addUniqueColor,
+  buildImageColorPairs,
+  extractDominantColor,
+  normalizeHexColor,
+  removeColorFromMap,
+} from "../../utils/imageColors";
 
 const emptyProduct = {
   name: "",
@@ -37,6 +44,7 @@ const emptyProduct = {
   images: [],
   description: "",
   colors: [],
+  imageColorMap: {},
 };
 
 const units = ["ml", "liter", "gram", "kg", "dozen", "piece"];
@@ -80,22 +88,43 @@ const AddProducts = () => {
 
     setUploadingImage(true);
     try {
-      const uploadedUrls = [];
+      const uploadedItems = [];
 
       for (const file of files) {
-        const url = await uploadImage(file);
-        if (url) uploadedUrls.push(url);
+        const [autoColor, url] = await Promise.all([
+          extractDominantColor(file),
+          uploadImage(file),
+        ]);
+        if (url) uploadedItems.push({ url, color: autoColor });
       }
 
-      if (uploadedUrls.length > 0) {
+      if (uploadedItems.length > 0) {
         setFormData((prev) => {
-          const images = [...prev.images, ...uploadedUrls];
+          const images = [...prev.images, ...uploadedItems.map((item) => item.url)];
+          const imageColorMap = { ...prev.imageColorMap };
+          let colors = [...prev.colors];
+
+          uploadedItems.forEach(({ url, color }) => {
+            const normalizedColor = normalizeHexColor(color);
+            if (!normalizedColor) return;
+            imageColorMap[url] = normalizedColor;
+            colors = addUniqueColor(colors, normalizedColor);
+          });
+
           return {
             ...prev,
             images,
+            colors,
+            imageColorMap,
             thumbnail: prev.thumbnail || images[0],
           };
         });
+
+        const latestColor = [...uploadedItems]
+          .reverse()
+          .map((item) => normalizeHexColor(item.color))
+          .find(Boolean);
+        if (latestColor) setSelectedColor(latestColor);
       }
     } catch (err) {
       toast.error("Image upload failed.");
@@ -109,36 +138,52 @@ const AddProducts = () => {
   const handleRemoveImage = (url) => {
     setFormData((prev) => {
       const images = prev.images.filter((image) => image !== url);
+      const imageColorMap = { ...prev.imageColorMap };
+      delete imageColorMap[url];
       return {
         ...prev,
         images,
+        imageColorMap,
         thumbnail: prev.thumbnail === url ? images[0] || "" : prev.thumbnail,
       };
     });
   };
 
   const handleAddColor = () => {
-    if (!/^#[0-9a-fA-F]{6}$/.test(selectedColor)) {
+    const normalizedColor = normalizeHexColor(selectedColor);
+
+    if (!normalizedColor) {
       toast.error("Use a valid hex color.");
       return;
     }
 
-    if (formData.colors.includes(selectedColor)) {
+    if (formData.colors.some((color) => normalizeHexColor(color) === normalizedColor)) {
       toast.info("This color is already added.");
       return;
     }
 
     setFormData((prev) => ({
       ...prev,
-      colors: [...prev.colors, selectedColor],
+      colors: [...prev.colors, normalizedColor],
+      imageColorMap: prev.thumbnail
+        ? { ...prev.imageColorMap, [prev.thumbnail]: normalizedColor }
+        : prev.imageColorMap,
     }));
+    setSelectedColor(normalizedColor);
   };
 
   const handleRemoveColor = (color) => {
     setFormData((prev) => ({
       ...prev,
-      colors: prev.colors.filter((item) => item !== color),
+      colors: prev.colors.filter((item) => normalizeHexColor(item) !== normalizeHexColor(color)),
+      imageColorMap: removeColorFromMap(prev.imageColorMap, color),
     }));
+  };
+
+  const handleSelectImage = (url) => {
+    const mappedColor = normalizeHexColor(formData.imageColorMap?.[url]);
+    setFormData((prev) => ({ ...prev, thumbnail: url }));
+    if (mappedColor) setSelectedColor(mappedColor);
   };
 
   const resetForm = () => {
@@ -172,6 +217,12 @@ const AddProducts = () => {
 
     setSubmitting(true);
     try {
+      const imageColors = buildImageColorPairs(formData.images, formData.imageColorMap);
+      const colors = imageColors.reduce(
+        (items, item) => addUniqueColor(items, item.color),
+        formData.colors.map(normalizeHexColor).filter(Boolean)
+      );
+
       const productData = {
         name: formData.name.trim(),
         category: formData.category.trim(),
@@ -185,7 +236,8 @@ const AddProducts = () => {
         thumbnail: formData.thumbnail,
         images: formData.images,
         description: formData.description.trim(),
-        colors: formData.colors,
+        colors,
+        imageColors,
       };
 
       const res = await addProduct(productData);
@@ -532,19 +584,25 @@ const AddProducts = () => {
                       <div key={url} className="group relative">
                         <button
                           type="button"
-                          onClick={() => setFormData((prev) => ({ ...prev, thumbnail: url }))}
-                          className={`block h-28 w-28 overflow-hidden rounded-2xl border bg-slate-50 ${
+                          onClick={() => handleSelectImage(url)}
+                          className={`relative block h-28 w-28 overflow-hidden rounded-2xl border bg-slate-50 ${
                             url === formData.thumbnail
                               ? "border-[var(--theme-primary)] ring-2 ring-[var(--theme-muted-bg)]"
                               : "border-slate-100"
                           }`}
-                          title="Set as thumbnail"
+                          title="Set thumbnail and matching color"
                         >
                           <img
                             src={url}
                             alt="Uploaded product"
                             className="h-full w-full object-cover"
                           />
+                          {formData.imageColorMap?.[url] && (
+                            <span
+                              className="absolute bottom-2 right-2 h-5 w-5 rounded-full border-2 border-white shadow"
+                              style={{ backgroundColor: formData.imageColorMap[url] }}
+                            />
+                          )}
                         </button>
                         <button
                           type="button"
