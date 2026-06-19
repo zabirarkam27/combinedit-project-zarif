@@ -527,7 +527,7 @@ const HandleOrders = () => {
             <div
               ref={tableScrollRef}
               onScroll={() => syncHorizontalScroll("table")}
-              className="dashboard-visible-scrollbar hidden overflow-x-auto md:block"
+              className="dashboard-hidden-scrollbar hidden overflow-x-auto md:block"
             >
               <table className="w-full min-w-[980px] text-left text-sm">
                 <thead className="bg-slate-50 text-xs font-black uppercase tracking-wide text-slate-500">

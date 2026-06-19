@@ -179,6 +179,14 @@
   background: var(--theme-primary);
 }
 
+.dashboard-hidden-scrollbar {
+  scrollbar-width: none;
+}
+
+.dashboard-hidden-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
 body {
   @apply font-sans; 
   font-family: 'Montserrat', sans-serif;
