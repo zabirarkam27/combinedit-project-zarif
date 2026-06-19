@@ -15,8 +15,7 @@ import OrdersProvider from "./context/OrdersProvider";
 import { ProfileSectionProvider } from "./context/ProfileSectionContext";
 import PrivateRoute from "./components/PrivateRoute";
 import MainLayout from "./Layout/MainLayout";
-import { initGA, trackPage } from "./analytics/ga4";
-import { initMetaPixel, trackMetaEvent } from "./analytics/metaPixel";
+import { initMarketingTools, trackMarketingPageView } from "./analytics/marketingTools";
 import api from "./api";
 
 const Login = lazy(() => import("./pages/Login"));
@@ -68,9 +67,7 @@ function AnalyticsWrapper() {
       try {
         const res = await api.get("/marketing-tools", { skipAuth: true });
         const settings = res.data || {};
-
-        if (settings.gaMeasurementId) initGA(settings.gaMeasurementId);
-        if (settings.metaPixelId) initMetaPixel(settings.metaPixelId);
+        initMarketingTools(settings);
       } catch (error) {
         console.warn("Marketing analytics settings could not be loaded.");
       }
@@ -80,8 +77,7 @@ function AnalyticsWrapper() {
   }, []);
 
   useEffect(() => {
-    trackPage(location.pathname);
-    trackMetaEvent("PageView");
+    trackMarketingPageView(location.pathname);
   }, [location]);
 
   return null;
