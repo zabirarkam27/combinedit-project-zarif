@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { createOrder } from "../services/orders";
 import { showErrorPopup, showSuccessPopup } from "../utils/popups";
+import { trackMetaPurchase } from "../services/metaConversions";
 
 const defaultOrderInfo = {
   name: "",
@@ -26,7 +27,10 @@ const useOrderForm = (initialProduct = null) => {
 
   const handleOrderSubmit = async (payload) => {
     try {
-      await createOrder(payload);
+      const response = await createOrder(payload);
+      trackMetaPurchase({ ...payload, ...(response?.data || {}) }).catch((error) => {
+        console.warn("Meta Conversion API Purchase failed:", error.message);
+      });
       showSuccessPopup("Order placed successfully", "Thank you. We received your order.");
       setOrderInfo(defaultOrderInfo);
       setSelectedProduct(null);

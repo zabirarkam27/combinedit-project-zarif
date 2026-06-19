@@ -28,6 +28,7 @@ import {
   updateMarketingSettings,
 } from "../../services/marketing";
 import { initMarketingTool } from "../../analytics/marketingTools";
+import { createMetaEventId, sendMetaConversionEvent } from "../../services/metaConversions";
 
 const inputClass =
   "h-12 w-full rounded-2xl border border-slate-200 bg-slate-50 px-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-[var(--theme-primary)] focus:bg-white focus:ring-2 focus:ring-[var(--theme-muted-bg)]";
@@ -67,7 +68,7 @@ const toolsConfig = [
     tone: "bg-sky-50 text-sky-700",
     regex: /^\d{5,30}$/,
     guide: "Meta Business Suite > Events Manager > Data sources > Pixel ID.",
-    event: "Loads fbevents.js and sends PageView events.",
+    event: "Loads fbevents.js and can mirror PageView/Purchase through Conversion API.",
   },
   {
     key: "tiktokPixelId",
@@ -107,13 +108,18 @@ const toolsConfig = [
   },
 ];
 
-const normalizeSettings = (data = {}) =>
-  toolsConfig.reduce((acc, tool) => {
+const normalizeSettings = (data = {}) => {
+  const settings = toolsConfig.reduce((acc, tool) => {
     const id = data[tool.key] || "";
     acc[tool.key] = id;
     acc[tool.enabledKey] = data[tool.enabledKey] ?? Boolean(id);
     return acc;
   }, {});
+
+  settings.metaConversionsEnabled = Boolean(data.metaConversionsEnabled);
+  settings.metaTestEventCode = data.metaTestEventCode || "";
+  return settings;
+};
 
 const getToolValidation = (tool, id) => {
   const value = String(id || "").trim();
@@ -185,6 +191,23 @@ const MarketingTools = () => {
     }));
   };
 
+  const getToolPayload = (tool) => {
+    const id = String(settings[tool.key] || "").trim();
+    const validation = getToolValidation(tool, id);
+    const payload = {
+      [tool.key]: id,
+      [tool.enabledKey]: Boolean(id && settings[tool.enabledKey] && validation.valid),
+    };
+
+    if (tool.key === "metaPixelId") {
+      payload.metaConversionsEnabled = Boolean(
+        id && settings.metaPixelEnabled && settings.metaConversionsEnabled && validation.valid
+      );
+      payload.metaTestEventCode = String(settings.metaTestEventCode || "").trim();
+    }
+
+    return payload;
+  };
   const saveTool = async (tool) => {
     const id = String(settings[tool.key] || "").trim();
     const enabled = Boolean(settings[tool.enabledKey]);
@@ -198,14 +221,12 @@ const MarketingTools = () => {
 
     setSavingKey(tool.key);
     try {
-      await updateMarketingSettings({
-        [tool.key]: id,
-        [tool.enabledKey]: enabled && validation.valid,
-      });
+      const payload = getToolPayload(tool);
+      await updateMarketingSettings(payload);
+      window.__marketingSettings = { ...(window.__marketingSettings || {}), ...payload };
       setSettings((prev) => ({
         ...prev,
-        [tool.key]: id,
-        [tool.enabledKey]: enabled && validation.valid,
+        ...payload,
       }));
       toast.success(`${tool.name} saved.`);
     } catch (err) {
@@ -230,13 +251,12 @@ const MarketingTools = () => {
 
     setSavingKey("all");
     try {
-      const payload = toolsConfig.reduce((acc, tool) => {
-        const id = String(settings[tool.key] || "").trim();
-        acc[tool.key] = id;
-        acc[tool.enabledKey] = Boolean(id && settings[tool.enabledKey]);
-        return acc;
-      }, {});
+      const payload = toolsConfig.reduce((acc, tool) => ({
+        ...acc,
+        ...getToolPayload(tool),
+      }), {});
       await updateMarketingSettings(payload);
+      window.__marketingSettings = { ...(window.__marketingSettings || {}), ...payload };
       setSettings((prev) => ({ ...prev, ...payload }));
       toast.success("Marketing tools saved.");
     } catch (err) {
@@ -259,11 +279,27 @@ const MarketingTools = () => {
     setTestingKey(tool.key);
     try {
       const loaded = initMarketingTool(tool.key, id);
+
+      if (tool.key === "metaPixelId" && settings.metaConversionsEnabled) {
+        const eventId = createMetaEventId("PageView");
+        if (window.fbq) window.fbq("track", "PageView", { test_source: "dashboard" }, { eventID: eventId });
+        await sendMetaConversionEvent({
+          pixelId: id,
+          eventName: "PageView",
+          eventId,
+          eventSourceUrl: window.location.href,
+          testEventCode: settings.metaTestEventCode,
+          customData: { test_source: "dashboard" },
+        });
+        toast.success("Meta Pixel and Conversion API test event sent.");
+        return;
+      }
+
       if (loaded) toast.success(`${tool.name} script loaded for this browser session.`);
       else toast.info(`${tool.name} is ready, but no script was loaded.`);
     } catch (err) {
       console.error(`Failed to test ${tool.name}:`, err);
-      toast.error(`Failed to load ${tool.name} script.`);
+      toast.error(err.message || `Failed to load ${tool.name} script.`);
     } finally {
       setTestingKey("");
     }
@@ -421,6 +457,54 @@ const MarketingTools = () => {
                         </p>
                       </div>
 
+                      {tool.key === "metaPixelId" && (
+                        <div className="mt-4 rounded-3xl border border-slate-100 bg-slate-50 p-4">
+                          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                            <div>
+                              <p className="text-sm font-black text-slate-950">Conversion API</p>
+                              <p className="mt-1 text-xs font-semibold leading-5 text-slate-500">
+                                Sends server-side PageView and Purchase events with Pixel deduplication. Keep the access token only in Vercel env.
+                              </p>
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setSettings((prev) => ({
+                                  ...prev,
+                                  metaConversionsEnabled: !prev.metaConversionsEnabled,
+                                }))
+                              }
+                              className={`inline-flex h-10 shrink-0 items-center justify-center gap-2 rounded-2xl px-4 text-xs font-black transition ${
+                                settings.metaConversionsEnabled
+                                  ? "bg-emerald-100 text-emerald-700 hover:bg-emerald-200"
+                                  : "bg-white text-slate-600 hover:bg-slate-100"
+                              }`}
+                            >
+                              {settings.metaConversionsEnabled ? <ToggleRight size={17} /> : <ToggleLeft size={17} />}
+                              {settings.metaConversionsEnabled ? "CAPI On" : "CAPI Off"}
+                            </button>
+                          </div>
+
+                          <label className="mt-4 block">
+                            <span className="text-xs font-black uppercase tracking-wide text-slate-500">
+                              Test Event Code
+                            </span>
+                            <input
+                              type="text"
+                              value={settings.metaTestEventCode}
+                              onChange={(event) =>
+                                setSettings((prev) => ({ ...prev, metaTestEventCode: event.target.value }))
+                              }
+                              placeholder="TEST12345"
+                              className={`${inputClass} mt-2 bg-white`}
+                            />
+                          </label>
+
+                          <div className="mt-3 rounded-2xl bg-white p-3 text-xs font-semibold leading-5 text-slate-500">
+                            Required server env: <span className="font-black text-slate-800">META_CONVERSIONS_ACCESS_TOKEN</span>. Optional: <span className="font-black text-slate-800">META_CONVERSIONS_API_VERSION</span> and <span className="font-black text-slate-800">META_TEST_EVENT_CODE</span>.
+                          </div>
+                        </div>
+                      )}
                       <div className="mt-4 flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                         <button
                           type="button"
@@ -509,3 +593,4 @@ const MarketingTools = () => {
 };
 
 export default MarketingTools;
+

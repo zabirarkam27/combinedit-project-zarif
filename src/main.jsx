@@ -1,4 +1,4 @@
-import { StrictMode, Suspense, lazy, useEffect } from "react";
+import { StrictMode, Suspense, lazy, useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import {
   createBrowserRouter,
@@ -61,6 +61,7 @@ const withSuspense = (element) => (
 
 function AnalyticsWrapper() {
   const location = useLocation();
+  const [analyticsReady, setAnalyticsReady] = useState(false);
 
   useEffect(() => {
     const initAnalytics = async () => {
@@ -70,6 +71,9 @@ function AnalyticsWrapper() {
         initMarketingTools(settings);
       } catch (error) {
         console.warn("Marketing analytics settings could not be loaded.");
+        initMarketingTools({});
+      } finally {
+        setAnalyticsReady(true);
       }
     };
 
@@ -77,8 +81,9 @@ function AnalyticsWrapper() {
   }, []);
 
   useEffect(() => {
+    if (!analyticsReady) return;
     trackMarketingPageView(location.pathname);
-  }, [location]);
+  }, [analyticsReady, location.pathname]);
 
   return null;
 }

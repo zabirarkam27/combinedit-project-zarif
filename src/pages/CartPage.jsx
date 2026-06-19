@@ -8,6 +8,7 @@ import "react-toastify/dist/ReactToastify.css";
 import OrderDrawer from "../components/OrderDrawer";
 import { createOrder } from "../services/orders";
 import { confirmPopup } from "../utils/popups";
+import { trackMetaPurchase } from "../services/metaConversions";
 
 const getItemPrice = (item) => Number(item.discountPrice || item.price || 0);
 
@@ -74,7 +75,10 @@ const CartPage = () => {
     };
 
     try {
-      await createOrder(orderPayload);
+      const response = await createOrder(orderPayload);
+      trackMetaPurchase({ ...orderPayload, ...(response?.data || {}) }).catch((error) => {
+        console.warn("Meta Conversion API Purchase failed:", error.message);
+      });
       clearCart();
       setIsOpen(false);
       toast.success("✅ Order placed successfully!");

@@ -1,3 +1,5 @@
+import { createMetaEventId, sendMetaConversionEvent } from "../services/metaConversions";
+
 const appendScript = ({ id, src, inline }) => {
   if (typeof document === "undefined") return null;
   const existing = document.getElementById(id);
@@ -166,6 +168,7 @@ export const initMarketingTool = (key, id) => {
 };
 
 export const initMarketingTools = (settings = {}) => {
+  window.__marketingSettings = settings;
   const toolPairs = [
     ["gaMeasurementId", "gaMeasurementEnabled"],
     ["gtmId", "gtmEnabled"],
@@ -183,10 +186,26 @@ export const initMarketingTools = (settings = {}) => {
 };
 
 export const trackMarketingPageView = (path) => {
+  const settings = window.__marketingSettings || {};
+  const metaEventId = createMetaEventId("PageView");
+
   if (window.gtag) window.gtag("event", "page_view", { page_path: path });
-  if (window.fbq) window.fbq("track", "PageView");
+  if (window.fbq) window.fbq("track", "PageView", {}, { eventID: metaEventId });
   if (window.ttq?.page) window.ttq.page();
   if (window.twq) window.twq("track", "PageView");
   if (window.snaptr) window.snaptr("track", "PAGE_VIEW");
   if (window.dataLayer) window.dataLayer.push({ event: "page_view", page_path: path });
+
+  if (settings.metaConversionsEnabled && settings.metaPixelId) {
+    sendMetaConversionEvent({
+      pixelId: settings.metaPixelId,
+      eventName: "PageView",
+      eventId: metaEventId,
+      eventSourceUrl: window.location.href,
+      testEventCode: settings.metaTestEventCode,
+      customData: { page_path: path },
+    }).catch((error) => {
+      console.warn("Meta Conversion API PageView failed:", error.message);
+    });
+  }
 };
