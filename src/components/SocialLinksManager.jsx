@@ -1,116 +1,138 @@
-import { useState, useCallback, useRef, memo } from "react";
+import { memo, useEffect, useState } from "react";
+import { ImagePlus, Link as LinkIcon, Plus, Trash2, Upload } from "lucide-react";
+
 import useImageUpload from "../hooks/useImageUpload";
-import design from "../styles/design";
-import debounce from "lodash/debounce";
+
+const inputClass =
+  "h-11 w-full rounded-2xl border border-slate-200 bg-slate-50 px-3 text-sm font-semibold text-slate-700 outline-none transition focus:border-[var(--theme-primary)] focus:bg-white focus:ring-2 focus:ring-[var(--theme-muted-bg)]";
 
 const SocialLinksManager = ({ socialLinks = [], onChange }) => {
   const [links, setLinks] = useState(socialLinks);
+  const [uploadingIndex, setUploadingIndex] = useState(null);
   const { uploadImage } = useImageUpload();
 
-  const linksRef = useRef(links);
+  useEffect(() => {
+    setLinks(socialLinks);
+  }, [socialLinks]);
 
-  // Use a callback to update state
+  const updateLinks = (nextLinks) => {
+    setLinks(nextLinks);
+    onChange(nextLinks);
+  };
+
   const handleAdd = () => {
-    const newLinks = [...linksRef.current, { icon: "", url: "" }];
-    linksRef.current = newLinks; // Update reference without re-rendering
-    setLinks(newLinks); // Trigger state update for render
-    onChange(newLinks);
+    updateLinks([...links, { icon: "", url: "" }]);
   };
 
   const handleRemove = (index) => {
-    const newLinks = linksRef.current.filter((_, i) => i !== index);
-    linksRef.current = newLinks; // Update reference without re-rendering
-    setLinks(newLinks);
-    onChange(newLinks);
+    updateLinks(links.filter((_, itemIndex) => itemIndex !== index));
   };
 
   const handleChange = (index, field, value) => {
-    const newLinks = [...linksRef.current];
-    newLinks[index][field] = value;
-    linksRef.current = newLinks; // Update reference without re-rendering
-    setLinks(newLinks);
-    onChange(newLinks);
+    updateLinks(
+      links.map((link, itemIndex) =>
+        itemIndex === index ? { ...link, [field]: value } : link
+      )
+    );
   };
 
-  const handleIconUpload = async (index, e) => {
-    const imageFile = e.target.files[0];
+  const handleIconUpload = async (index, event) => {
+    const imageFile = event.target.files?.[0];
     if (!imageFile) return;
 
-    const imageUrl = await uploadImage(imageFile);
-    if (imageUrl) handleChange(index, "icon", imageUrl);
+    setUploadingIndex(index);
+    try {
+      const imageUrl = await uploadImage(imageFile);
+      if (imageUrl) handleChange(index, "icon", imageUrl);
+    } finally {
+      setUploadingIndex(null);
+      event.target.value = "";
+    }
   };
 
-  // Debounced function to avoid excessive API calls when user types quickly
-  const handleUrlChange = useCallback(
-    debounce((index, value) => {
-      handleChange(index, "url", value);
-    }, 500),
-    []
-  );
-
   return (
-    <div className="col-span-full rounded-2xl bg-[#d8e2e2] p-3 sm:p-4">
-      <h3 className="font-semibold text-lg mb-3">Custom Social Links</h3>
-
-      {links.map((link, index) => (
-        <div
-          key={index}
-          className="mb-3 grid gap-3 rounded-xl bg-white/45 p-3 md:grid-cols-3 md:items-center"
-        >
-          {/* Icon Preview & Upload */}
-          <div className="col-span-1 flex flex-col items-center">
-            {link.icon && (
-              <img
-                src={link.icon}
-                alt={`social-${index}`}
-                className="w-12 h-12 object-contain mb-1"
-              />
-            )}
-          </div>
-
-          {/* URL Input */}
-          <div className="md:col-span-2">
-            <div className="grid gap-2 sm:grid-cols-[1fr_auto]">
-              <div className="min-w-0">
-                <input
-                  type="text"
-                  placeholder="Enter link (https://...)"
-                  value={link.url}
-                  onChange={(e) => handleUrlChange(index, e.target.value)}
-                  className="w-full bg-[#ebf0f0] border border-gray-300 px-3 py-2 rounded-md"
-                />
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => handleIconUpload(index, e)}
-                  className="input w-full bg-[#ebf0f0] border border-gray-300 px-2 py-1 rounded-md"
-                />
-              </div>
-
-              {/* Remove Button */}
-              <div className="h-full">
-                <button
-                  type="button"
-                  onClick={() => handleRemove(index)}
-                  className="h-10 w-full rounded-md bg-red-600 px-3 py-2 text-white transition hover:bg-red-700 sm:h-[80px] sm:w-auto"
-                >
-                  ✕
-                </button>
-              </div>
-            </div>
+    <div>
+      <div className="mb-5 flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <div className="flex items-center gap-3">
+          <span className="grid h-11 w-11 place-items-center rounded-2xl bg-cyan-50 text-cyan-700">
+            <LinkIcon size={20} />
+          </span>
+          <div>
+            <p className="text-xs font-black uppercase tracking-wide text-[var(--theme-primary)]">
+              Social
+            </p>
+            <h2 className="text-xl font-black text-slate-950">Custom social links</h2>
           </div>
         </div>
-      ))}
-
-      <div className="flex justify-end">
         <button
           type="button"
           onClick={handleAdd}
-          className={`${design.buttons} mt-2 w-full bg-green-600 hover:bg-green-800 sm:w-auto sm:min-w-72`}
+          className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-slate-950 px-4 text-sm font-black text-white transition hover:bg-slate-800"
         >
-          + Add Social Link
+          <Plus size={16} />
+          Add Link
         </button>
       </div>
+
+      {links.length > 0 ? (
+        <div className="grid gap-3">
+          {links.map((link, index) => (
+            <div
+              key={`${link.icon || "icon"}-${index}`}
+              className="grid gap-3 rounded-3xl border border-slate-100 bg-slate-50 p-4 md:grid-cols-[88px_1fr_auto] md:items-center"
+            >
+              <div className="grid h-20 w-20 place-items-center overflow-hidden rounded-3xl bg-white">
+                {link.icon ? (
+                  <img
+                    src={link.icon}
+                    alt={`Social ${index + 1}`}
+                    className="h-12 w-12 object-contain"
+                  />
+                ) : (
+                  <ImagePlus size={24} className="text-slate-300" />
+                )}
+              </div>
+
+              <div className="min-w-0 space-y-2">
+                <input
+                  type="text"
+                  placeholder="Enter link (https://...)"
+                  value={link.url || ""}
+                  onChange={(event) => handleChange(index, "url", event.target.value)}
+                  className={inputClass}
+                />
+                <label className="inline-flex h-10 w-full cursor-pointer items-center justify-center gap-2 rounded-2xl bg-white px-3 text-xs font-black text-slate-700 ring-1 ring-slate-200 transition hover:ring-[var(--theme-primary)] sm:w-auto">
+                  <Upload size={15} />
+                  {uploadingIndex === index ? "Uploading..." : "Upload icon"}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(event) => handleIconUpload(index, event)}
+                    className="hidden"
+                  />
+                </label>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => handleRemove(index)}
+                className="inline-flex h-11 items-center justify-center gap-2 rounded-2xl bg-rose-50 px-4 text-sm font-black text-rose-700 transition hover:bg-rose-600 hover:text-white"
+              >
+                <Trash2 size={16} />
+                Remove
+              </button>
+            </div>
+          ))}
+        </div>
+      ) : (
+        <div className="rounded-3xl border border-dashed border-slate-200 bg-slate-50 p-8 text-center">
+          <LinkIcon className="mx-auto text-slate-300" size={34} />
+          <p className="mt-3 font-black text-slate-700">No custom social links yet</p>
+          <p className="mt-1 text-sm font-medium text-slate-500">
+            Add extra channels only when you need them.
+          </p>
+        </div>
+      )}
     </div>
   );
 };
