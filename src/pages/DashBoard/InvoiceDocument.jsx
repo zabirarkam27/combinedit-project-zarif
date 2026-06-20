@@ -76,17 +76,15 @@ const createStyles = (themeColors = {}) => {
       paddingVertical: 14,
     },
     logoWrap: {
-      width: 104,
-      minHeight: 58,
-      borderRadius: 12,
-      backgroundColor: "#f7fff9",
-      padding: 8,
-      alignItems: "center",
+      width: 122,
+      minHeight: 54,
+      borderRadius: 10,
+      backgroundColor: primary,
+      padding: 4,
+      alignItems: "flex-start",
       justifyContent: "center",
-      borderWidth: 1,
-      borderColor: "#ffffff",
     },
-    logo: { width: 86, height: 42, objectFit: "contain" },
+    logo: { width: 112, height: 46, objectFit: "contain" },
     logoFallback: {
       width: 86,
       height: 42,
@@ -319,4 +317,5 @@ const InvoiceDocument = ({ order, orders, themeColors, profile }) => {
 };
 
 export default InvoiceDocument;
+
 
