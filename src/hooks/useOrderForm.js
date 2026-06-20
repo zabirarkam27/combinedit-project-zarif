@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { createOrder } from "../services/orders";
-import { showErrorPopup, showSuccessPopup } from "../utils/popups";
+import { showErrorPopup, showOrderSuccessPopup } from "../utils/popups";
 import { trackMetaPurchase } from "../services/metaConversions";
+import useInvoiceGenerator from "./useInvoiceGenerator";
 
 const defaultOrderInfo = {
   name: "",
@@ -16,6 +17,7 @@ const defaultOrderInfo = {
 const useOrderForm = (initialProduct = null) => {
   const [selectedProduct, setSelectedProduct] = useState(initialProduct);
   const [orderInfo, setOrderInfo] = useState(defaultOrderInfo);
+  const { generateInvoice } = useInvoiceGenerator();
 
   const handleOrderChange = (e) => {
     const { name, value } = e.target;
@@ -28,10 +30,18 @@ const useOrderForm = (initialProduct = null) => {
   const handleOrderSubmit = async (payload) => {
     try {
       const response = await createOrder(payload);
-      trackMetaPurchase({ ...payload, ...(response?.data || {}) }).catch((error) => {
+      const placedOrder = { ...payload, ...(response?.data || {}) };
+      trackMetaPurchase(placedOrder).catch((error) => {
         console.warn("Meta Conversion API Purchase failed:", error.message);
       });
-      showSuccessPopup("Order placed successfully", "Thank you. We received your order.");
+      const result = await showOrderSuccessPopup(
+        "Order placed successfully",
+        "Thank you. We received your order."
+      );
+      if (result.isConfirmed) {
+        const { downloadInvoice } = await import("../utils/invoiceDownload.jsx");
+        await downloadInvoice(placedOrder);
+      }
       setOrderInfo(defaultOrderInfo);
       setSelectedProduct(null);
     } catch (error) {
@@ -51,3 +61,6 @@ const useOrderForm = (initialProduct = null) => {
 };
 
 export default useOrderForm;
+
+
+

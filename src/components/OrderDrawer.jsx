@@ -232,7 +232,7 @@ const OrderDrawer = ({
 
           <form onSubmit={handleSubmit} className="flex min-h-0 flex-col bg-white">
             <div className="grid gap-4 p-4 sm:p-6">
-              <div className="grid gap-3 sm:grid-cols-2">
+              <div className="grid gap-3 md:grid-cols-2">
                 <label className="block">
                   <span className="mb-1.5 block text-xs font-extrabold uppercase text-slate-500">
                     Name
@@ -382,3 +382,4 @@ const OrderDrawer = ({
 };
 
 export default OrderDrawer;
+

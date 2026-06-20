@@ -7,8 +7,9 @@ import "react-toastify/dist/ReactToastify.css";
 
 import OrderDrawer from "../components/OrderDrawer";
 import { createOrder } from "../services/orders";
-import { confirmPopup } from "../utils/popups";
+import { confirmPopup, showOrderSuccessPopup } from "../utils/popups";
 import { trackMetaPurchase } from "../services/metaConversions";
+import useInvoiceGenerator from "../hooks/useInvoiceGenerator";
 
 const getItemPrice = (item) => Number(item.discountPrice || item.price || 0);
 
@@ -76,12 +77,20 @@ const CartPage = () => {
 
     try {
       const response = await createOrder(orderPayload);
-      trackMetaPurchase({ ...orderPayload, ...(response?.data || {}) }).catch((error) => {
+      const placedOrder = { ...orderPayload, ...(response?.data || {}) };
+      trackMetaPurchase(placedOrder).catch((error) => {
         console.warn("Meta Conversion API Purchase failed:", error.message);
       });
       clearCart();
       setIsOpen(false);
-      toast.success("✅ Order placed successfully!");
+      const result = await showOrderSuccessPopup(
+        "Order placed successfully",
+        "Thank you. We received your order."
+      );
+      if (result.isConfirmed) {
+        const { downloadInvoice } = await import("../utils/invoiceDownload.jsx");
+        await downloadInvoice(placedOrder);
+      }
       navigate("/");
     } catch (err) {
       console.error("Order Error:", err);
@@ -226,3 +235,5 @@ const CartPage = () => {
 };
 
 export default CartPage;
+
+

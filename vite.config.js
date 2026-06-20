@@ -16,6 +16,17 @@ export default defineConfig(({ mode }) => {
         overlay: false,
       },
     },
+    build: {
+      rollupOptions: {
+        output: {
+          manualChunks(id) {
+            if (id.includes("@react-pdf") || id.includes("fontkit") || id.includes("pdfkit")) {
+              return "react-pdf";
+            }
+          },
+        },
+      },
+    },
     optimizeDeps: {
       include: [
         "react",
@@ -25,7 +36,6 @@ export default defineConfig(({ mode }) => {
         "framer-motion",
         "react-icons/bs",
         "axios",
-        "@react-pdf/renderer",
         "react-toastify",
         "sweetalert2",
       ],

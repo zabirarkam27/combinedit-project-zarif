@@ -188,8 +188,8 @@ const ViewOrder = () => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 px-2 py-4 md:px-4">
-      <div className="mx-auto w-full max-w-7xl space-y-5">
+    <div className="min-h-screen w-full overflow-x-hidden bg-slate-50 px-2 py-4 md:px-4">
+      <div className="mx-auto w-full max-w-7xl min-w-0 space-y-5">
         <section className="overflow-hidden rounded-[28px] border border-white/70 bg-white shadow-[0_20px_60px_rgba(15,23,42,0.08)]">
           <div className="flex flex-col gap-5 p-5 lg:flex-row lg:items-center lg:justify-between">
             <div>
@@ -214,7 +214,7 @@ const ViewOrder = () => {
               </p>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 lg:min-w-[560px]">
+            <div className="grid w-full min-w-0 grid-cols-1 gap-3 sm:grid-cols-2 lg:w-auto lg:grid-cols-4 xl:min-w-[560px]">
               <div className="rounded-2xl bg-slate-50 p-3">
                 <p className="text-[11px] font-black uppercase text-slate-500">Payment</p>
                 <span className={`mt-2 inline-flex rounded-full px-2.5 py-1 text-xs font-black ring-1 ${statusTone(paymentStatus)}`}>
@@ -239,8 +239,8 @@ const ViewOrder = () => {
           </div>
         </section>
 
-        <div className="grid gap-5 xl:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.55fr)]">
-          <div className="space-y-5">
+        <div className="grid min-w-0 gap-5 xl:grid-cols-[minmax(0,1.45fr)_minmax(300px,0.55fr)]">
+          <div className="min-w-0 space-y-5">
             <section className="overflow-hidden rounded-[28px] border border-white/70 bg-white shadow-[0_18px_45px_rgba(15,23,42,0.07)]">
               <div className="border-b border-slate-100 p-5">
                 <p className="text-xs font-black uppercase tracking-wide text-[var(--theme-primary)]">
@@ -249,7 +249,67 @@ const ViewOrder = () => {
                 <h2 className="mt-1 text-xl font-black text-slate-950">Order items</h2>
               </div>
 
-              <div className="overflow-x-auto">
+              <div className="grid gap-3 p-4 md:hidden">
+                {(order.items || []).map((item, index) => {
+                  const image = getItemImage(item);
+                  const badges = selectedBadges(item);
+                  const itemTotal =
+                    item.finalPrice || Number(item.unitPrice || 0) * Number(item.quantity || 1);
+
+                  return (
+                    <article
+                      key={`${item.productName || "item"}-mobile-${index}`}
+                      className="rounded-3xl border border-slate-100 bg-slate-50 p-3"
+                    >
+                      <div className="flex min-w-0 gap-3">
+                        {image ? (
+                          <img
+                            src={image}
+                            alt={item.productName || "Product"}
+                            className="h-16 w-16 shrink-0 rounded-2xl object-cover ring-1 ring-slate-100"
+                          />
+                        ) : (
+                          <span className="grid h-16 w-16 shrink-0 place-items-center rounded-2xl bg-white text-slate-400">
+                            <Package size={20} />
+                          </span>
+                        )}
+                        <div className="min-w-0 flex-1">
+                          <p className="break-words font-black leading-snug text-slate-950">
+                            {item.productName || item.name || "Product"}
+                          </p>
+                          {badges.length > 0 && (
+                            <div className="mt-2 flex flex-wrap gap-1.5">
+                              {badges.map((badge) => (
+                                <span
+                                  key={badge}
+                                  className="rounded-full bg-white px-2 py-0.5 text-[11px] font-bold text-slate-600 ring-1 ring-slate-200"
+                                >
+                                  {badge}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                      <div className="mt-3 grid grid-cols-3 gap-2 rounded-2xl bg-white p-3 text-center text-xs font-bold text-slate-500">
+                        <div>
+                          <p className="uppercase">Qty</p>
+                          <p className="mt-1 text-sm font-black text-slate-950">{Number(item.quantity || 1)}</p>
+                        </div>
+                        <div>
+                          <p className="uppercase">Price</p>
+                          <p className="mt-1 text-sm font-black text-slate-950">{formatCurrency(item.unitPrice)}</p>
+                        </div>
+                        <div>
+                          <p className="uppercase">Total</p>
+                          <p className="mt-1 text-sm font-black text-slate-950">{formatCurrency(itemTotal)}</p>
+                        </div>
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+              <div className="hidden overflow-x-auto md:block">
                 <table className="w-full min-w-[760px] text-left text-sm">
                   <thead className="bg-slate-50 text-xs font-black uppercase tracking-wide text-slate-500">
                     <tr>
@@ -386,7 +446,7 @@ const ViewOrder = () => {
             </section>
           </div>
 
-          <aside className="space-y-5">
+          <aside className="min-w-0 space-y-5">
             <section className="rounded-[28px] border border-white/70 bg-white p-5 shadow-[0_18px_45px_rgba(15,23,42,0.07)]">
               <div className="flex items-start justify-between gap-4">
                 <div>
@@ -483,3 +543,5 @@ const ViewOrder = () => {
 };
 
 export default ViewOrder;
+
+

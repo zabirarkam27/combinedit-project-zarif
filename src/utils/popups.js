@@ -27,6 +27,17 @@ export const showSuccessPopup = (title, text = "") =>
     timerProgressBar: true,
   });
 
+export const showOrderSuccessPopup = (title, text = "") =>
+  Swal.fire({
+    ...basePopup,
+    icon: "success",
+    title,
+    text,
+    showCancelButton: true,
+    reverseButtons: true,
+    confirmButtonText: "Download Invoice",
+    cancelButtonText: "Close",
+  });
 export const showErrorPopup = (title, text = "") =>
   Swal.fire({
     ...basePopup,
@@ -74,3 +85,4 @@ export const confirmPopup = async ({
 
   return result.isConfirmed;
 };
+

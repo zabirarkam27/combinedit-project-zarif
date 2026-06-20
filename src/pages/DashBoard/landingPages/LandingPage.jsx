@@ -9,7 +9,6 @@
 // // services
 // import { getProductById } from "../../../services/products";
 // import { createOrder } from "../../../services/orders";
-
 // const LandingPage = () => {
 //   const { fetchOrders } = useOrdersContext();
 //   const productId = "688af7213b7267440c7f13be";
@@ -148,14 +147,14 @@
 //                 onSubmit={handleSubmit}
 //                 className="space-y-4 max-w-lg mx-auto"
 //               >
-//                 <div className="grid grid-cols-8 items-center gap-2">
+//                 <div className="grid gap-3 md:grid-cols-8 md:items-start">
 //                   <div className="col-span-2 space-y-8 text-xs">
 //                     <p>নাম</p>
 //                     <p>মোবাইল নাম্বার</p>
 //                     <p>ঠিকানা</p>
 //                     <p>অর্ডার নোট</p>
 //                   </div>
-//                   <div className="space-y-2 col-span-6">
+//                   <div className="space-y-2 md:col-span-6">
 //                     <input
 //                       type="text"
 //                       name="name"
@@ -384,6 +383,8 @@ import { useOrdersContext } from "../../../context/OrdersContext";
 import { getLandingPageById } from "../../../services/landingPages";
 import { getProductById } from "../../../services/products";
 import { createOrder } from "../../../services/orders";
+import { showOrderSuccessPopup } from "../../../utils/popups";
+import useInvoiceGenerator from "../../../hooks/useInvoiceGenerator";
 
 const landingInputClass =
   "input w-full bg-white border landing-border px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[var(--landing-button-primary)] focus:ring-opacity-50";
@@ -505,8 +506,16 @@ const LandingPage = () => {
     };
 
     try {
-      await createOrder(orderData);
-      toast.success("✅ Order placed successfully!");
+      const response = await createOrder(orderData);
+      const placedOrder = { ...orderData, ...(response?.data || {}) };
+      const result = await showOrderSuccessPopup(
+        "Order placed successfully",
+        "Thank you. We received your order."
+      );
+      if (result.isConfirmed) {
+        const { downloadInvoice } = await import("../../../utils/invoiceDownload.jsx");
+        await downloadInvoice(placedOrder);
+      }
       fetchOrders();
       setOrderInfo({
         name: "",
@@ -573,14 +582,14 @@ const LandingPage = () => {
                 onSubmit={handleSubmit}
                 className="space-y-4 max-w-lg mx-auto"
               >
-                <div className="grid grid-cols-8 items-center gap-2">
-                  <div className="col-span-2 space-y-8 text-xs landing-text">
+                <div className="grid gap-3 md:grid-cols-8 md:items-start">
+                  <div className="space-y-2 text-xs font-bold landing-text md:col-span-2 md:space-y-8 md:pt-3">
                     <p>নাম</p>
                     <p>মোবাইল নাম্বার</p>
                     <p>ঠিকানা</p>
                     <p>অর্ডার নোট</p>
                   </div>
-                  <div className="space-y-2 col-span-6">
+                  <div className="space-y-2 md:col-span-6">
                     <input
                       type="text"
                       name="name"
@@ -787,3 +796,6 @@ const LandingPage = () => {
 };
 
 export default LandingPage;
+
+
+
