@@ -26,6 +26,7 @@ import usePagination from "../../hooks/usePagination";
 import InvoiceDocument from "./InvoiceDocument";
 import { downloadCsv } from "../../utils/csv";
 import { confirmPopup } from "../../utils/popups";
+import useProfileData from "../../hooks/useProfileData";
 
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -47,6 +48,8 @@ const HandleOrders = () => {
   const { status } = useParams();
   const navigate = useNavigate();
   const { orders, handleStatusUpdate, handleDeleteOrder } = useOrders();
+  const { profile } = useProfileData();
+  const invoiceThemeColors = profile?.themeColors || {};
 
   const [search, setSearch] = useState("");
   const [activeTab, setActiveTab] = useState(status || "all");
@@ -394,7 +397,7 @@ const HandleOrders = () => {
             <div className="grid grid-cols-1 gap-2 xs:grid-cols-2 sm:flex sm:flex-wrap">
               {paginatedData.length === 1 && (
                 <PDFDownloadLink
-                  document={<InvoiceDocument order={paginatedData[0]} />}
+                  document={<InvoiceDocument order={paginatedData[0]} themeColors={invoiceThemeColors} />}
                   fileName={`invoice_${paginatedData[0].orderNumber}.pdf`}
                 >
                   {({ loading }) => (
@@ -408,7 +411,7 @@ const HandleOrders = () => {
 
               {selectedOrders.length > 0 && (
                 <PDFDownloadLink
-                  document={<InvoiceDocument orders={selectedOrderData} />}
+                  document={<InvoiceDocument orders={selectedOrderData} themeColors={invoiceThemeColors} />}
                   fileName="merged_invoices.pdf"
                 >
                   {({ loading }) => (
@@ -493,7 +496,7 @@ const HandleOrders = () => {
                         <Eye size={16} />
                       </button>
                       <PDFDownloadLink
-                        document={<InvoiceDocument order={order} />}
+                        document={<InvoiceDocument order={order} themeColors={invoiceThemeColors} />}
                         fileName={`invoice_${order.orderNumber}.pdf`}
                       >
                         {() => (
@@ -610,7 +613,7 @@ const HandleOrders = () => {
                         <td className="px-4 py-4 align-middle">
                           <div className="flex items-center justify-end gap-2">
                             <PDFDownloadLink
-                              document={<InvoiceDocument order={order} />}
+                              document={<InvoiceDocument order={order} themeColors={invoiceThemeColors} />}
                               fileName={`invoice_${order.orderNumber}.pdf`}
                             >
                               {({ loading }) => (
@@ -708,3 +711,4 @@ const HandleOrders = () => {
 };
 
 export default HandleOrders;
+
