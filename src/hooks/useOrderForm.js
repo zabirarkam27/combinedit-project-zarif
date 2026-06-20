@@ -3,6 +3,7 @@ import { createOrder } from "../services/orders";
 import { showErrorPopup, showOrderSuccessPopup } from "../utils/popups";
 import { trackMetaPurchase } from "../services/metaConversions";
 import useInvoiceGenerator from "./useInvoiceGenerator";
+import { saveCustomerOrder } from "../utils/customerOrderHistory";
 
 const defaultOrderInfo = {
   name: "",
@@ -31,6 +32,7 @@ const useOrderForm = (initialProduct = null) => {
     try {
       const response = await createOrder(payload);
       const placedOrder = { ...payload, ...(response?.data || {}) };
+      saveCustomerOrder(placedOrder);
       trackMetaPurchase(placedOrder).catch((error) => {
         console.warn("Meta Conversion API Purchase failed:", error.message);
       });
@@ -61,6 +63,7 @@ const useOrderForm = (initialProduct = null) => {
 };
 
 export default useOrderForm;
+
 
 
 

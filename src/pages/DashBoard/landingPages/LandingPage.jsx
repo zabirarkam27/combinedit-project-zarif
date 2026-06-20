@@ -385,6 +385,7 @@ import { getProductById } from "../../../services/products";
 import { createOrder } from "../../../services/orders";
 import { showOrderSuccessPopup } from "../../../utils/popups";
 import useInvoiceGenerator from "../../../hooks/useInvoiceGenerator";
+import { saveCustomerOrder } from "../../../utils/customerOrderHistory";
 
 const landingInputClass =
   "input w-full bg-white border landing-border px-3 py-2 focus:outline-none focus:ring-1 focus:ring-[var(--landing-button-primary)] focus:ring-opacity-50";
@@ -508,6 +509,7 @@ const LandingPage = () => {
     try {
       const response = await createOrder(orderData);
       const placedOrder = { ...orderData, ...(response?.data || {}) };
+      saveCustomerOrder(placedOrder);
       const result = await showOrderSuccessPopup(
         "Order placed successfully",
         "Thank you. We received your order."
@@ -796,6 +798,7 @@ const LandingPage = () => {
 };
 
 export default LandingPage;
+
 
 
 

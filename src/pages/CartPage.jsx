@@ -10,6 +10,7 @@ import { createOrder } from "../services/orders";
 import { confirmPopup, showOrderSuccessPopup } from "../utils/popups";
 import { trackMetaPurchase } from "../services/metaConversions";
 import useInvoiceGenerator from "../hooks/useInvoiceGenerator";
+import { saveCustomerOrder } from "../utils/customerOrderHistory";
 
 const getItemPrice = (item) => Number(item.discountPrice || item.price || 0);
 
@@ -78,6 +79,7 @@ const CartPage = () => {
     try {
       const response = await createOrder(orderPayload);
       const placedOrder = { ...orderPayload, ...(response?.data || {}) };
+      saveCustomerOrder(placedOrder);
       trackMetaPurchase(placedOrder).catch((error) => {
         console.warn("Meta Conversion API Purchase failed:", error.message);
       });
@@ -235,5 +237,6 @@ const CartPage = () => {
 };
 
 export default CartPage;
+
 
 

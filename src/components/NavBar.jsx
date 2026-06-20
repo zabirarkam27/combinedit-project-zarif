@@ -1,10 +1,13 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   ChevronDown,
+  Clock3,
+  PackageCheck,
   Search,
   ShoppingBag,
   UserRound,
+  X,
 } from "lucide-react";
 
 import { useCart } from "../context/CartContext";
@@ -12,15 +15,47 @@ import design from "../styles/design";
 import BottomNav from "./BottomNav";
 import GlobalSearch from "./GlobalSearch";
 import useProfileData from "../hooks/useProfileData";
+import { readCustomerOrderHistory } from "../utils/customerOrderHistory";
+
+const formatCurrency = (value) => `BDT ${Number(value || 0).toLocaleString("en-US")}`;
+
+const formatDate = (value) => {
+  const date = value ? new Date(value) : null;
+  return date && !Number.isNaN(date.getTime())
+    ? date.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" })
+    : "Recent order";
+};
 
 const NavBar = ({ refs }) => {
   const { contactRef } = refs || {};
   const [searchOpen, setSearchOpen] = useState(false);
+  const [orderHistoryOpen, setOrderHistoryOpen] = useState(false);
+  const [orderHistory, setOrderHistory] = useState([]);
   const { cartItems } = useCart();
   const location = useLocation();
   const navigate = useNavigate();
   const { profile } = useProfileData();
   const logoSrc = profile?.logo || "/nav-icon/logo.png";
+
+  useEffect(() => {
+    const syncOrderHistory = () => setOrderHistory(readCustomerOrderHistory());
+    syncOrderHistory();
+    window.addEventListener("storage", syncOrderHistory);
+    window.addEventListener("customer-orders-updated", syncOrderHistory);
+    return () => {
+      window.removeEventListener("storage", syncOrderHistory);
+      window.removeEventListener("customer-orders-updated", syncOrderHistory);
+    };
+  }, []);
+
+  useEffect(() => {
+    setOrderHistoryOpen(false);
+  }, [location.pathname]);
+
+  const orderedProductCount = useMemo(
+    () => orderHistory.reduce((sum, order) => sum + (order.items?.length || 0), 0),
+    [orderHistory]
+  );
 
   const routeMobileItem = location.pathname.startsWith("/products") || location.pathname.startsWith("/categories")
     ? "menu"
@@ -72,6 +107,12 @@ const NavBar = ({ refs }) => {
     }
 
     setSearchOpen(true);
+  };
+
+  const openProduct = (productId) => {
+    if (!productId) return;
+    setOrderHistoryOpen(false);
+    navigate(`/products/${productId}`);
   };
 
   const navLinkClass = ({ isActive }) =>
@@ -139,13 +180,115 @@ const NavBar = ({ refs }) => {
             >
               <Search size={28} strokeWidth={2.1} />
             </button>
-            <button
-              type="button"
-              aria-label="Account"
-              className="rounded-full p-2 transition-colors hover:text-[var(--theme-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--theme-primary)] focus-visible:ring-offset-4"
-            >
-              <UserRound size={28} strokeWidth={2.1} />
-            </button>
+            <div className="relative">
+              <button
+                type="button"
+                aria-label="View ordered products"
+                aria-expanded={orderHistoryOpen}
+                onClick={() => setOrderHistoryOpen((open) => !open)}
+                className="relative rounded-full p-2 transition-colors hover:text-[var(--theme-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--theme-primary)] focus-visible:ring-offset-4"
+              >
+                <UserRound size={28} strokeWidth={2.1} />
+                {orderedProductCount > 0 && (
+                  <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-600 px-1 text-[9px] font-extrabold leading-none text-white ring-2 ring-white">
+                    {orderedProductCount > 9 ? "9+" : orderedProductCount}
+                  </span>
+                )}
+              </button>
+
+              {orderHistoryOpen && (
+                <div className="absolute right-0 top-12 z-[70] w-[min(390px,calc(100vw-24px))] overflow-hidden rounded-3xl border border-[var(--theme-border-color)] bg-white shadow-[0_24px_70px_rgba(15,23,42,0.18)]">
+                  <div className="flex items-center justify-between border-b border-slate-100 bg-[var(--theme-muted-bg)] px-4 py-3">
+                    <div className="flex items-center gap-3">
+                      <span className="grid h-10 w-10 place-items-center rounded-2xl bg-white text-[var(--theme-primary)] shadow-sm">
+                        <PackageCheck size={20} />
+                      </span>
+                      <div>
+                        <p className="text-sm font-black text-slate-950">Ordered Products</p>
+                        <p className="text-xs font-semibold text-slate-500">Saved in this browser</p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setOrderHistoryOpen(false)}
+                      className="grid h-9 w-9 place-items-center rounded-full text-slate-500 transition hover:bg-white hover:text-slate-950"
+                      aria-label="Close ordered products"
+                    >
+                      <X size={18} />
+                    </button>
+                  </div>
+
+                  <div className="max-h-[70vh] overflow-y-auto p-3">
+                    {orderHistory.length === 0 ? (
+                      <div className="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-8 text-center">
+                        <PackageCheck className="mx-auto text-slate-300" size={36} />
+                        <p className="mt-3 text-sm font-black text-slate-900">No ordered products yet</p>
+                        <p className="mt-1 text-xs font-semibold leading-5 text-slate-500">
+                          After placing an order, products will appear here on this browser.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="space-y-3">
+                        {orderHistory.map((order) => (
+                          <section key={order.id} className="rounded-2xl border border-slate-100 bg-white p-3 shadow-sm">
+                            <div className="mb-3 flex items-center justify-between gap-3 text-xs font-bold text-slate-500">
+                              <span className="inline-flex items-center gap-1.5">
+                                <Clock3 size={14} />
+                                {formatDate(order.createdAt)}
+                              </span>
+                              <span className="rounded-full bg-[var(--theme-muted-bg)] px-2 py-1 text-[var(--theme-primary)]">
+                                {order.orderNumber || order.id}
+                              </span>
+                            </div>
+                            <div className="space-y-2">
+                              {(order.items || []).map((item, index) => (
+                                <button
+                                  key={`${order.id}-${item.productId || item.productName}-${index}`}
+                                  type="button"
+                                  onClick={() => openProduct(item.productId)}
+                                  className="flex w-full items-center gap-3 rounded-2xl bg-slate-50 p-2 text-left transition hover:bg-[var(--theme-muted-bg)] disabled:cursor-default"
+                                  disabled={!item.productId}
+                                >
+                                  <span className="grid h-14 w-14 shrink-0 place-items-center overflow-hidden rounded-xl bg-white ring-1 ring-slate-100">
+                                    {item.selectedImage ? (
+                                      <img src={item.selectedImage} alt="" className="h-full w-full object-cover" />
+                                    ) : (
+                                      <ShoppingBag size={20} className="text-slate-300" />
+                                    )}
+                                  </span>
+                                  <span className="min-w-0 flex-1">
+                                    <span className="block truncate text-sm font-black text-slate-950">
+                                      {item.productName}
+                                    </span>
+                                    <span className="mt-1 flex flex-wrap items-center gap-2 text-[11px] font-bold text-slate-500">
+                                      <span>Qty {item.quantity}</span>
+                                      {item.variation && <span>{item.variation}</span>}
+                                      {item.color && (
+                                        <span className="inline-flex items-center gap-1">
+                                          <span className="h-3 w-3 rounded-full border border-black/10" style={{ backgroundColor: item.color }} />
+                                          Color
+                                        </span>
+                                      )}
+                                    </span>
+                                  </span>
+                                  <span className="shrink-0 text-xs font-black text-[var(--theme-primary)]">
+                                    {formatCurrency(item.finalPrice || item.unitPrice * item.quantity)}
+                                  </span>
+                                </button>
+                              ))}
+                            </div>
+                            <div className="mt-3 flex items-center justify-between border-t border-slate-100 pt-3 text-sm">
+                              <span className="font-bold text-slate-500">Order total</span>
+                              <span className="font-black text-slate-950">{formatCurrency(order.grandTotal)}</span>
+                            </div>
+                          </section>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
             <NavLink
               to="/cart"
               className={({ isActive }) =>
@@ -184,4 +327,3 @@ const NavBar = ({ refs }) => {
 };
 
 export default NavBar;
-
