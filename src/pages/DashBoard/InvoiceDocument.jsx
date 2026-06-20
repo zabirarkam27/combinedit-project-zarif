@@ -34,6 +34,14 @@ const wrapTextByWords = (text, limit = 7) =>
 
 const formatCurrency = (value) => `BDT ${Number(value || 0).toLocaleString("en-US")}`;
 
+const getInitials = (name = "Combined IT") =>
+  safeText(name, "Combined IT")
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((word) => word.charAt(0).toUpperCase())
+    .join("") || "CI";
+
 const formatDate = (value) => {
   const date = value ? new Date(value) : null;
   return date && !Number.isNaN(date.getTime())
@@ -68,15 +76,32 @@ const createStyles = (themeColors = {}) => {
       paddingVertical: 14,
     },
     logoWrap: {
-      width: 96,
-      minHeight: 52,
+      width: 104,
+      minHeight: 58,
       borderRadius: 12,
-      backgroundColor: "#ffffff",
+      backgroundColor: "#f7fff9",
       padding: 8,
       alignItems: "center",
       justifyContent: "center",
+      borderWidth: 1,
+      borderColor: "#ffffff",
     },
-    logo: { width: 78, height: 40, objectFit: "contain" },
+    logo: { width: 86, height: 42, objectFit: "contain" },
+    logoFallback: {
+      width: 86,
+      height: 42,
+      borderRadius: 10,
+      backgroundColor: "#ffffff",
+      alignItems: "center",
+      justifyContent: "center",
+      borderWidth: 1,
+      borderColor: border,
+    },
+    logoFallbackText: {
+      color: primary,
+      fontSize: 22,
+      fontWeight: 700,
+    },
     headerMeta: { alignItems: "flex-end" },
     headerEyebrow: { fontSize: 9, color: "#dff8e7", fontWeight: 700, textTransform: "uppercase" },
     headerText: { marginTop: 4, fontSize: 24, fontWeight: 700, color: "#ffffff" },
@@ -173,9 +198,17 @@ const createStyles = (themeColors = {}) => {
   });
 };
 
-const InvoiceDocument = ({ order, orders, themeColors }) => {
+const InvoiceDocument = ({ order, orders, themeColors, profile }) => {
   const list = orders ?? (order ? [order] : []);
   const styles = createStyles(themeColors);
+  const businessName = safeText(profile?.name, "Combined IT");
+  const businessAddress = safeText(
+    profile?.address,
+    "House: 26 Naya Paltan, Masjid Market, VIP Road, Dhaka-1000"
+  );
+  const businessEmail = safeText(profile?.email, "info@combinedit.com");
+  const businessPhone = safeText(profile?.phone, "09678-321321");
+  const logoSrc = profile?.logo;
 
   return (
     <Document>
@@ -190,7 +223,13 @@ const InvoiceDocument = ({ order, orders, themeColors }) => {
           <Page key={idx} size="A4" style={styles.page}>
             <View style={styles.header}>
               <View style={styles.logoWrap}>
-                <Image src="https://i.ibb.co/k25ggjgL/logo.png" style={styles.logo} />
+                {logoSrc ? (
+                  <Image src={logoSrc} style={styles.logo} />
+                ) : (
+                  <View style={styles.logoFallback}>
+                    <Text style={styles.logoFallbackText}>{getInitials(businessName)}</Text>
+                  </View>
+                )}
               </View>
               <View style={styles.headerMeta}>
                 <Text style={styles.headerEyebrow}>Official Invoice</Text>
@@ -218,9 +257,9 @@ const InvoiceDocument = ({ order, orders, themeColors }) => {
 
             <View style={styles.fromSection}>
               <Text style={styles.sectionLabel}>Bill From</Text>
-              <Text style={[styles.line, styles.bold]}>Combined IT</Text>
-              <Text style={styles.line}>House: 26 Naya Paltan, Masjid Market, VIP Road, Dhaka-1000</Text>
-              <Text style={styles.line}>info@combinedit.com | 09678-321321</Text>
+              <Text style={[styles.line, styles.bold]}>{businessName}</Text>
+              <Text style={styles.line}>{wrapTextByWords(businessAddress, 8)}</Text>
+              <Text style={styles.line}>{businessEmail} | {businessPhone}</Text>
             </View>
 
             <View style={styles.table}>
@@ -269,7 +308,7 @@ const InvoiceDocument = ({ order, orders, themeColors }) => {
             </View>
 
             <View style={styles.footer}>
-              <Text>Thank you for shopping with <Text style={styles.accent}>Combined IT</Text>.</Text>
+              <Text>Thank you for shopping with <Text style={styles.accent}>{businessName}</Text>.</Text>
               <Text>Generated invoice</Text>
             </View>
           </Page>
@@ -280,3 +319,4 @@ const InvoiceDocument = ({ order, orders, themeColors }) => {
 };
 
 export default InvoiceDocument;
+

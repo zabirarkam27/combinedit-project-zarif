@@ -3,12 +3,12 @@ import React from "react";
 import InvoiceDocument from "../pages/DashBoard/InvoiceDocument";
 import { getProfile } from "../services/profile";
 
-const getInvoiceTheme = async () => {
+const getInvoiceProfile = async () => {
   try {
     const profileResponse = await getProfile();
-    return profileResponse?.data?.themeColors || {};
+    return profileResponse?.data || {};
   } catch (error) {
-    console.warn("Invoice theme colors could not be loaded:", error.message);
+    console.warn("Invoice profile branding could not be loaded:", error.message);
     return {};
   }
 };
@@ -26,9 +26,10 @@ const useInvoiceGenerator = () => {
   const generateInvoice = async (order) => {
     if (!order) return;
     try {
-      const themeColors = await getInvoiceTheme();
+      const profile = await getInvoiceProfile();
+      const themeColors = profile?.themeColors || {};
       const blob = await pdf(
-        <InvoiceDocument orders={[order]} themeColors={themeColors} />
+        <InvoiceDocument orders={[order]} themeColors={themeColors} profile={profile} />
       ).toBlob();
 
       downloadBlob(blob, `invoice_${order.orderNumber || "order"}.pdf`);
@@ -40,9 +41,10 @@ const useInvoiceGenerator = () => {
   const generateInvoicePDF = async (orders) => {
     if (!orders || !orders.length) return;
     try {
-      const themeColors = await getInvoiceTheme();
+      const profile = await getInvoiceProfile();
+      const themeColors = profile?.themeColors || {};
       const blob = await pdf(
-        <InvoiceDocument orders={orders} themeColors={themeColors} />
+        <InvoiceDocument orders={orders} themeColors={themeColors} profile={profile} />
       ).toBlob();
 
       downloadBlob(blob, "merged_invoices.pdf");
@@ -55,3 +57,4 @@ const useInvoiceGenerator = () => {
 };
 
 export default useInvoiceGenerator;
+

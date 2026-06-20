@@ -8,16 +8,18 @@ export const downloadInvoice = async (order) => {
     import("../services/profile"),
   ]);
 
-  let themeColors = {};
+  let profile = {};
   try {
     const profileResponse = await getProfile();
-    themeColors = profileResponse?.data?.themeColors || {};
+    profile = profileResponse?.data || {};
   } catch (error) {
-    console.warn("Invoice theme colors could not be loaded:", error.message);
+    console.warn("Invoice profile branding could not be loaded:", error.message);
   }
 
+  const themeColors = profile?.themeColors || {};
+
   const blob = await pdf(
-    React.createElement(InvoiceDocument, { orders: [order], themeColors })
+    React.createElement(InvoiceDocument, { orders: [order], themeColors, profile })
   ).toBlob();
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
@@ -26,3 +28,4 @@ export const downloadInvoice = async (order) => {
   link.click();
   URL.revokeObjectURL(url);
 };
+

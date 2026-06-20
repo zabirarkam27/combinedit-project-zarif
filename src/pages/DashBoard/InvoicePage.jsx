@@ -31,8 +31,8 @@ const InvoicePage = () => {
   }, [id]);
 
   const memoizedDocument = useMemo(
-    () => order && <InvoiceDocument order={order} themeColors={profile?.themeColors || {}} />,
-    [order, profile?.themeColors]
+    () => order && <InvoiceDocument order={order} themeColors={profile?.themeColors || {}} profile={profile} />,
+    [order, profile]
   );
 
   if (loading) return <p className="mt-10 text-center">Loading...</p>;
@@ -72,3 +72,4 @@ const InvoicePage = () => {
 };
 
 export default InvoicePage;
+
