@@ -137,7 +137,7 @@ const NavBar = ({ refs }) => {
   };
 
   const navLinkClass = ({ isActive }) =>
-    `relative inline-flex h-11 items-center justify-center rounded-2xl px-4 text-sm font-black transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--theme-primary)] focus-visible:ring-offset-4 ${
+    `relative inline-flex h-10 items-center justify-center rounded-2xl px-2.5 text-[12px] font-black transition-all duration-200 lg:h-11 lg:px-4 lg:text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--theme-primary)] focus-visible:ring-offset-4 ${
       isActive
         ? "bg-[var(--theme-primary)] text-white shadow-[0_14px_30px_rgba(11,125,35,0.18)]"
         : "text-slate-700 hover:bg-[var(--theme-muted-bg)] hover:text-[var(--theme-primary)]"
@@ -152,23 +152,23 @@ const NavBar = ({ refs }) => {
     <div>
       <div className="fixed left-0 top-0 z-50 hidden w-full border-b border-white/70 bg-white/82 shadow-[0_18px_55px_rgba(15,23,42,0.10)] backdrop-blur-xl md:flex">
         <div
-          className={`${design.navbarContainer} flex items-center justify-between gap-5 py-3`}
+          className={`${design.navbarContainer} flex items-center justify-between gap-2 py-2 lg:gap-5 lg:py-3`}
         >
           <div className="min-w-0 shrink-0">
             <Link
               to="/"
               onClick={goHome}
-              className="inline-flex h-14 items-center rounded-[22px] border border-[var(--theme-border-color)] bg-white px-3 shadow-[0_14px_35px_rgba(15,23,42,0.07)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_45px_rgba(15,23,42,0.11)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--theme-primary)] focus-visible:ring-offset-4"
+              className="inline-flex h-12 items-center rounded-[20px] border border-[var(--theme-border-color)] bg-white px-2 shadow-[0_14px_35px_rgba(15,23,42,0.07)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_45px_rgba(15,23,42,0.11)] lg:h-14 lg:rounded-[22px] lg:px-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--theme-primary)] focus-visible:ring-offset-4"
               aria-label="Go to home"
             >
               <span
-                className="block h-11 w-[76px] bg-[var(--theme-logo-color)]"
+                className="block h-9 w-[62px] bg-[var(--theme-logo-color)] lg:h-11 lg:w-[76px]"
                 style={logoMaskStyle}
               />
             </Link>
           </div>
 
-          <nav className="flex min-w-0 flex-1 items-center justify-center gap-1 rounded-[24px] border border-[var(--theme-border-color)] bg-white/75 p-1.5 shadow-inner shadow-slate-100/70">
+          <nav className="flex min-w-0 flex-1 items-center justify-center gap-0.5 rounded-[22px] border border-[var(--theme-border-color)] bg-white/75 p-1 shadow-inner shadow-slate-100/70 lg:gap-1 lg:rounded-[24px] lg:p-1.5">
             <NavLink to="/" end onClick={goHome} className={navLinkClass}>
               Home
             </NavLink>
@@ -186,20 +186,20 @@ const NavBar = ({ refs }) => {
             <button
               type="button"
               onClick={goToContact}
-              className="relative inline-flex h-11 items-center justify-center rounded-2xl px-4 text-sm font-black text-slate-700 transition-all duration-200 hover:bg-[var(--theme-muted-bg)] hover:text-[var(--theme-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--theme-primary)] focus-visible:ring-offset-4"
+              className="relative inline-flex h-10 items-center justify-center rounded-2xl px-2.5 text-[12px] font-black text-slate-700 transition-all duration-200 hover:bg-[var(--theme-muted-bg)] hover:text-[var(--theme-primary)] lg:h-11 lg:px-4 lg:text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--theme-primary)] focus-visible:ring-offset-4"
             >
               Contact Us
             </button>
           </nav>
 
-          <div className="flex shrink-0 items-center justify-end gap-2 text-slate-950 xl:gap-3">
+          <div className="flex shrink-0 items-center justify-end gap-1.5 text-slate-950 lg:gap-2 xl:gap-3">
             <button
               type="button"
               aria-label="Search"
               onClick={() => setSearchOpen(true)}
-              className="grid h-12 w-12 place-items-center rounded-2xl border border-[var(--theme-border-color)] bg-white text-slate-800 shadow-[0_10px_24px_rgba(15,23,42,0.07)] transition hover:-translate-y-0.5 hover:border-[var(--theme-primary)] hover:text-[var(--theme-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--theme-primary)] focus-visible:ring-offset-4"
+              className="grid h-10 w-10 place-items-center rounded-2xl border border-[var(--theme-border-color)] bg-white text-slate-800 shadow-[0_10px_24px_rgba(15,23,42,0.07)] transition hover:-translate-y-0.5 hover:border-[var(--theme-primary)] hover:text-[var(--theme-primary)] lg:h-12 lg:w-12 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--theme-primary)] focus-visible:ring-offset-4"
             >
-              <Search size={24} strokeWidth={2.15} />
+              <Search className="h-5 w-5 lg:h-6 lg:w-6" strokeWidth={2.15} />
             </button>
             <div ref={orderHistoryRef} className="relative">
               <button
@@ -207,9 +207,9 @@ const NavBar = ({ refs }) => {
                 aria-label="View ordered products"
                 aria-expanded={orderHistoryOpen}
                 onClick={() => setOrderHistoryOpen((open) => !open)}
-                className="relative grid h-12 w-12 place-items-center rounded-2xl border border-[var(--theme-border-color)] bg-white text-slate-800 shadow-[0_10px_24px_rgba(15,23,42,0.07)] transition hover:-translate-y-0.5 hover:border-[var(--theme-primary)] hover:text-[var(--theme-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--theme-primary)] focus-visible:ring-offset-4"
+                className="relative grid h-10 w-10 place-items-center rounded-2xl border border-[var(--theme-border-color)] bg-white text-slate-800 shadow-[0_10px_24px_rgba(15,23,42,0.07)] transition hover:-translate-y-0.5 hover:border-[var(--theme-primary)] hover:text-[var(--theme-primary)] lg:h-12 lg:w-12 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--theme-primary)] focus-visible:ring-offset-4"
               >
-                <UserRound size={24} strokeWidth={2.15} />
+                <UserRound className="h-5 w-5 lg:h-6 lg:w-6" strokeWidth={2.15} />
                 {orderedProductCount > 0 && (
                   <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-600 px-1 text-[9px] font-extrabold leading-none text-white ring-2 ring-white">
                     {orderedProductCount > 9 ? "9+" : orderedProductCount}
@@ -313,7 +313,7 @@ const NavBar = ({ refs }) => {
             <NavLink
               to="/cart"
               className={({ isActive }) =>
-                `relative flex h-12 items-center gap-2 rounded-2xl border px-3 shadow-[0_10px_24px_rgba(15,23,42,0.07)] transition hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--theme-primary)] focus-visible:ring-offset-4 ${
+                `relative flex h-10 items-center gap-1.5 rounded-2xl border px-2 shadow-[0_10px_24px_rgba(15,23,42,0.07)] transition hover:-translate-y-0.5 lg:h-12 lg:gap-2 lg:px-3 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--theme-primary)] focus-visible:ring-offset-4 ${
                   isActive
                     ? "border-[var(--theme-primary)] bg-[var(--theme-muted-bg)] text-[var(--theme-cart-icon-color)]"
                     : "border-[var(--theme-border-color)] bg-white hover:border-[var(--theme-primary)] hover:text-[var(--theme-primary)]"
@@ -323,15 +323,15 @@ const NavBar = ({ refs }) => {
             >
               <ShoppingBag
                 className="text-[var(--theme-cart-icon-color)]"
-                size={25}
+                size={22}
                 strokeWidth={2.15}
               />
               {cartItems.length > 0 && (
-                <span className="absolute -top-0.5 left-7 flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--theme-primary)] px-1 text-[9px] font-extrabold leading-none text-white ring-2 ring-white">
+                <span className="absolute -top-0.5 left-6 flex h-4 lg:left-7 min-w-4 items-center justify-center rounded-full bg-[var(--theme-primary)] px-1 text-[9px] font-extrabold leading-none text-white ring-2 ring-white">
                   {cartItems.length}
                 </span>
               )}
-              <span className="text-sm font-black text-slate-900">{"\u09F3"}0</span>
+              <span className="hidden text-sm font-black text-slate-900 lg:inline">{"\u09F3"}0</span>
             </NavLink>
           </div>
         </div>
