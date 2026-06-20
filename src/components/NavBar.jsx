@@ -351,8 +351,3 @@ const NavBar = ({ refs }) => {
 };
 
 export default NavBar;
-
-
-
-
-
