@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   ChevronDown,
@@ -31,6 +31,7 @@ const NavBar = ({ refs }) => {
   const [searchOpen, setSearchOpen] = useState(false);
   const [orderHistoryOpen, setOrderHistoryOpen] = useState(false);
   const [orderHistory, setOrderHistory] = useState([]);
+  const orderHistoryRef = useRef(null);
   const { cartItems } = useCart();
   const location = useLocation();
   const navigate = useNavigate();
@@ -51,6 +52,27 @@ const NavBar = ({ refs }) => {
   useEffect(() => {
     setOrderHistoryOpen(false);
   }, [location.pathname]);
+
+  useEffect(() => {
+    if (!orderHistoryOpen) return undefined;
+
+    const handlePointerDown = (event) => {
+      if (orderHistoryRef.current && !orderHistoryRef.current.contains(event.target)) {
+        setOrderHistoryOpen(false);
+      }
+    };
+
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape") setOrderHistoryOpen(false);
+    };
+
+    document.addEventListener("mousedown", handlePointerDown);
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("mousedown", handlePointerDown);
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [orderHistoryOpen]);
 
   const orderedProductCount = useMemo(
     () => orderHistory.reduce((sum, order) => sum + (order.items?.length || 0), 0),
@@ -180,7 +202,7 @@ const NavBar = ({ refs }) => {
             >
               <Search size={28} strokeWidth={2.1} />
             </button>
-            <div className="relative">
+            <div ref={orderHistoryRef} className="relative">
               <button
                 type="button"
                 aria-label="View ordered products"
@@ -327,3 +349,5 @@ const NavBar = ({ refs }) => {
 };
 
 export default NavBar;
+
+

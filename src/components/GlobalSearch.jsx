@@ -78,7 +78,7 @@ const GlobalSearch = ({ open, onClose }) => {
   if (!open) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] bg-slate-950/45 p-3 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[100] bg-slate-950/45 p-3 backdrop-blur-sm" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
       <div className="mx-auto mt-16 max-h-[82vh] max-w-3xl overflow-y-auto rounded-3xl bg-white p-4 shadow-[0_30px_90px_rgba(15,23,42,0.28)] md:p-6">
         <div className="flex items-center gap-3">
           <Search className="text-[var(--theme-primary)]" size={24} />
@@ -171,3 +171,4 @@ const GlobalSearch = ({ open, onClose }) => {
 };
 
 export default GlobalSearch;
+
