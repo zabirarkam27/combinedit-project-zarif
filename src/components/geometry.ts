@@ -1,9 +1,9 @@
-export const NAV_HEIGHT = 72;
+export const NAV_HEIGHT = 64;
 export const NAV_MAX_WIDTH = 420;
-export const CIRCLE_DIAMETER = 64;
-export const CIRCLE_TOP_OFFSET = -28;
-export const CURVE_WIDTH = 120;
-export const CURVE_DEPTH = 28;
+export const CIRCLE_DIAMETER = 56;
+export const CIRCLE_TOP_OFFSET = -20;
+export const CURVE_WIDTH = 106;
+export const CURVE_DEPTH = 22;
 
 export const buildNotchPath = (
   centerX: number,
@@ -31,3 +31,4 @@ export const buildNotchPath = (
 };
 
 const round = (value: number) => Math.round(value * 100) / 100;
+

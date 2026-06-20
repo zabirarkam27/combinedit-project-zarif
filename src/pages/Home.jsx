@@ -4,7 +4,7 @@ import CategorySection from "../components/CategorySection";
 import ProfileInfo from "../components/ProfileInfo";
 import design from "../styles/design";
 import { useProfileSection } from "../context/ProfileSectionContext";
-import { Headphones, Leaf, ShieldCheck, Truck } from "lucide-react";
+import { ArrowRight, Headphones, Leaf, ShieldCheck, Sparkles, Truck } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
@@ -41,33 +41,40 @@ const Home = ({ refs }) => {
 
           <div className={`${design.container} theme-page-bg md:mt-6 sm:mt-3`}>
             <div ref={allProductsRef}>
-              <div className="mb-4 flex flex-col gap-3 text-left sm:flex-row sm:items-end sm:justify-between">
-                <div>
-                  <h2 className="flex items-center gap-2 text-2xl font-extrabold text-slate-950 md:text-3xl">
-                    Our Best Sellers <Leaf className="text-[#66c35d]" size={24} fill="currentColor" />
-                  </h2>
-                  <p className="mt-1 text-sm font-medium text-[var(--theme-muted-text)] md:text-base">
-                    Best quality products for your daily needs
-                  </p>
+              <div className="mb-5 overflow-hidden rounded-[28px] border border-white/70 bg-white/80 p-4 text-left shadow-[0_18px_50px_rgba(15,23,42,0.07)] backdrop-blur md:p-5">
+                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="min-w-0">
+                    <p className="mb-2 inline-flex items-center gap-2 rounded-full bg-[var(--theme-muted-bg)] px-3 py-1 text-xs font-black uppercase tracking-wide text-[var(--theme-primary)]">
+                      <Sparkles size={14} />
+                      Curated picks
+                    </p>
+                    <h2 className="flex items-center gap-2 text-2xl font-black tracking-tight text-slate-950 md:text-3xl">
+                      Our Best Sellers <Leaf className="text-[#66c35d]" size={23} fill="currentColor" />
+                    </h2>
+                    <p className="mt-1 text-sm font-semibold text-[var(--theme-muted-text)] md:text-base">
+                      Best quality products for your daily needs
+                    </p>
+                  </div>
+                  <Link
+                    to="/products"
+                    className="inline-flex w-fit items-center gap-2 rounded-2xl bg-[var(--theme-primary)] px-5 py-3 text-sm font-black text-white shadow-[0_14px_30px_rgba(11,125,35,0.18)] transition hover:opacity-90"
+                  >
+                    View All Products
+                    <ArrowRight size={17} />
+                  </Link>
                 </div>
-                <Link
-                  to="/products"
-                  className="w-fit rounded-lg border border-[var(--theme-primary)] px-5 py-2.5 text-sm font-bold text-[var(--theme-primary)] transition-colors hover:bg-[var(--theme-primary)] hover:text-white"
-                >
-                  View All Products
-                </Link>
               </div>
               <AllProducts pageSize={6} largeColumns={4} />
               <CategorySection limit={6} />
-              <div className="mb-8 mt-6 grid gap-0 overflow-hidden rounded-2xl bg-white/80 p-4 text-left shadow-[0_14px_40px_rgba(15,23,42,0.06)] backdrop-blur md:grid-cols-4">
+              <div className="mb-8 mt-6 grid gap-3 rounded-[28px] border border-white/70 bg-white/70 p-3 text-left shadow-[0_18px_50px_rgba(15,23,42,0.07)] backdrop-blur sm:grid-cols-2 md:grid-cols-4 md:p-4">
                 {[
                   { icon: ShieldCheck, title: "100% Quality Products", subtitle: "Premium & Fresh Products" },
                   { icon: Truck, title: "Fast Home Delivery", subtitle: "On Time Delivery" },
                   { icon: ShieldCheck, title: "Secure Payment", subtitle: "100% Secure Payment" },
                   { icon: Headphones, title: "24/7 Support", subtitle: "Dedicated Support" },
                 ].map(({ icon: Icon, title, subtitle }) => (
-                  <div key={title} className="flex items-center gap-4 border-[var(--theme-border-color)] px-4 py-3 md:border-r last:border-r-0">
-                    <Icon className="shrink-0 text-[var(--theme-primary)]" size={34} />
+                  <div key={title} className="flex items-center gap-3 rounded-2xl bg-white px-3 py-3 shadow-sm ring-1 ring-slate-100 transition hover:-translate-y-0.5 hover:shadow-md">
+                    <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-[var(--theme-muted-bg)] text-[var(--theme-primary)]"><Icon size={23} /></span>
                     <div>
                       <p className="font-bold text-slate-950">{title}</p>
                       <p className="text-sm text-[var(--theme-muted-text)]">{subtitle}</p>
@@ -84,3 +91,5 @@ const Home = ({ refs }) => {
 };
 
 export default Home;
+
+

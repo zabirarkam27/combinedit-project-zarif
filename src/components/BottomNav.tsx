@@ -103,7 +103,7 @@ const BottomNav = ({ activeKey = "home", onTabSelect }: BottomNavProps) => {
               animate="center"
               exit="exit"
             >
-              <ActiveIcon size={24} strokeWidth={2.15} aria-hidden="true" />
+              <ActiveIcon size={21} strokeWidth={2.1} aria-hidden="true" />
             </motion.span>
           </AnimatePresence>
         </motion.div>
@@ -119,3 +119,4 @@ const BottomNav = ({ activeKey = "home", onTabSelect }: BottomNavProps) => {
 };
 
 export default memo(BottomNav);
+

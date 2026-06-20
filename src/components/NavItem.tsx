@@ -30,10 +30,11 @@ const NavItem = ({ icon: Icon, active, onClick, label }: NavItemProps) => {
         whileTap={!active ? pressTapAnimation : undefined}
         transition={pressTapTransition}
       >
-        <Icon size={22} strokeWidth={1.95} aria-hidden="true" />
+        <Icon size={19} strokeWidth={1.95} aria-hidden="true" />
       </motion.span>
     </button>
   );
 };
 
 export default memo(NavItem);
+
