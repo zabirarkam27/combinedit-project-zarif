@@ -79,6 +79,7 @@ export const extractDominantColor = async (file) => {
 };
 
 export const normalizeImageColorMap = (product = {}) => {
+  const safeProduct = product && typeof product === "object" ? product : {};
   const map = {};
 
   const addPair = (image, color) => {
@@ -86,17 +87,17 @@ export const normalizeImageColorMap = (product = {}) => {
     if (image && normalized) map[image] = normalized;
   };
 
-  if (product.imageColorMap && typeof product.imageColorMap === "object") {
-    Object.entries(product.imageColorMap).forEach(([image, color]) => addPair(image, color));
+  if (safeProduct.imageColorMap && typeof safeProduct.imageColorMap === "object") {
+    Object.entries(safeProduct.imageColorMap).forEach(([image, color]) => addPair(image, color));
   }
 
-  if (Array.isArray(product.imageColors)) {
-    product.imageColors.forEach((item) => {
+  if (Array.isArray(safeProduct.imageColors)) {
+    safeProduct.imageColors.forEach((item) => {
       if (typeof item === "string") return;
       addPair(item?.image || item?.url || item?.src, item?.color || item?.hex);
     });
-  } else if (product.imageColors && typeof product.imageColors === "object") {
-    Object.entries(product.imageColors).forEach(([image, color]) => addPair(image, color));
+  } else if (safeProduct.imageColors && typeof safeProduct.imageColors === "object") {
+    Object.entries(safeProduct.imageColors).forEach(([image, color]) => addPair(image, color));
   }
 
   return map;
@@ -124,3 +125,4 @@ export const removeColorFromMap = (imageColorMap = {}, color) => {
     Object.entries(imageColorMap).filter(([, value]) => normalizeHexColor(value) !== normalized)
   );
 };
+
