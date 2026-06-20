@@ -138,10 +138,10 @@ const NavBar = ({ refs }) => {
   };
 
   const navLinkClass = ({ isActive }) =>
-    `relative py-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--theme-primary)] focus-visible:ring-offset-4 ${
+    `relative inline-flex h-11 items-center justify-center rounded-2xl px-4 text-sm font-black transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--theme-primary)] focus-visible:ring-offset-4 ${
       isActive
-        ? "text-[var(--theme-primary)] after:absolute after:left-0 after:right-0 after:-bottom-1 after:h-0.5 after:rounded-full after:bg-[var(--theme-primary)]"
-        : "text-slate-950 hover:text-[var(--theme-primary)]"
+        ? "bg-[var(--theme-primary)] text-white shadow-[0_14px_30px_rgba(11,125,35,0.18)]"
+        : "text-slate-700 hover:bg-[var(--theme-muted-bg)] hover:text-[var(--theme-primary)]"
     }`;
 
   const logoMaskStyle = {
@@ -151,7 +151,7 @@ const NavBar = ({ refs }) => {
 
   return (
     <div>
-      <div className="fixed left-0 top-0 z-50 hidden w-full border-b border-[var(--theme-border-color)] bg-white/95 shadow-[0_10px_30px_rgba(15,23,42,0.08)] backdrop-blur md:flex">
+      <div className="fixed left-0 top-0 z-50 hidden w-full border-b border-white/70 bg-white/82 shadow-[0_18px_55px_rgba(15,23,42,0.10)] backdrop-blur-xl md:flex">
         <div
           className={`${design.navbarContainer} flex items-center justify-between gap-5 py-3`}
         >
@@ -159,17 +159,17 @@ const NavBar = ({ refs }) => {
             <Link
               to="/"
               onClick={goHome}
-              className="inline-flex items-center rounded-xl p-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--theme-primary)] focus-visible:ring-offset-4"
+              className="inline-flex h-14 items-center rounded-[22px] border border-[var(--theme-border-color)] bg-white px-3 shadow-[0_14px_35px_rgba(15,23,42,0.07)] transition hover:-translate-y-0.5 hover:shadow-[0_18px_45px_rgba(15,23,42,0.11)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--theme-primary)] focus-visible:ring-offset-4"
               aria-label="Go to home"
             >
               <span
-                className="block h-16 w-20 bg-[var(--theme-logo-color)]"
+                className="block h-11 w-[76px] bg-[var(--theme-logo-color)]"
                 style={logoMaskStyle}
               />
             </Link>
           </div>
 
-          <nav className="flex min-w-0 flex-1 items-center justify-center gap-3 text-[13px] font-semibold xl:gap-7 xl:text-[15px]">
+          <nav className="flex min-w-0 flex-1 items-center justify-center gap-1 rounded-[24px] border border-[var(--theme-border-color)] bg-white/75 p-1.5 shadow-inner shadow-slate-100/70">
             <NavLink to="/" end onClick={goHome} className={navLinkClass}>
               Home
             </NavLink>
@@ -187,20 +187,20 @@ const NavBar = ({ refs }) => {
             <button
               type="button"
               onClick={goToContact}
-              className="py-2 text-slate-950 transition-colors hover:text-[var(--theme-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--theme-primary)] focus-visible:ring-offset-4"
+              className="relative inline-flex h-11 items-center justify-center rounded-2xl px-4 text-sm font-black text-slate-700 transition-all duration-200 hover:bg-[var(--theme-muted-bg)] hover:text-[var(--theme-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--theme-primary)] focus-visible:ring-offset-4"
             >
               Contact Us
             </button>
           </nav>
 
-          <div className="flex shrink-0 items-center justify-end gap-2 pr-1 text-slate-950 xl:gap-5 xl:pr-2">
+          <div className="flex shrink-0 items-center justify-end gap-2 text-slate-950 xl:gap-3">
             <button
               type="button"
               aria-label="Search"
               onClick={() => setSearchOpen(true)}
-              className="rounded-full p-2 transition-colors hover:text-[var(--theme-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--theme-primary)] focus-visible:ring-offset-4"
+              className="grid h-12 w-12 place-items-center rounded-2xl border border-[var(--theme-border-color)] bg-white text-slate-800 shadow-[0_10px_24px_rgba(15,23,42,0.07)] transition hover:-translate-y-0.5 hover:border-[var(--theme-primary)] hover:text-[var(--theme-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--theme-primary)] focus-visible:ring-offset-4"
             >
-              <Search size={28} strokeWidth={2.1} />
+              <Search size={24} strokeWidth={2.15} />
             </button>
             <div ref={orderHistoryRef} className="relative">
               <button
@@ -208,9 +208,9 @@ const NavBar = ({ refs }) => {
                 aria-label="View ordered products"
                 aria-expanded={orderHistoryOpen}
                 onClick={() => setOrderHistoryOpen((open) => !open)}
-                className="relative rounded-full p-2 transition-colors hover:text-[var(--theme-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--theme-primary)] focus-visible:ring-offset-4"
+                className="relative grid h-12 w-12 place-items-center rounded-2xl border border-[var(--theme-border-color)] bg-white text-slate-800 shadow-[0_10px_24px_rgba(15,23,42,0.07)] transition hover:-translate-y-0.5 hover:border-[var(--theme-primary)] hover:text-[var(--theme-primary)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--theme-primary)] focus-visible:ring-offset-4"
               >
-                <UserRound size={28} strokeWidth={2.1} />
+                <UserRound size={24} strokeWidth={2.15} />
                 {orderedProductCount > 0 && (
                   <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-red-600 px-1 text-[9px] font-extrabold leading-none text-white ring-2 ring-white">
                     {orderedProductCount > 9 ? "9+" : orderedProductCount}
@@ -314,23 +314,25 @@ const NavBar = ({ refs }) => {
             <NavLink
               to="/cart"
               className={({ isActive }) =>
-                `relative flex items-center gap-3 rounded-full p-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--theme-primary)] focus-visible:ring-offset-4 ${
-                  isActive ? "text-[var(--theme-cart-icon-color)]" : "hover:text-[var(--theme-primary)]"
+                `relative flex h-12 items-center gap-2 rounded-2xl border px-3 shadow-[0_10px_24px_rgba(15,23,42,0.07)] transition hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--theme-primary)] focus-visible:ring-offset-4 ${
+                  isActive
+                    ? "border-[var(--theme-primary)] bg-[var(--theme-muted-bg)] text-[var(--theme-cart-icon-color)]"
+                    : "border-[var(--theme-border-color)] bg-white hover:border-[var(--theme-primary)] hover:text-[var(--theme-primary)]"
                 }`
               }
               aria-label="Open cart"
             >
               <ShoppingBag
                 className="text-[var(--theme-cart-icon-color)]"
-                size={30}
-                strokeWidth={2.1}
+                size={25}
+                strokeWidth={2.15}
               />
               {cartItems.length > 0 && (
                 <span className="absolute -top-0.5 left-7 flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--theme-primary)] px-1 text-[9px] font-extrabold leading-none text-white ring-2 ring-white">
                   {cartItems.length}
                 </span>
               )}
-              <span className="ml-3 text-base font-bold">{"\u09F3"}0</span>
+              <span className="text-sm font-black text-slate-900">{"\u09F3"}0</span>
             </NavLink>
           </div>
         </div>
@@ -349,5 +351,8 @@ const NavBar = ({ refs }) => {
 };
 
 export default NavBar;
+
+
+
 
 
