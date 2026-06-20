@@ -107,7 +107,7 @@ const ViewOrder = () => {
     return () => {
       alive = false;
     };
-  }, [id]);
+  }, [id, handleViewOrder]);
 
   const totals = useMemo(() => {
     const itemsTotal = (order?.items || []).reduce(
@@ -543,5 +543,3 @@ const ViewOrder = () => {
 };
 
 export default ViewOrder;
-
-

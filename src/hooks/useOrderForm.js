@@ -2,7 +2,6 @@ import { useState } from "react";
 import { createOrder } from "../services/orders";
 import { showErrorPopup, showOrderSuccessPopup } from "../utils/popups";
 import { trackMetaPurchase } from "../services/metaConversions";
-import useInvoiceGenerator from "./useInvoiceGenerator";
 import { saveCustomerOrder } from "../utils/customerOrderHistory";
 
 const defaultOrderInfo = {
@@ -18,7 +17,6 @@ const defaultOrderInfo = {
 const useOrderForm = (initialProduct = null) => {
   const [selectedProduct, setSelectedProduct] = useState(initialProduct);
   const [orderInfo, setOrderInfo] = useState(defaultOrderInfo);
-  const { generateInvoice } = useInvoiceGenerator();
 
   const handleOrderChange = (e) => {
     const { name, value } = e.target;
@@ -63,7 +61,3 @@ const useOrderForm = (initialProduct = null) => {
 };
 
 export default useOrderForm;
-
-
-
-

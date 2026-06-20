@@ -9,7 +9,6 @@ import OrderDrawer from "../components/OrderDrawer";
 import { createOrder } from "../services/orders";
 import { confirmPopup, showOrderSuccessPopup } from "../utils/popups";
 import { trackMetaPurchase } from "../services/metaConversions";
-import useInvoiceGenerator from "../hooks/useInvoiceGenerator";
 import { saveCustomerOrder } from "../utils/customerOrderHistory";
 
 const getItemPrice = (item) => Number(item.discountPrice || item.price || 0);
@@ -237,6 +236,3 @@ const CartPage = () => {
 };
 
 export default CartPage;
-
-
-

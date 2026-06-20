@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { toast } from "react-toastify";
 import { getOrders, deleteOrder } from "../services/orders";
 import api from "../api";
@@ -86,7 +86,7 @@ export const useOrders = ({ autoFetch = true } = {}) => {
   };
 
   // View single order
-  const handleViewOrder = async (orderId) => {
+  const handleViewOrder = useCallback(async (orderId) => {
     try {
       const res = await api.get(`/orders/${orderId}`);
       return res.data; // return fetched order
@@ -94,7 +94,7 @@ export const useOrders = ({ autoFetch = true } = {}) => {
       toast.error("Failed to fetch order details.");
       console.error(err);
     }
-  };
+  }, []);
 
   // Update order status & paymentStatus (single or bulk)
   const handleStatusUpdate = async (orderId, status, paymentStatus) => {

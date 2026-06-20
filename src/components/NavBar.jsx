@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
-  ChevronDown,
   Clock3,
   PackageCheck,
   Search,
@@ -182,7 +181,7 @@ const NavBar = ({ refs }) => {
                 `${navLinkClass({ isActive })} flex items-center gap-1.5`
               }
             >
-              Categories <ChevronDown size={16} strokeWidth={2.4} />
+              Categories
             </NavLink>
             <button
               type="button"
